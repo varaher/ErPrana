@@ -107,10 +107,12 @@ if (!FEATURE_FLAGS.SAFE_BOOT) {
       const { router: triageRoutes } = require('./routes/triage');
       const learningRoutes = require('./routes/learning');
       const symptomsRoutes = require('./routes/symptoms');
+      const symptomFeedbackRoutes = require('./routes/symptom-feedback');
       
       app.use('/api/triage', triageRoutes);
       app.use('/api/learning', learningRoutes);
       app.use('/api/symptoms', symptomsRoutes);
+      app.use('/api/symptom-feedback', symptomFeedbackRoutes);
       
       // Add playground routes (no authentication required)
       const { playgroundRouter } = require('./routes/triage');
