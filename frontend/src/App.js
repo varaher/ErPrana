@@ -118,18 +118,7 @@ function App() {
         </div>
       </div>
       
-      {/* Active Components */}
-      {activeComponent === 'symptom-checker' && (
-        <SymptomChecker onClose={() => setActiveComponent(null)} />
-      )}
-      
-      {activeComponent === 'vitals-tracker' && (
-        <VitalsTracker onClose={() => setActiveComponent(null)} />
-      )}
-      
-      {activeComponent === 'health-records' && (
-        <HealthRecords onClose={() => setActiveComponent(null)} />
-      )}
+      {/* Components are now handled by currentView routing */}
     </div>
   );
 }
