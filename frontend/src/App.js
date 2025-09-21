@@ -220,6 +220,19 @@ function App() {
         📞
       </button>
       
+      {/* Active Components */}
+      {activeComponent === 'symptom-checker' && (
+        <SymptomChecker onClose={() => setActiveComponent(null)} />
+      )}
+      
+      {activeComponent === 'vitals-tracker' && (
+        <VitalsTracker onClose={() => setActiveComponent(null)} />
+      )}
+      
+      {activeComponent === 'health-records' && (
+        <HealthRecords onClose={() => setActiveComponent(null)} />
+      )}
+      
       {selectedFeature && (
         <div className="modal" style={{display: 'block'}}>
           <div className="modal-content">
