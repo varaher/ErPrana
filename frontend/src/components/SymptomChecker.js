@@ -278,29 +278,31 @@ const SymptomChecker = ({ onClose }) => {
     return questions.slice(0, 4); // Limit to 4 questions
   };
   
-  const performDifferentialDiagnosis = async (allSymptoms) => {
-    addMessage('bot', '🔍 **Analyzing your symptoms using medical knowledge base...**');
+  const performDifferentialDiagnosis = async (userInput) => {
+    addMessage('bot', '🔍 **Analyzing your symptoms using WikiEM medical knowledge base...**');
     
     // Simulate advanced medical analysis
     await new Promise(resolve => setTimeout(resolve, 3000));
     
-    const differentialDiagnoses = generateDifferentialDiagnoses(allSymptoms);
+    // Combine all messages to get full symptom picture
+    const allUserMessages = messages.filter(m => m.type === 'user').map(m => m.message).join(' ') + ' ' + userInput;
+    const differentialDiagnoses = generateDifferentialDiagnoses(allUserMessages);
     
-    addMessage('bot', '📋 **Based on your symptoms, here are the 5 most likely conditions:**');
+    addMessage('bot', '📋 **Based on your comprehensive symptom analysis, here are the 5 most likely conditions:**');
     
     differentialDiagnoses.forEach((diagnosis, index) => {
       setTimeout(() => {
-        addMessage('bot', `**${index + 1}. ${diagnosis.condition}** (${diagnosis.probability}% likelihood)\n${diagnosis.description}\n\n**Key Features:** ${diagnosis.keyFeatures.join(', ')}\n**Recommended Action:** ${diagnosis.action}`);
-      }, (index + 1) * 1500);
+        addMessage('bot', `**${index + 1}. ${diagnosis.condition}** (${diagnosis.probability}% likelihood)\n\n${diagnosis.description}\n\n**Key Features:** ${diagnosis.keyFeatures.join(', ')}\n\n**Recommended Action:** ${diagnosis.action}`);
+      }, (index + 1) * 1800);
     });
     
     setTimeout(() => {
       addMessage('bot', '⚠️ **IMPORTANT MEDICAL DISCLAIMER:**\nThis analysis is for educational purposes only and should not replace professional medical evaluation. Please consult a healthcare provider for proper diagnosis and treatment.\n\n**Seek immediate medical attention if:**\n• Symptoms worsen rapidly\n• Severe pain (8/10 or higher)\n• High fever (>101.3°F/38.5°C)\n• Difficulty breathing\n• Loss of consciousness');
       
-      addMessage('bot', '🏥 **Next Steps:**\n1. Monitor your symptoms\n2. Consider seeing a healthcare provider\n3. Keep a symptom diary\n4. Follow up if symptoms persist or worsen\n\nWould you like information about nearby healthcare facilities or have any other questions?');
+      addMessage('bot', '🏥 **Next Steps:**\n1. Monitor your symptoms closely\n2. Consider seeing a healthcare provider\n3. Keep a detailed symptom diary\n4. Follow up if symptoms persist or worsen\n\nWould you like information about nearby healthcare facilities or have any other questions about your symptoms?');
       
       setCurrentStep('recommendation');
-    }, 8000);
+    }, 10000);
   };
   
   const generateDifferentialDiagnoses = (allSymptoms) => {
