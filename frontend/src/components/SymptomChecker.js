@@ -603,6 +603,25 @@ const SymptomChecker = ({ onClose }) => {
             <div key={msg.id} className={`message ${msg.type}`}>
               <div className="message-content">
                 <div className="message-text">{msg.message}</div>
+                
+                {/* Feedback buttons for diagnosis */}
+                {msg.type === 'feedback' && !feedbackGiven && (
+                  <div className="feedback-buttons">
+                    <button 
+                      className="feedback-btn positive"
+                      onClick={() => handleFeedback(true)}
+                    >
+                      👍 Accurate
+                    </button>
+                    <button 
+                      className="feedback-btn negative"
+                      onClick={() => handleFeedback(false)}
+                    >
+                      👎 Not Accurate
+                    </button>
+                  </div>
+                )}
+                
                 <div className="message-time">
                   {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </div>
