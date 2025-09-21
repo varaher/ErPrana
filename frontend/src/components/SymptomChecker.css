@@ -205,7 +205,47 @@
   border-top: 1px solid #e1e5e9;
 }
 
+.input-controls {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.voice-btn {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+}
+
+.voice-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+.voice-btn.listening {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
+}
+
+.voice-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .chat-input-wrapper {
+  flex: 1;
   display: flex;
   gap: 12px;
   align-items: flex-end;
