@@ -61,11 +61,18 @@ function App() {
       action: () => setSelectedFeature('medical-knowledge')
     },
     {
-      id: 'triage-system',
-      icon: '✅',
-      title: 'Intelligent Triage',
-      description: 'Smart patient triage system for emergency departments and clinics.',
-      action: () => setSelectedFeature('triage-system')
+      id: 'vitals-tracker',
+      icon: '📊',
+      title: 'Vitals Tracking',
+      description: 'Track heart rate, blood pressure, oxygen levels from wearable devices.',
+      action: () => setActiveComponent('vitals-tracker')
+    },
+    {
+      id: 'health-records',
+      icon: '📋',
+      title: 'Health Records',
+      description: 'View medical history, test results, and health timeline in one place.',
+      action: () => setActiveComponent('health-records')
     },
     {
       id: 'multi-language',
