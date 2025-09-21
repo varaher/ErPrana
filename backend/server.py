@@ -72,6 +72,19 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+@api_router.post("/symptom-feedback", response_model=SymptomFeedback)
+async def create_symptom_feedback(input: SymptomFeedbackCreate):
+    feedback_dict = input.dict()
+    feedback_obj = SymptomFeedback(**feedback_dict)
+    _ = await db.symptom_feedback.insert_one(feedback_obj.dict())
+    logger.info(f"Symptom feedback saved: {feedback_obj.feedback} for session {feedback_obj.sessionId}")
+    return feedback_obj
+
+@api_router.get("/symptom-feedback", response_model=List[SymptomFeedback])
+async def get_symptom_feedback():
+    feedback_list = await db.symptom_feedback.find().to_list(1000)
+    return [SymptomFeedback(**feedback) for feedback in feedback_list]
+
 # Include the router in the main app
 app.include_router(api_router)
 
