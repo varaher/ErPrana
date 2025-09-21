@@ -469,12 +469,12 @@ const SymptomChecker = ({ onClose }) => {
   };
   
   const quickResponses = [
-    "I have a headache",
-    "I'm feeling feverish",
-    "I have a persistent cough",
-    "My stomach hurts",
-    "I'm feeling dizzy",
-    "I need emergency help"
+    "I have severe flank pain radiating to my groin",
+    "I'm experiencing chest pain and shortness of breath", 
+    "I have a severe headache that came on suddenly",
+    "I have abdominal pain with nausea and vomiting",
+    "I have a high fever with chills and body aches",
+    "I need emergency help - this is urgent"
   ];
   
   const handleQuickResponse = (response) => {
