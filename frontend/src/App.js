@@ -38,8 +38,6 @@ function App() {
     }
   };
   
-  const [activeComponent, setActiveComponent] = useState(null);
-  
   const handleLogin = (userData) => {
     setUser(userData);
   };
