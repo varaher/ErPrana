@@ -111,6 +111,12 @@ def main():
     if not success:
         print("❌ Status check retrieval failed")
 
+    # Test symptom feedback endpoint (critical for frontend)
+    print("\n🩺 Testing Symptom Feedback Endpoint...")
+    success, _ = tester.test_symptom_feedback_endpoint()
+    if not success:
+        print("❌ Symptom feedback endpoint failed - Frontend feedback system won't work")
+
     # Print final results
     print("\n" + "=" * 60)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
