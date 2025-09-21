@@ -304,6 +304,42 @@
   transform: none;
 }
 
+.feedback-buttons {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0 8px 0;
+  justify-content: center;
+}
+
+.feedback-btn {
+  background: #f1f3f4;
+  border: 2px solid #dadce0;
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feedback-btn.positive:hover {
+  background: #d4edda;
+  border-color: #27ae60;
+  color: #27ae60;
+}
+
+.feedback-btn.negative:hover {
+  background: #f8d7da;
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.feedback-btn:active {
+  transform: scale(0.95);
+}
+
 .disclaimer {
   background: #fff3cd;
   color: #856404;
