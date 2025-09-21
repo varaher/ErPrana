@@ -69,12 +69,17 @@ const SymptomChecker = ({ onClose }) => {
   
   const simulateAIResponse = async (userMessage) => {
     // Simulate thinking delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     const lowerMessage = userMessage.toLowerCase();
     
-    // Emergency keywords detection
-    const emergencyKeywords = ['chest pain', 'difficulty breathing', 'severe pain', 'unconscious', 'bleeding heavily', 'stroke', 'heart attack'];
+    // Emergency keywords detection - more comprehensive
+    const emergencyKeywords = [
+      'chest pain', 'difficulty breathing', 'severe pain', 'unconscious', 'bleeding heavily', 
+      'stroke', 'heart attack', 'can\'t breathe', 'crushing chest pain', 'severe abdominal pain',
+      'severe headache', 'loss of consciousness', 'seizure', 'anaphylaxis', 'allergic reaction',
+      'difficulty swallowing', 'severe vomiting', 'severe diarrhea', 'high fever', 'dehydration'
+    ];
     const hasEmergency = emergencyKeywords.some(keyword => lowerMessage.includes(keyword));
     
     if (hasEmergency) {
@@ -83,19 +88,8 @@ const SymptomChecker = ({ onClose }) => {
       return;
     }
     
-    switch (currentStep) {
-      case 'symptoms':
-        await handleSymptomsPhase(lowerMessage);
-        break;
-      case 'followup':
-        await handleFollowupPhase(lowerMessage);
-        break;
-      case 'assessment':
-        await handleAssessmentPhase(lowerMessage);
-        break;
-      default:
-        addMessage('bot', 'I understand. Is there anything else about your symptoms you\'d like to discuss?');
-    }
+    // Advanced symptom analysis with WikiEM-style medical reasoning
+    await performMedicalAnalysis(lowerMessage, currentStep);
   };
   
   const handleSymptomsPhase = async (message) => {
