@@ -8,13 +8,19 @@ const SymptomChecker = ({ onClose }) => {
     {
       id: 1,
       type: 'bot',
-      message: "Hello! I'm your AI health assistant. I'll help you understand your symptoms and provide basic medical guidance. Please note that I cannot replace professional medical advice.",
+      message: "👋 Hello! I'm ARYA, your AI medical assistant powered by WikiEM medical knowledge. I'm here to help analyze your symptoms and provide evidence-based medical guidance.",
       timestamp: new Date()
     },
     {
       id: 2,
       type: 'bot',
-      message: "To get started, please tell me: What symptoms are you experiencing? Be as detailed as possible.",
+      message: "🩺 I can provide provisional diagnoses, suggest follow-up questions, and guide you on when to seek medical care. However, I cannot replace professional medical evaluation.",
+      timestamp: new Date()
+    },
+    {
+      id: 3,
+      type: 'bot',
+      message: "Please describe your symptoms in your own words - be as detailed as possible. You can type or use the 🎤 voice input button. What's bothering you today?",
       timestamp: new Date()
     }
   ]);
