@@ -303,12 +303,14 @@ const SymptomChecker = ({ onClose }) => {
     }, 8000);
   };
   
-  const generateDifferentialDiagnoses = (symptoms) => {
-    const lowerSymptoms = symptoms.toLowerCase();
+  const generateDifferentialDiagnoses = (allSymptoms) => {
+    const symptomsString = Array.isArray(allSymptoms) ? allSymptoms.join(' ').toLowerCase() : allSymptoms.toLowerCase();
+    console.log('Generating diagnosis for symptoms:', symptomsString);
     
     // Enhanced diagnostic logic based on symptom patterns
-    if (lowerSymptoms.includes('flank pain') || lowerSymptoms.includes('colicky') || 
-        lowerSymptoms.includes('kidney stone') || lowerSymptoms.includes('ureteric')) {
+    if (symptomsString.includes('flank pain') || symptomsString.includes('colicky') || 
+        (symptomsString.includes('radiating pain') && symptomsString.includes('nausea')) ||
+        symptomsString.includes('kidney stone') || symptomsString.includes('ureteric')) {
       return [
         {
           condition: 'Ureteric Colic (Kidney Stone)',
