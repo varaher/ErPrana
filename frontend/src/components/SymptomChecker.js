@@ -143,11 +143,13 @@ const SymptomChecker = ({ onClose }) => {
     const symptoms = extractSymptoms(message);
     const medicalContext = analyzeMedicalContext(message);
     
-    if (step === 'symptoms' || step === 'followup') {
-      // Generate intelligent follow-up questions based on symptoms
+    console.log('Current step:', step, 'Symptoms found:', symptoms);
+    
+    if (step === 'symptoms') {
+      // First interaction - ask follow-up questions
       const followUpQuestions = generateFollowUpQuestions(symptoms, medicalContext);
       
-      if (followUpQuestions.length > 0) {
+      if (followUpQuestions.length > 0 && symptoms[0] !== 'unspecified symptoms') {
         addMessage('bot', `I understand you're experiencing ${symptoms.join(', ')}. Let me gather some more specific information to provide better guidance:`);
         
         followUpQuestions.forEach((question, index) => {
@@ -158,11 +160,19 @@ const SymptomChecker = ({ onClose }) => {
         
         setCurrentStep('followup');
       } else {
-        // Move to analysis if we have enough information
-        setTimeout(() => performDifferentialDiagnosis(message), 2000);
+        // If symptoms are unspecified, ask general questions
+        addMessage('bot', 'Thank you for sharing your symptoms. Let me ask some important questions:');
+        setTimeout(() => {
+          addMessage('bot', '1. When did these symptoms start?\n2. How severe are they on a scale of 1-10?\n3. Have you experienced anything like this before?\n4. Are you currently taking any medications?');
+        }, 800);
+        setCurrentStep('followup');
       }
+    } else if (step === 'followup') {
+      // Second interaction - now we have enough info for diagnosis
+      addMessage('bot', 'Thank you for the additional information. Let me analyze all your symptoms now...');
+      setTimeout(() => performDifferentialDiagnosis(message), 2000);
     } else {
-      // Perform differential diagnosis
+      // Any further interactions go straight to diagnosis
       await performDifferentialDiagnosis(message);
     }
   };
