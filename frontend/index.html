@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErMate - Emergency Medicine Assistant</title>
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ErMate">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .feature-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .feature-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .feature-button:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        
+        .emergency-btn {
+            background: #e74c3c;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .online { background-color: #27ae60; }
+        .offline { background-color: #e74c3c; }
+        
+        .api-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        function App() {
+            const [backendStatus, setBackendStatus] = useState('checking');
+            const [selectedFeature, setSelectedFeature] = useState(null);
+            
+            useEffect(() => {
+                checkBackendStatus();
+                const interval = setInterval(checkBackendStatus, 30000);
+                return () => clearInterval(interval);
+            }, []);
+            
+            const checkBackendStatus = async () => {
+                try {
+                    const response = await fetch('http://localhost:3001/health');
+                    if (response.ok) {
+                        setBackendStatus('online');
+                    } else {
+                        setBackendStatus('offline');
+                    }
+                } catch (error) {
+                    setBackendStatus('offline');
+                }
+            };
+            
+            const features = [
+                {
+                    id: 'symptom-checker',
+                    icon: 'fas fa-stethoscope',
+                    title: 'Symptom Checker',
+                    description: 'Get immediate symptom assessment and triage recommendations based on medical protocols.',
+                    action: () => setSelectedFeature('symptom-checker')
+                },
+                {
+                    id: 'voice-assistant',
+                    icon: 'fas fa-microphone',
+                    title: 'ARYA Voice Assistant',
+                    description: 'Interact with AI-powered voice assistant for medical guidance and emergency support.',
+                    action: () => setSelectedFeature('voice-assistant')
+                },
+                {
+                    id: 'emergency-protocols',
+                    icon: 'fas fa-ambulance',
+                    title: 'Emergency Protocols',
+                    description: 'Access standardized emergency medicine protocols and treatment guidelines.',
+                    action: () => setSelectedFeature('emergency-protocols')
+                },
+                {
+                    id: 'medical-knowledge',
+                    icon: 'fas fa-book-medical',
+                    title: 'Medical Knowledge Base',
+                    description: 'Browse comprehensive medical information from WikiEM and other trusted sources.',
+                    action: () => setSelectedFeature('medical-knowledge')
+                },
+                {
+                    id: 'triage-system',
+                    icon: 'fas fa-clipboard-check',
+                    title: 'Intelligent Triage',
+                    description: 'Smart patient triage system for emergency departments and clinics.',
+                    action: () => setSelectedFeature('triage-system')
+                },
+                {
+                    id: 'multi-language',
+                    icon: 'fas fa-globe',
+                    title: 'Multi-Language Support',
+                    description: 'Available in multiple languages including English, Spanish, French, Hindi, and more.',
+                    action: () => setSelectedFeature('multi-language')
+                }
+            ];
+            
+            const closeModal = () => setSelectedFeature(null);
+            
+            const getFeatureContent = (featureId) => {
+                const contents = {
+                    'symptom-checker': {
+                        title: 'Symptom Checker',
+                        content: (
+                            <div>
+                                <p>This feature provides:</p>
+                                <ul style={{textAlign: 'left', margin: '20px 0'}}>
+                                    <li>AI-powered symptom analysis</li>
+                                    <li>Evidence-based triage recommendations</li>
+                                    <li>Integration with medical protocols</li>
+                                    <li>Severity assessment</li>
+                                    <li>Treatment suggestions</li>
+                                </ul>
+                                <p>Status: Backend API {backendStatus === 'online' ? 'Connected ✅' : 'Offline ❌'}</p>
+                            </div>
+                        )
+                    },
+                    'voice-assistant': {
+                        title: 'ARYA Voice Assistant',
+                        content: (
+                            <div>
+                                <p>Voice-powered medical assistant featuring:</p>
+                                <ul style={{textAlign: 'left', margin: '20px 0'}}>
+                                    <li>Google Cloud Speech-to-Text</li>
+                                    <li>OpenAI Whisper integration</li>
+                                    <li>Real-time voice interaction</li>
+                                    <li>Emergency voice commands</li>
+                                    <li>Multi-language voice support</li>
+                                </ul>
+                                <p>Requires API keys for full functionality</p>
+                            </div>
+                        )
+                    },
+                    'emergency-protocols': {
+                        title: 'Emergency Protocols',
+                        content: (
+                            <div>
+                                <p>Comprehensive emergency medicine protocols:</p>
+                                <ul style={{textAlign: 'left', margin: '20px 0'}}>
+                                    <li>ACLS (Advanced Cardiac Life Support)</li>
+                                    <li>PALS (Pediatric Advanced Life Support)</li>
+                                    <li>Trauma protocols</li>
+                                    <li>Medication dosing guidelines</li>
+                                    <li>Diagnostic criteria</li>
+                                </ul>
+                            </div>
+                        )
+                    },
+                    'medical-knowledge': {
+                        title: 'Medical Knowledge Base',
+                        content: (
+                            <div>
+                                <p>Integrated medical knowledge from:</p>
+                                <ul style={{textAlign: 'left', margin: '20px 0'}}>
+                                    <li>WikiEM (Emergency Medicine)</li>
+                                    <li>Clinical decision rules</li>
+                                    <li>Drug interaction databases</li>
+                                    <li>Diagnostic imaging guides</li>
+                                    <li>Laboratory reference values</li>
+                                </ul>
+                            </div>
+                        )
+                    },
+                    'triage-system': {
+                        title: 'Intelligent Triage',
+                        content: (
+                            <div>
+                                <p>Smart triage system features:</p>
+                                <ul style={{textAlign: 'left', margin: '20px 0'}}>
+                                    <li>ESI (Emergency Severity Index)</li>
+                                    <li>Automated risk stratification</li>
+                                    <li>Resource utilization prediction</li>
+                                    <li>Wait time optimization</li>
+                                    <li>Clinical decision support</li>
+                                </ul>
+                            </div>
+                        )
+                    },
+                    'multi-language': {
+                        title: 'Multi-Language Support',
+                        content: (
+                            <div>
+                                <p>Supported languages:</p>
+                                <ul style={{textAlign: 'left', margin: '20px 0'}}>
+                                    <li>🇺🇸 English</li>
+                                    <li>🇪🇸 Spanish (Español)</li>
+                                    <li>🇫🇷 French (Français)</li>
+                                    <li>🇮🇳 Hindi (हिंदी)</li>
+                                    <li>🇮🇳 Tamil (தமிழ்)</li>
+                                    <li>🇮🇳 Telugu (తెలుగు)</li>
+                                    <li>🇮🇳 Kannada (ಕನ್ನಡ)</li>
+                                    <li>🇮🇳 Malayalam (മലയാളം)</li>
+                                    <li>🇸🇦 Arabic (العربية)</li>
+                                </ul>
+                            </div>
+                        )
+                    }
+                };
+                return contents[featureId] || {title: 'Feature', content: <p>Feature details</p>};
+            };
+            
+            return (
+                <div>
+                    <div className="api-status">
+                        <span className={`status-indicator ${backendStatus}`}></span>
+                        Backend API: {backendStatus === 'online' ? 'Online' : backendStatus === 'offline' ? 'Offline' : 'Checking...'}
+                    </div>
+                    
+                    <div className="container">
+                        <div className="header">
+                            <h1>🏥 ErMate</h1>
+                            <p>Emergency Medicine Assistant with AI-Powered Voice Interface</p>
+                        </div>
+                        
+                        <div className="features-grid">
+                            {features.map(feature => (
+                                <div key={feature.id} className="feature-card" onClick={feature.action}>
+                                    <div className="feature-icon">
+                                        <i className={feature.icon}></i>
+                                    </div>
+                                    <div className="feature-title">{feature.title}</div>
+                                    <div className="feature-description">{feature.description}</div>
+                                    <button className="feature-button">
+                                        Learn More
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <button className="emergency-btn" onClick={() => setSelectedFeature('emergency')}>
+                        <i className="fas fa-phone"></i>
+                    </button>
+                    
+                    {selectedFeature && (
+                        <div className="modal" style={{display: 'block'}}>
+                            <div className="modal-content">
+                                <span className="close" onClick={closeModal}>&times;</span>
+                                {selectedFeature === 'emergency' ? (
+                                    <div>
+                                        <h2>🚨 Emergency</h2>
+                                        <p style={{margin: '20px 0', fontSize: '1.1rem'}}>
+                                            In case of a medical emergency, call your local emergency number immediately.
+                                        </p>
+                                        <p style={{margin: '20px 0'}}>
+                                            <strong>US:</strong> 911<br/>
+                                            <strong>UK:</strong> 999<br/>
+                                            <strong>India:</strong> 108<br/>
+                                            <strong>EU:</strong> 112
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <h2>{getFeatureContent(selectedFeature).title}</h2>
+                                        {getFeatureContent(selectedFeature).content}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+        
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>
