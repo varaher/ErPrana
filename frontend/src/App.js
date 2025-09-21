@@ -9,8 +9,9 @@ import UserProfile from './components/UserProfile';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, symptom-checker, vitals, records, profile
   const [backendStatus, setBackendStatus] = useState('checking');
-  const [selectedFeature, setSelectedFeature] = useState(null);
   
   useEffect(() => {
     checkBackendStatus();
