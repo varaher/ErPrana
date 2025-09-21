@@ -85,35 +85,66 @@ function App() {
   ];
   
   return (
-    <div>
-      <div className="api-status">
-        <span className={`status-indicator ${backendStatus}`}></span>
-        Backend API: {backendStatus === 'online' ? 'Online' : backendStatus === 'offline' ? 'Offline' : 'Checking...'}
-      </div>
-      
-      <div className="container">
-        <div className="header">
-          <h1>🌿 ErPrana</h1>
-          <p>Your Personal Health Assistant</p>
+    <div className="erprana-app">
+      {/* Top Navigation */}
+      <nav className="top-nav">
+        <div className="nav-left">
+          <h1 className="app-name">🌿 ErPrana</h1>
         </div>
-        
-        <div className="features-grid">
-          {features.map(feature => (
-            <div key={feature.id} className="feature-card" onClick={feature.action}>
-              <div className="feature-icon">
-                {feature.icon}
-              </div>
-              <div className="feature-title">{feature.title}</div>
-              <div className="feature-description">{feature.description}</div>
-              <button className="feature-button">
-                Learn More
-              </button>
+        <div className="nav-right">
+          <span className="user-greeting">Hi, {user.fullName.split(' ')[0]}!</span>
+          <button 
+            className="profile-btn"
+            onClick={() => setCurrentView('profile')}
+          >
+            👤
+          </button>
+          <button className="logout-btn" onClick={handleLogout}>
+            🚪 Logout
+          </button>
+        </div>
+      </nav>
+      
+      {/* Main Content */}
+      <main className="main-content">
+        {currentView === 'dashboard' && (
+          <div className="dashboard">
+            <div className="welcome-section">
+              <h2>Welcome back, {user.fullName.split(' ')[0]}!</h2>
+              <p>How can I help you with your health today?</p>
             </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Components are now handled by currentView routing */}
+            
+            <div className="features-grid">
+              {features.map(feature => (
+                <div key={feature.id} className="clean-feature-card" onClick={feature.action}>
+                  <div className="card-icon">{feature.icon}</div>
+                  <div className="card-content">
+                    <h3>{feature.title}</h3>
+                    <p>{feature.description}</p>
+                  </div>
+                  <div className="card-arrow">→</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {currentView === 'profile' && (
+          <UserProfile 
+            user={user} 
+            onUpdateUser={handleUpdateUser}
+            onClose={() => setCurrentView('dashboard')}
+          />
+        )}
+        
+        {currentView === 'vitals' && (
+          <VitalsTracker onClose={() => setCurrentView('dashboard')} />
+        )}
+        
+        {currentView === 'records' && (
+          <HealthRecords onClose={() => setCurrentView('dashboard')} />
+        )}
+      </main>
     </div>
   );
 }
