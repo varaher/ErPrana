@@ -475,6 +475,23 @@ const SymptomChecker = ({ onClose }) => {
     setInputMessage(response);
   };
   
+  const startVoiceInput = () => {
+    if (recognitionRef.current && !isListening) {
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Speech recognition start error:', error);
+        addMessage('bot', '🎤 Unable to start voice input. Please check microphone permissions.');
+      }
+    }
+  };
+  
+  const stopVoiceInput = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+    }
+  };
+  
   return (
     <div className="symptom-checker-modal">
       <div className="symptom-checker-container">
