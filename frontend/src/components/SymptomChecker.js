@@ -170,8 +170,8 @@ const SymptomChecker = ({ onClose }) => {
       }
     } else if (step === 'followup') {
       // Second interaction - now we have enough info for diagnosis
-      addMessage('bot', 'Thank you for the additional information. Let me analyze all your symptoms now...');
-      setTimeout(() => performDifferentialDiagnosis(message), 2000);
+      addMessage('bot', 'Thank you for the comprehensive information. Let me analyze all your symptoms now...');
+      setTimeout(() => performDifferentialDiagnosis(message), 1500);
     } else if (step === 'feedback-detail') {
       // Handle detailed feedback
       handleDetailedFeedback(message);
