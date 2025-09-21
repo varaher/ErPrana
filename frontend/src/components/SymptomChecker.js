@@ -552,6 +552,44 @@ const SymptomChecker = ({ onClose }) => {
     }
   };
   
+  const handleFeedback = async (isPositive, additionalFeedback = '') => {
+    setFeedbackGiven(true);
+    
+    // Save feedback for machine learning
+    const feedbackData = {
+      sessionId,
+      symptoms: messages.filter(m => m.type === 'user').map(m => m.message),
+      diagnosis: messages.filter(m => m.type === 'bot' && m.message.includes('likelihood')),
+      feedback: isPositive ? 'positive' : 'negative',
+      additionalFeedback,
+      timestamp: new Date()
+    };
+    
+    try {
+      // Send feedback to backend for learning
+      await fetch(`${BACKEND_URL}/api/symptom-feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(feedbackData)
+      });
+    } catch (error) {
+      console.error('Failed to save feedback:', error);
+    }
+    
+    if (isPositive) {
+      addMessage('bot', '👍 Thank you for the positive feedback! This helps ErMate learn and improve medical guidance for future patients.');
+    } else {
+      addMessage('bot', '👎 Thank you for your feedback. Could you briefly tell me what was inaccurate so ErMate can improve?');
+      setCurrentStep('feedback-detail');
+    }
+  };
+  
+  const handleDetailedFeedback = (feedback) => {
+    handleFeedback(false, feedback);
+    addMessage('bot', 'Thank you for the detailed feedback! This will help improve ErMate\'s diagnostic accuracy.');
+    setCurrentStep('recommendation');
+  };
+  
   return (
     <div className="symptom-checker-modal">
       <div className="symptom-checker-container">
