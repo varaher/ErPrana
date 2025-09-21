@@ -37,6 +37,43 @@ const SymptomChecker = ({ onClose }) => {
     scrollToBottom();
   }, [messages]);
   
+  useEffect(() => {
+    // Initialize speech recognition (ARYA Voice Input)
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+      
+      recognitionRef.current.onstart = () => {
+        setIsListening(true);
+        addMessage('bot', '🎤 ARYA is listening... Please speak your symptoms clearly.');
+      };
+      
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputMessage(transcript);
+        addMessage('bot', `🎤 I heard: "${transcript}". Processing your symptoms...`);
+      };
+      
+      recognitionRef.current.onerror = (event) => {
+        setIsListening(false);
+        addMessage('bot', '🎤 Voice input error. Please try typing your symptoms instead.');
+        console.error('Speech recognition error:', event.error);
+      };
+      
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+      
+      setSpeechSupported(true);
+    } else {
+      setSpeechSupported(false);
+    }
+  }, []);
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
