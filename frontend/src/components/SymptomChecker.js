@@ -172,6 +172,9 @@ const SymptomChecker = ({ onClose }) => {
       // Second interaction - now we have enough info for diagnosis
       addMessage('bot', 'Thank you for the additional information. Let me analyze all your symptoms now...');
       setTimeout(() => performDifferentialDiagnosis(message), 2000);
+    } else if (step === 'feedback-detail') {
+      // Handle detailed feedback
+      handleDetailedFeedback(message);
     } else {
       // Any further interactions go straight to diagnosis
       await performDifferentialDiagnosis(message);
