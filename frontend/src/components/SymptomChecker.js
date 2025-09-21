@@ -178,31 +178,43 @@ const SymptomChecker = ({ onClose }) => {
   };
   
   const extractSymptoms = (message) => {
-    const commonSymptoms = {
-      'flank pain': ['ureteric colic', 'kidney stone', 'pyelonephritis'],
-      'colicky pain': ['ureteric colic', 'bowel obstruction', 'biliary colic'],
-      'radiating pain': ['ureteric colic', 'sciatica', 'myocardial infarction'],
-      'severe pain': ['ureteric colic', 'acute abdomen', 'myocardial infarction'],
-      'nausea vomiting': ['ureteric colic', 'gastroenteritis', 'bowel obstruction'],
-      'blood in urine': ['ureteric colic', 'UTI', 'bladder cancer'],
-      'hematuria': ['ureteric colic', 'UTI', 'glomerulonephritis'],
-      'back pain': ['ureteric colic', 'pyelonephritis', 'musculoskeletal'],
-      'abdominal pain': ['ureteric colic', 'appendicitis', 'cholecystitis'],
-      'headache': ['tension headache', 'migraine', 'cluster headache'],
-      'fever': ['infection', 'viral syndrome', 'bacterial infection'],
-      'cough': ['upper respiratory infection', 'pneumonia', 'asthma'],
-      'chest pain': ['myocardial infarction', 'angina', 'pneumonia'],
-      'shortness of breath': ['asthma', 'pneumonia', 'heart failure']
-    };
+    const lowerMessage = message.toLowerCase();
+    console.log('Analyzing message:', lowerMessage);
+    
+    const symptomPatterns = [
+      // Ureteric colic patterns
+      { pattern: /flank pain|back pain.*groin|side pain.*groin/, symptoms: ['flank pain', 'radiating pain'] },
+      { pattern: /pain.*radiates|radiating.*pain|pain.*groin/, symptoms: ['radiating pain'] },
+      { pattern: /colicky|comes in waves|wave.*pain/, symptoms: ['colicky pain'] },
+      { pattern: /kidney stone|stone|ureteric|ureter/, symptoms: ['flank pain', 'colicky pain'] },
+      { pattern: /nausea.*vomiting|vomiting.*nausea|nausea|vomiting/, symptoms: ['nausea vomiting'] },
+      { pattern: /blood.*urine|hematuria|red urine/, symptoms: ['blood in urine'] },
+      
+      // Chest pain patterns
+      { pattern: /chest pain|chest discomfort/, symptoms: ['chest pain'] },
+      { pattern: /shortness.*breath|difficulty breathing|can't breathe/, symptoms: ['shortness of breath'] },
+      { pattern: /crushing|squeezing.*chest/, symptoms: ['chest pain'] },
+      
+      // Other common patterns
+      { pattern: /headache|head pain/, symptoms: ['headache'] },
+      { pattern: /fever|feverish|hot|temperature/, symptoms: ['fever'] },
+      { pattern: /cough|coughing/, symptoms: ['cough'] },
+      { pattern: /abdominal pain|stomach pain|belly pain/, symptoms: ['abdominal pain'] },
+      { pattern: /severe pain|excruciating|unbearable/, symptoms: ['severe pain'] }
+    ];
     
     const foundSymptoms = [];
-    Object.keys(commonSymptoms).forEach(symptom => {
-      if (message.toLowerCase().includes(symptom)) {
-        foundSymptoms.push(symptom);
+    symptomPatterns.forEach(({ pattern, symptoms }) => {
+      if (pattern.test(lowerMessage)) {
+        foundSymptoms.push(...symptoms);
       }
     });
     
-    return foundSymptoms.length > 0 ? foundSymptoms : ['unspecified symptoms'];
+    // Remove duplicates
+    const uniqueSymptoms = [...new Set(foundSymptoms)];
+    console.log('Found symptoms:', uniqueSymptoms);
+    
+    return uniqueSymptoms.length > 0 ? uniqueSymptoms : ['unspecified symptoms'];
   };
   
   const analyzeMedicalContext = (message) => {
