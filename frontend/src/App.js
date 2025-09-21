@@ -14,6 +14,12 @@ function App() {
   const [backendStatus, setBackendStatus] = useState('checking');
   
   useEffect(() => {
+    // Check for existing user session
+    const savedUser = localStorage.getItem('erprana_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    
     checkBackendStatus();
     const interval = setInterval(checkBackendStatus, 30000);
     return () => clearInterval(interval);
