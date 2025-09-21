@@ -29,13 +29,15 @@ function App() {
     }
   };
   
+  const [activeComponent, setActiveComponent] = useState(null);
+  
   const features = [
     {
       id: 'symptom-checker',
       icon: '🩺',
       title: 'Symptom Checker',
-      description: 'Get immediate symptom assessment and triage recommendations based on medical protocols.',
-      action: () => setSelectedFeature('symptom-checker')
+      description: 'Chat with AI doctor for symptom analysis, diagnosis and medical guidance.',
+      action: () => setActiveComponent('symptom-checker')
     },
     {
       id: 'voice-assistant',
