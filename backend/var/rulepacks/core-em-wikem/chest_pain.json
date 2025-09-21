@@ -1,0 +1,119 @@
+{
+  "metadata": {
+    "id": "chest-pain-wikem-001",
+    "name": "Chest Pain Triage Rules",
+    "version": "1.0.0",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z",
+    "topics": ["chest_pain"],
+    "totalRules": 5,
+    "coverage": {
+      "chest_pain": "partial"
+    }
+  },
+  "rules": [
+    {
+      "id": "cp-001",
+      "name": "Acute Coronary Syndrome",
+      "description": "High-risk chest pain with cardiac features",
+      "triageLevel": "emergency",
+      "baseScore": 8,
+      "conditions": [
+        {
+          "field": "socrates.character",
+          "operator": "contains",
+          "value": "crushing"
+        },
+        {
+          "field": "vitals.sbp",
+          "operator": "less_than",
+          "value": 100
+        }
+      ],
+      "modifiers": [
+        {
+          "field": "vitals.hr",
+          "type": "threshold",
+          "threshold": 100,
+          "multiplier": 1.5
+        }
+      ]
+    },
+    {
+      "id": "cp-002",
+      "name": "Stable Angina",
+      "description": "Typical chest pain without high-risk features",
+      "triageLevel": "urgent",
+      "baseScore": 5,
+      "conditions": [
+        {
+          "field": "socrates.character",
+          "operator": "contains",
+          "value": "pressure"
+        },
+        {
+          "field": "vitals.sbp",
+          "operator": "greater_than_or_equal",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "cp-003",
+      "name": "Musculoskeletal Pain",
+      "description": "Chest pain with musculoskeletal features",
+      "triageLevel": "routine",
+      "baseScore": 2,
+      "conditions": [
+        {
+          "field": "socrates.character",
+          "operator": "contains",
+          "value": "sharp"
+        },
+        {
+          "field": "socrates.aggravating",
+          "operator": "contains",
+          "value": "movement"
+        }
+      ]
+    },
+    {
+      "id": "cp-004",
+      "name": "Respiratory Chest Pain",
+      "description": "Chest pain with respiratory symptoms",
+      "triageLevel": "urgent",
+      "baseScore": 6,
+      "conditions": [
+        {
+          "field": "abcde.breathing.distress",
+          "operator": "equals",
+          "value": true
+        },
+        {
+          "field": "vitals.spo2",
+          "operator": "less_than",
+          "value": 95
+        }
+      ]
+    },
+    {
+      "id": "cp-005",
+      "name": "Anxiety-Related Pain",
+      "description": "Non-specific chest pain with anxiety features",
+      "triageLevel": "routine",
+      "baseScore": 1,
+      "conditions": [
+        {
+          "field": "socrates.associated",
+          "operator": "contains",
+          "value": "anxiety"
+        },
+        {
+          "field": "vitals.hr",
+          "operator": "in_range",
+          "value": { "min": 60, "max": 100 }
+        }
+      ]
+    }
+  ]
+}

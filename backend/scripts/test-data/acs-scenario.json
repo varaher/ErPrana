@@ -1,0 +1,54 @@
+{
+  "age": 65,
+  "sex": "male",
+  "abcde": {
+    "airway": "patent",
+    "breathing": {
+      "respiratoryRate": 24,
+      "distress": false,
+      "wheeze": false
+    },
+    "circulation": {
+      "heartRate": 110,
+      "systolicBP": 90,
+      "diastolicBP": 60,
+      "capRefillSec": 2
+    },
+    "disability": {
+      "gcs": 15,
+      "seizure": false,
+      "focalDeficit": false
+    },
+    "exposure": {
+      "trauma": false
+    }
+  },
+  "sample": {
+    "signsSymptoms": ["chest pain", "shortness of breath", "diaphoresis"],
+    "allergies": ["penicillin"],
+    "medications": ["aspirin", "metoprolol"],
+    "pastHistory": ["hypertension", "diabetes", "smoking"],
+    "lastMeal": "2 hours ago",
+    "events": "Started while walking"
+  },
+  "socrates": {
+    "site": "chest",
+    "character": "crushing",
+    "severity": 9,
+    "onset": "gradual",
+    "duration": "2 hours",
+    "radiation": ["left arm", "jaw"],
+    "associated": ["diaphoresis", "shortness of breath", "nausea"],
+    "relieving": "rest",
+    "timing": "constant"
+  },
+  "vitals": {
+    "hr": 110,
+    "rr": 24,
+    "sbp": 90,
+    "dbp": 60,
+    "spo2": 92,
+    "temp": 37.2,
+    "gcs": 15
+  }
+}

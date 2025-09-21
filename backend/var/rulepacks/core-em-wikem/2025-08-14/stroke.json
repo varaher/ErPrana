@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "id": "stroke-wikem-001",
+    "name": "Stroke Triage Rules",
+    "version": "1.0.0",
+    "createdAt": "2025-08-14T05:15:27.737Z",
+    "updatedAt": "2025-08-14T05:15:27.737Z",
+    "topics": [
+      "stroke"
+    ],
+    "totalRules": 3,
+    "coverage": {
+      "stroke": "partial"
+    }
+  },
+  "rules": [
+    {
+      "id": "stroke-001",
+      "name": "High-risk Stroke",
+      "description": "High-risk Stroke requiring immediate attention",
+      "triageLevel": "emergency",
+      "baseScore": 8,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "less_than",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "stroke-002",
+      "name": "Moderate Stroke",
+      "description": "Moderate Stroke requiring urgent attention",
+      "triageLevel": "urgent",
+      "baseScore": 5,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "greater_than_or_equal",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "stroke-003",
+      "name": "Mild Stroke",
+      "description": "Mild Stroke requiring routine attention",
+      "triageLevel": "routine",
+      "baseScore": 2,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "greater_than",
+          "value": 120
+        }
+      ]
+    }
+  ]
+}

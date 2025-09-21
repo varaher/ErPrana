@@ -1,0 +1,54 @@
+{
+  "age": 35,
+  "sex": "female",
+  "abcde": {
+    "airway": "patent",
+    "breathing": {
+      "respiratoryRate": 16,
+      "distress": false,
+      "wheeze": false
+    },
+    "circulation": {
+      "heartRate": 72,
+      "systolicBP": 120,
+      "diastolicBP": 80,
+      "capRefillSec": 2
+    },
+    "disability": {
+      "gcs": 15,
+      "seizure": false,
+      "focalDeficit": false
+    },
+    "exposure": {
+      "trauma": false
+    }
+  },
+  "sample": {
+    "signsSymptoms": ["sore throat", "runny nose", "mild cough"],
+    "allergies": [],
+    "medications": [],
+    "pastHistory": [],
+    "lastMeal": "1 hour ago",
+    "events": "Started 2 days ago"
+  },
+  "socrates": {
+    "site": "throat",
+    "character": "scratchy",
+    "severity": 3,
+    "onset": "gradual",
+    "duration": "2 days",
+    "radiation": [],
+    "associated": ["runny nose", "mild cough", "fatigue"],
+    "relieving": "rest",
+    "timing": "constant"
+  },
+  "vitals": {
+    "hr": 72,
+    "rr": 16,
+    "sbp": 120,
+    "dbp": 80,
+    "spo2": 98,
+    "temp": 37.8,
+    "gcs": 15
+  }
+}

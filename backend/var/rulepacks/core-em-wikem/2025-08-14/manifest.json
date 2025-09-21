@@ -1,0 +1,29 @@
+{
+  "version": "2025-08-14",
+  "generatedAt": "2025-08-14T05:15:27.749Z",
+  "activated": true,
+  "topics": [
+    {
+      "name": "Chest_pain",
+      "coverage": "partial",
+      "filename": "chest_pain.json"
+    },
+    {
+      "name": "Stroke",
+      "coverage": "partial",
+      "filename": "stroke.json"
+    },
+    {
+      "name": "Sepsis",
+      "coverage": "partial",
+      "filename": "sepsis.json"
+    }
+  ],
+  "metadata": {
+    "source": "WikiEM",
+    "license": "CC BY-SA 4.0",
+    "sourceUrl": "https://wikem.org/wiki/Main_Page",
+    "importMethod": "sample-generation",
+    "totalTopics": 3
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "id": "sepsis-wikem-001",
+    "name": "Sepsis Triage Rules",
+    "version": "1.0.0",
+    "createdAt": "2025-08-14T05:15:27.742Z",
+    "updatedAt": "2025-08-14T05:15:27.742Z",
+    "topics": [
+      "sepsis"
+    ],
+    "totalRules": 3,
+    "coverage": {
+      "sepsis": "partial"
+    }
+  },
+  "rules": [
+    {
+      "id": "sepsis-001",
+      "name": "High-risk Sepsis",
+      "description": "High-risk Sepsis requiring immediate attention",
+      "triageLevel": "emergency",
+      "baseScore": 8,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "less_than",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "sepsis-002",
+      "name": "Moderate Sepsis",
+      "description": "Moderate Sepsis requiring urgent attention",
+      "triageLevel": "urgent",
+      "baseScore": 5,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "greater_than_or_equal",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "sepsis-003",
+      "name": "Mild Sepsis",
+      "description": "Mild Sepsis requiring routine attention",
+      "triageLevel": "routine",
+      "baseScore": 2,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "greater_than",
+          "value": 120
+        }
+      ]
+    }
+  ]
+}

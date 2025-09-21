@@ -1,0 +1,43 @@
+{
+  "version": "2025-08-14",
+  "generatedAt": "2025-08-14T05:15:27.746Z",
+  "summary": {
+    "totalTopics": 3,
+    "successfulImports": 3,
+    "failedImports": 0,
+    "coverageBreakdown": {
+      "full": 0,
+      "partial": 3,
+      "minimal": 0,
+      "none": 0
+    }
+  },
+  "topics": {
+    "Chest_pain": "partial",
+    "Stroke": "partial",
+    "Sepsis": "partial"
+  },
+  "results": [
+    {
+      "topic": "Chest_pain",
+      "success": true,
+      "coverage": "partial",
+      "filepath": "var\\rulepacks\\core-em-wikem\\2025-08-14\\chest_pain.json",
+      "rulesCount": 3
+    },
+    {
+      "topic": "Stroke",
+      "success": true,
+      "coverage": "partial",
+      "filepath": "var\\rulepacks\\core-em-wikem\\2025-08-14\\stroke.json",
+      "rulesCount": 3
+    },
+    {
+      "topic": "Sepsis",
+      "success": true,
+      "coverage": "partial",
+      "filepath": "var\\rulepacks\\core-em-wikem\\2025-08-14\\sepsis.json",
+      "rulesCount": 3
+    }
+  ]
+}

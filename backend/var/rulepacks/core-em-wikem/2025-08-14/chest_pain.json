@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "id": "chest_pain-wikem-001",
+    "name": "Chest_pain Triage Rules",
+    "version": "1.0.0",
+    "createdAt": "2025-08-14T05:15:27.732Z",
+    "updatedAt": "2025-08-14T05:15:27.732Z",
+    "topics": [
+      "chest_pain"
+    ],
+    "totalRules": 3,
+    "coverage": {
+      "chest_pain": "partial"
+    }
+  },
+  "rules": [
+    {
+      "id": "chest_pain-001",
+      "name": "High-risk Chest_pain",
+      "description": "High-risk Chest_pain requiring immediate attention",
+      "triageLevel": "emergency",
+      "baseScore": 8,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "less_than",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "chest_pain-002",
+      "name": "Moderate Chest_pain",
+      "description": "Moderate Chest_pain requiring urgent attention",
+      "triageLevel": "urgent",
+      "baseScore": 5,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "greater_than_or_equal",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "chest_pain-003",
+      "name": "Mild Chest_pain",
+      "description": "Mild Chest_pain requiring routine attention",
+      "triageLevel": "routine",
+      "baseScore": 2,
+      "conditions": [
+        {
+          "field": "vitals.sbp",
+          "operator": "greater_than",
+          "value": 120
+        }
+      ]
+    }
+  ]
+}
