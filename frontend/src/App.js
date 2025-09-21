@@ -232,33 +232,6 @@ function App() {
       {activeComponent === 'health-records' && (
         <HealthRecords onClose={() => setActiveComponent(null)} />
       )}
-      
-      {selectedFeature && (
-        <div className="modal" style={{display: 'block'}}>
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>&times;</span>
-            {selectedFeature === 'emergency' ? (
-              <div>
-                <h2>🚨 Emergency</h2>
-                <p style={{margin: '20px 0', fontSize: '1.1rem'}}>
-                  In case of a medical emergency, call your local emergency number immediately.
-                </p>
-                <p style={{margin: '20px 0'}}>
-                  <strong>US:</strong> 911<br/>
-                  <strong>UK:</strong> 999<br/>
-                  <strong>India:</strong> 108<br/>
-                  <strong>EU:</strong> 112
-                </p>
-              </div>
-            ) : (
-              <div>
-                <h2>{getFeatureContent(selectedFeature).title}</h2>
-                {getFeatureContent(selectedFeature).content}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
