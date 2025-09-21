@@ -299,30 +299,37 @@ const SymptomChecker = ({ onClose }) => {
   };
   
   const performDifferentialDiagnosis = async (userInput) => {
-    addMessage('bot', '🔍 **Analyzing your symptoms using WikiEM medical knowledge base...**');
+    // Natural, conversational analysis without mentioning data sources
+    addMessage('bot', 'Thank you for the detailed information. Let me analyze your symptoms...');
     
-    // Simulate advanced medical analysis
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Simulate medical thinking process
+    await new Promise(resolve => setTimeout(resolve, 2500));
     
     // Combine all messages to get full symptom picture
     const allUserMessages = messages.filter(m => m.type === 'user').map(m => m.message).join(' ') + ' ' + userInput;
     const differentialDiagnoses = generateDifferentialDiagnoses(allUserMessages);
     
-    addMessage('bot', '📋 **Based on your comprehensive symptom analysis, here are the 5 most likely conditions:**');
+    addMessage('bot', 'Based on your symptoms, here are the most likely conditions:');
     
     differentialDiagnoses.forEach((diagnosis, index) => {
       setTimeout(() => {
         addMessage('bot', `**${index + 1}. ${diagnosis.condition}** (${diagnosis.probability}% likelihood)\n\n${diagnosis.description}\n\n**Key Features:** ${diagnosis.keyFeatures.join(', ')}\n\n**Recommended Action:** ${diagnosis.action}`);
-      }, (index + 1) * 1800);
+      }, (index + 1) * 1200);
     });
     
+    // Add feedback system
     setTimeout(() => {
-      addMessage('bot', '⚠️ **IMPORTANT MEDICAL DISCLAIMER:**\nThis analysis is for educational purposes only and should not replace professional medical evaluation. Please consult a healthcare provider for proper diagnosis and treatment.\n\n**Seek immediate medical attention if:**\n• Symptoms worsen rapidly\n• Severe pain (8/10 or higher)\n• High fever (>101.3°F/38.5°C)\n• Difficulty breathing\n• Loss of consciousness');
+      addMessage('bot', '**Was this diagnosis helpful?** Your feedback helps ErMate improve for future patients.');
+      addMessage('feedback', 'Please rate the accuracy of this diagnosis:');
       
-      addMessage('bot', '🏥 **Next Steps:**\n1. Monitor your symptoms closely\n2. Consider seeing a healthcare provider\n3. Keep a detailed symptom diary\n4. Follow up if symptoms persist or worsen\n\nWould you like information about nearby healthcare facilities or have any other questions about your symptoms?');
+      setCurrentStep('feedback');
+    }, (differentialDiagnoses.length + 1) * 1200);
+    
+    setTimeout(() => {
+      addMessage('bot', '⚠️ **Important:** This analysis is for guidance only. Please consult a healthcare provider for proper diagnosis and treatment.\n\n**Seek immediate medical attention if:**\n• Symptoms worsen rapidly\n• Severe pain (8/10 or higher)\n• High fever (>101.3°F/38.5°C)\n• Difficulty breathing\n• Loss of consciousness');
       
-      setCurrentStep('recommendation');
-    }, 10000);
+      addMessage('bot', '**Next Steps:**\n1. Monitor your symptoms closely\n2. Consider seeing a healthcare provider\n3. Keep a detailed symptom diary\n4. Follow up if symptoms persist or worsen\n\nWould you like information about nearby healthcare facilities?');
+    }, (differentialDiagnoses.length + 3) * 1200);
   };
   
   const generateDifferentialDiagnoses = (allSymptoms) => {
