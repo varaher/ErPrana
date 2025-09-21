@@ -545,23 +545,36 @@ const SymptomChecker = ({ onClose }) => {
         )}
         
         <div className="chat-input-container">
-          <div className="chat-input-wrapper">
-            <textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Describe your symptoms in detail..."
-              className="chat-input"
-              rows="2"
-              disabled={isLoading}
-            />
-            <button
-              className="send-btn"
-              onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-            >
-              Send
-            </button>
+          <div className="input-controls">
+            {speechSupported && (
+              <button
+                className={`voice-btn ${isListening ? 'listening' : ''}`}
+                onClick={isListening ? stopVoiceInput : startVoiceInput}
+                disabled={isLoading}
+                title="ARYA Voice Input"
+              >
+                {isListening ? '⏹️' : '🎤'}
+              </button>
+            )}
+            
+            <div className="chat-input-wrapper">
+              <textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Describe your symptoms in detail... or use voice input"
+                className="chat-input"
+                rows="2"
+                disabled={isLoading || isListening}
+              />
+              <button
+                className="send-btn"
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isLoading || isListening}
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
         
