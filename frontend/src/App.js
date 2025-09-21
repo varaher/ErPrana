@@ -220,10 +220,6 @@ function App() {
         </div>
       </div>
       
-      <button className="emergency-btn" onClick={() => setSelectedFeature('emergency')}>
-        📞
-      </button>
-      
       {/* Active Components */}
       {activeComponent === 'symptom-checker' && (
         <SymptomChecker onClose={() => setActiveComponent(null)} />
