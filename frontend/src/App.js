@@ -89,8 +89,6 @@ function App() {
     }
   ];
   
-  const closeModal = () => setSelectedFeature(null);
-  
   const getFeatureContent = (featureId) => {
     const contents = {
       'symptom-checker': {
