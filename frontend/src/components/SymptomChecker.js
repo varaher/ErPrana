@@ -348,7 +348,7 @@ const SymptomChecker = ({ onClose }) => {
           action: 'IMMEDIATE emergency evaluation - life-threatening condition'
         }
       ];
-    } else if (lowerSymptoms.includes('chest pain')) {
+    } else if (symptomsString.includes('chest pain')) {
       return [
         {
           condition: 'Acute Coronary Syndrome',
