@@ -196,8 +196,8 @@ function App() {
       
       <div className="container">
         <div className="header">
-          <h1>🏥 ErMate</h1>
-          <p>Emergency Medicine Assistant with AI-Powered Voice Interface</p>
+          <h1>🌿 ErPrana</h1>
+          <p>Your Personal Health Assistant</p>
         </div>
         
         <div className="features-grid">
