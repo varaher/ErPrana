@@ -27,8 +27,11 @@ const SymptomChecker = ({ onClose }) => {
     medicalHistory: []
   });
   const [currentStep, setCurrentStep] = useState('symptoms'); // symptoms, followup, assessment, recommendation
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   
   const messagesEndRef = useRef(null);
+  const recognitionRef = useRef(null);
   
   useEffect(() => {
     scrollToBottom();
