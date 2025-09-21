@@ -40,55 +40,52 @@ function App() {
   
   const [activeComponent, setActiveComponent] = useState(null);
   
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem('erprana_user');
+    setUser(null);
+    setCurrentView('dashboard');
+  };
+  
+  const handleUpdateUser = (updatedUser) => {
+    setUser(updatedUser);
+  };
+  
+  // Show login page if no user
+  if (!user) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+  
+  // Show symptom checker as separate page
+  if (currentView === 'symptom-checker') {
+    return <CleanSymptomChecker user={user} onBack={() => setCurrentView('dashboard')} />;
+  }
+  
+  // Main dashboard features - clean and minimal
   const features = [
     {
       id: 'symptom-checker',
       icon: '🩺',
       title: 'Symptom Checker',
-      description: 'Chat with AI doctor for symptom analysis, diagnosis and medical guidance.',
-      action: () => setActiveComponent('symptom-checker')
-    },
-    {
-      id: 'voice-assistant',
-      icon: '🎤',
-      title: 'ARYA Voice Assistant',
-      description: 'Interact with AI-powered voice assistant for medical guidance and emergency support.',
-      action: () => setSelectedFeature('voice-assistant')
-    },
-    {
-      id: 'emergency-protocols',
-      icon: '🚑',
-      title: 'Emergency Protocols',
-      description: 'Access standardized emergency medicine protocols and treatment guidelines.',
-      action: () => setSelectedFeature('emergency-protocols')
-    },
-    {
-      id: 'medical-knowledge',
-      icon: '📚',
-      title: 'Medical Knowledge Base',
-      description: 'Browse comprehensive medical information from WikiEM and other trusted sources.',
-      action: () => setSelectedFeature('medical-knowledge')
+      description: 'Chat with ARYA about your health concerns',
+      action: () => setCurrentView('symptom-checker')
     },
     {
       id: 'vitals-tracker',
       icon: '📊',
-      title: 'Vitals Tracking',
-      description: 'Track heart rate, blood pressure, oxygen levels from wearable devices.',
-      action: () => setActiveComponent('vitals-tracker')
+      title: 'Health Monitoring',
+      description: 'Track vitals from wearable devices',
+      action: () => setCurrentView('vitals')
     },
     {
       id: 'health-records',
       icon: '📋',
       title: 'Health Records',
-      description: 'View medical history, test results, and health timeline in one place.',
-      action: () => setActiveComponent('health-records')
-    },
-    {
-      id: 'multi-language',
-      icon: '🌍',
-      title: 'Multi-Language Support',
-      description: 'Available in multiple languages including English, Spanish, French, Hindi, and more.',
-      action: () => setSelectedFeature('multi-language')
+      description: 'View your medical history and reports',
+      action: () => setCurrentView('records')
     }
   ];
   
