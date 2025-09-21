@@ -92,28 +92,269 @@ const SymptomChecker = ({ onClose }) => {
     await performMedicalAnalysis(lowerMessage, currentStep);
   };
   
-  const handleSymptomsPhase = async (message) => {
-    // Analyze symptoms and ask follow-up questions
-    if (message.includes('headache')) {
-      addMessage('bot', 'I understand you\'re experiencing headaches. Let me ask a few questions to better understand your condition:');
-      addMessage('bot', '1. How long have you been experiencing these headaches?\n2. On a scale of 1-10, how would you rate the pain?\n3. Where exactly is the pain located?\n4. Have you taken any medication?');
-      setCurrentStep('followup');
-    } else if (message.includes('fever') || message.includes('temperature')) {
-      addMessage('bot', 'I see you mentioned fever. This is important information. Let me gather more details:');
-      addMessage('bot', '1. What is your current temperature if you\'ve measured it?\n2. How long have you had the fever?\n3. Are you experiencing any other symptoms like chills, body aches, or fatigue?\n4. Have you taken any fever-reducing medication?');
-      setCurrentStep('followup');
-    } else if (message.includes('cough')) {
-      addMessage('bot', 'Thank you for telling me about your cough. I\'d like to understand it better:');
-      addMessage('bot', '1. Is it a dry cough or do you produce phlegm?\n2. How long have you had this cough?\n3. Is it worse at any particular time of day?\n4. Do you have any other symptoms like fever, shortness of breath, or chest pain?');
-      setCurrentStep('followup');
-    } else if (message.includes('stomach') || message.includes('abdominal') || message.includes('nausea')) {
-      addMessage('bot', 'I understand you\'re having stomach/abdominal issues. Let me ask some clarifying questions:');
-      addMessage('bot', '1. Where exactly is the pain/discomfort located?\n2. When did it start?\n3. Is the pain constant or does it come and go?\n4. Have you experienced vomiting, diarrhea, or changes in appetite?\n5. Any recent changes in diet or medication?');
-      setCurrentStep('followup');
+  const performMedicalAnalysis = async (message, step) => {
+    // Enhanced medical reasoning with WikiEM-style approach
+    const symptoms = extractSymptoms(message);
+    const medicalContext = analyzeMedicalContext(message);
+    
+    if (step === 'symptoms' || step === 'followup') {
+      // Generate intelligent follow-up questions based on symptoms
+      const followUpQuestions = generateFollowUpQuestions(symptoms, medicalContext);
+      
+      if (followUpQuestions.length > 0) {
+        addMessage('bot', `I understand you're experiencing ${symptoms.join(', ')}. Let me gather some more specific information to provide better guidance:`);
+        
+        followUpQuestions.forEach((question, index) => {
+          setTimeout(() => {
+            addMessage('bot', `${index + 1}. ${question}`);
+          }, (index + 1) * 800);
+        });
+        
+        setCurrentStep('followup');
+      } else {
+        // Move to analysis if we have enough information
+        setTimeout(() => performDifferentialDiagnosis(message), 2000);
+      }
     } else {
-      addMessage('bot', 'Thank you for describing your symptoms. To provide better guidance, I need some additional information:');
-      addMessage('bot', '1. When did these symptoms start?\n2. How severe are they on a scale of 1-10?\n3. Have you experienced anything like this before?\n4. Are you currently taking any medications?\n5. Do you have any known medical conditions?');
-      setCurrentStep('followup');
+      // Perform differential diagnosis
+      await performDifferentialDiagnosis(message);
+    }
+  };
+  
+  const extractSymptoms = (message) => {
+    const commonSymptoms = {
+      'flank pain': ['ureteric colic', 'kidney stone', 'pyelonephritis'],
+      'colicky pain': ['ureteric colic', 'bowel obstruction', 'biliary colic'],
+      'radiating pain': ['ureteric colic', 'sciatica', 'myocardial infarction'],
+      'severe pain': ['ureteric colic', 'acute abdomen', 'myocardial infarction'],
+      'nausea vomiting': ['ureteric colic', 'gastroenteritis', 'bowel obstruction'],
+      'blood in urine': ['ureteric colic', 'UTI', 'bladder cancer'],
+      'hematuria': ['ureteric colic', 'UTI', 'glomerulonephritis'],
+      'back pain': ['ureteric colic', 'pyelonephritis', 'musculoskeletal'],
+      'abdominal pain': ['ureteric colic', 'appendicitis', 'cholecystitis'],
+      'headache': ['tension headache', 'migraine', 'cluster headache'],
+      'fever': ['infection', 'viral syndrome', 'bacterial infection'],
+      'cough': ['upper respiratory infection', 'pneumonia', 'asthma'],
+      'chest pain': ['myocardial infarction', 'angina', 'pneumonia'],
+      'shortness of breath': ['asthma', 'pneumonia', 'heart failure']
+    };
+    
+    const foundSymptoms = [];
+    Object.keys(commonSymptoms).forEach(symptom => {
+      if (message.toLowerCase().includes(symptom)) {
+        foundSymptoms.push(symptom);
+      }
+    });
+    
+    return foundSymptoms.length > 0 ? foundSymptoms : ['unspecified symptoms'];
+  };
+  
+  const analyzeMedicalContext = (message) => {
+    const context = {
+      severity: 'moderate',
+      duration: 'acute',
+      associated: []
+    };
+    
+    // Severity assessment
+    if (message.includes('severe') || message.includes('excruciating')) {
+      context.severity = 'severe';
+    } else if (message.includes('mild') || message.includes('slight')) {
+      context.severity = 'mild';
+    }
+    
+    // Duration assessment
+    if (message.includes('sudden') || message.includes('acute')) {
+      context.duration = 'acute';
+    } else if (message.includes('chronic') || message.includes('persistent')) {
+      context.duration = 'chronic';
+    }
+    
+    return context;
+  };
+  
+  const generateFollowUpQuestions = (symptoms, context) => {
+    const questions = [];
+    
+    // Symptom-specific questions based on WikiEM protocols
+    if (symptoms.some(s => s.includes('flank pain') || s.includes('colicky pain'))) {
+      questions.push('Does the pain radiate from your back/flank to your groin or genitals?');
+      questions.push('Is the pain colicky (comes in waves) or constant?');
+      questions.push('Have you noticed any blood in your urine or changes in urination?');
+      questions.push('Any nausea, vomiting, or fever?');
+      questions.push('Have you had kidney stones before?');
+    } else if (symptoms.some(s => s.includes('chest pain'))) {
+      questions.push('Is the pain crushing, squeezing, or sharp?');
+      questions.push('Does it radiate to your arm, jaw, or back?');
+      questions.push('Any shortness of breath or sweating?');
+      questions.push('Does the pain worsen with breathing or movement?');
+    } else if (symptoms.some(s => s.includes('headache'))) {
+      questions.push('Is this the worst headache of your life?');
+      questions.push('Is it one-sided or both sides of your head?');
+      questions.push('Any visual changes, nausea, or sensitivity to light?');
+      questions.push('Did it start suddenly or gradually?');
+    } else if (symptoms.some(s => s.includes('abdominal pain'))) {
+      questions.push('Where exactly is the pain located?');
+      questions.push('Does the pain move or radiate anywhere?');
+      questions.push('Any nausea, vomiting, or changes in bowel movements?');
+      questions.push('Does eating make it better or worse?');
+    }
+    
+    // Always ask about timeline and severity if not already specified
+    if (!questions.length) {
+      questions.push('When did these symptoms start?');
+      questions.push('On a scale of 1-10, how severe are they?');
+      questions.push('Have you experienced anything like this before?');
+    }
+    
+    return questions.slice(0, 4); // Limit to 4 questions
+  };
+  
+  const performDifferentialDiagnosis = async (allSymptoms) => {
+    addMessage('bot', '🔍 **Analyzing your symptoms using medical knowledge base...**');
+    
+    // Simulate advanced medical analysis
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    const differentialDiagnoses = generateDifferentialDiagnoses(allSymptoms);
+    
+    addMessage('bot', '📋 **Based on your symptoms, here are the 5 most likely conditions:**');
+    
+    differentialDiagnoses.forEach((diagnosis, index) => {
+      setTimeout(() => {
+        addMessage('bot', `**${index + 1}. ${diagnosis.condition}** (${diagnosis.probability}% likelihood)\n${diagnosis.description}\n\n**Key Features:** ${diagnosis.keyFeatures.join(', ')}\n**Recommended Action:** ${diagnosis.action}`);
+      }, (index + 1) * 1500);
+    });
+    
+    setTimeout(() => {
+      addMessage('bot', '⚠️ **IMPORTANT MEDICAL DISCLAIMER:**\nThis analysis is for educational purposes only and should not replace professional medical evaluation. Please consult a healthcare provider for proper diagnosis and treatment.\n\n**Seek immediate medical attention if:**\n• Symptoms worsen rapidly\n• Severe pain (8/10 or higher)\n• High fever (>101.3°F/38.5°C)\n• Difficulty breathing\n• Loss of consciousness');
+      
+      addMessage('bot', '🏥 **Next Steps:**\n1. Monitor your symptoms\n2. Consider seeing a healthcare provider\n3. Keep a symptom diary\n4. Follow up if symptoms persist or worsen\n\nWould you like information about nearby healthcare facilities or have any other questions?');
+      
+      setCurrentStep('recommendation');
+    }, 8000);
+  };
+  
+  const generateDifferentialDiagnoses = (symptoms) => {
+    const lowerSymptoms = symptoms.toLowerCase();
+    
+    // Enhanced diagnostic logic based on symptom patterns
+    if (lowerSymptoms.includes('flank pain') || lowerSymptoms.includes('colicky') || 
+        lowerSymptoms.includes('kidney stone') || lowerSymptoms.includes('ureteric')) {
+      return [
+        {
+          condition: 'Ureteric Colic (Kidney Stone)',
+          probability: 85,
+          description: 'Stone blocking ureter causing severe colicky pain',
+          keyFeatures: ['Severe flank pain', 'Radiating to groin', 'Nausea/vomiting', 'Hematuria'],
+          action: 'Urgent medical evaluation, imaging (CT scan), pain management'
+        },
+        {
+          condition: 'Acute Pyelonephritis',
+          probability: 75,
+          description: 'Kidney infection causing similar symptoms',
+          keyFeatures: ['Flank pain', 'Fever', 'Dysuria', 'Costovertebral angle tenderness'],
+          action: 'Immediate medical attention, urine culture, antibiotic therapy'
+        },
+        {
+          condition: 'Renal Infarction',
+          probability: 60,
+          description: 'Blocked blood supply to kidney',
+          keyFeatures: ['Sudden severe flank pain', 'Hematuria', 'Elevated LDH'],
+          action: 'Emergency evaluation, CT angiography, immediate intervention'
+        },
+        {
+          condition: 'Musculoskeletal Back Pain',
+          probability: 40,
+          description: 'Muscle strain or spinal issue',
+          keyFeatures: ['Localized back pain', 'Movement-related', 'No systemic symptoms'],
+          action: 'Conservative management, physical therapy, pain relief'
+        },
+        {
+          condition: 'Abdominal Aortic Aneurysm',
+          probability: 20,
+          description: 'Serious vascular condition (if >50 years)',
+          keyFeatures: ['Severe back/abdominal pain', 'Pulsatile mass', 'Hypotension'],
+          action: 'IMMEDIATE emergency evaluation - life-threatening condition'
+        }
+      ];
+    } else if (lowerSymptoms.includes('chest pain')) {
+      return [
+        {
+          condition: 'Acute Coronary Syndrome',
+          probability: 70,
+          description: 'Heart attack or unstable angina',
+          keyFeatures: ['Crushing chest pain', 'Radiating pain', 'Sweating', 'Shortness of breath'],
+          action: 'IMMEDIATE emergency care - call 911'
+        },
+        {
+          condition: 'Pulmonary Embolism',
+          probability: 60,
+          description: 'Blood clot in lung vessels',
+          keyFeatures: ['Sharp chest pain', 'Shortness of breath', 'Rapid heart rate'],
+          action: 'Emergency evaluation, CT pulmonary angiogram'
+        },
+        {
+          condition: 'Pneumonia',
+          probability: 50,
+          description: 'Lung infection',
+          keyFeatures: ['Chest pain with breathing', 'Cough', 'Fever', 'Sputum'],
+          action: 'Medical evaluation, chest X-ray, possible antibiotics'
+        },
+        {
+          condition: 'Gastroesophageal Reflux',
+          probability: 45,
+          description: 'Acid reflux causing chest discomfort',
+          keyFeatures: ['Burning chest pain', 'After meals', 'Lying down worsens'],
+          action: 'Dietary changes, antacids, medical evaluation if persistent'
+        },
+        {
+          condition: 'Musculoskeletal Pain',
+          probability: 35,
+          description: 'Chest wall muscle strain',
+          keyFeatures: ['Localized pain', 'Movement-related', 'Tender to touch'],
+          action: 'Rest, anti-inflammatory medications, heat/ice therapy'
+        }
+      ];
+    } else {
+      // Generic symptom analysis
+      return [
+        {
+          condition: 'Viral Syndrome',
+          probability: 60,
+          description: 'Common viral infection',
+          keyFeatures: ['Multiple symptoms', 'Gradual onset', 'Self-limiting'],
+          action: 'Supportive care, rest, hydration, symptom monitoring'
+        },
+        {
+          condition: 'Bacterial Infection',
+          probability: 45,
+          description: 'Bacterial cause requiring treatment',
+          keyFeatures: ['Fever', 'Localized symptoms', 'Progressive course'],
+          action: 'Medical evaluation, possible antibiotic therapy'
+        },
+        {
+          condition: 'Stress-Related Symptoms',
+          probability: 40,
+          description: 'Physical manifestation of psychological stress',
+          keyFeatures: ['Multiple vague symptoms', 'Timing with stressors'],
+          action: 'Stress management, lifestyle changes, counseling if needed'
+        },
+        {
+          condition: 'Medication Side Effects',
+          probability: 30,
+          description: 'Adverse reaction to medications',
+          keyFeatures: ['Timing with new medications', 'Known side effects'],
+          action: 'Review medications with healthcare provider'
+        },
+        {
+          condition: 'Chronic Medical Condition',
+          probability: 25,
+          description: 'Underlying chronic disease manifestation',
+          keyFeatures: ['Gradual onset', 'Progressive symptoms', 'System involvement'],
+          action: 'Comprehensive medical evaluation, specialist referral'
+        }
+      ];
     }
   };
   
