@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import "./App.css";
-import SymptomChecker from './components/SymptomChecker';
+import LoginPage from './components/LoginPage';
+import CleanSymptomChecker from './components/CleanSymptomChecker';
 import VitalsTracker from './components/VitalsTracker';
 import HealthRecords from './components/HealthRecords';
+import UserProfile from './components/UserProfile';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
