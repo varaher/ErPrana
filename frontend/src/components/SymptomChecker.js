@@ -32,9 +32,10 @@ const SymptomChecker = ({ onClose }) => {
     gender: null,
     medicalHistory: []
   });
-  const [currentStep, setCurrentStep] = useState('symptoms'); // symptoms, followup, assessment, recommendation
+  const [currentStep, setCurrentStep] = useState('symptoms'); // symptoms, followup, assessment, recommendation, feedback
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [feedbackGiven, setFeedbackGiven] = useState(false);
   
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
