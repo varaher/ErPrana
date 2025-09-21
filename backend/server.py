@@ -76,6 +76,9 @@ async def get_status_checks():
 @api_router.post("/symptom-feedback", response_model=SymptomFeedback)
 async def create_symptom_feedback(input: SymptomFeedbackCreate):
     feedback_dict = input.dict()
+    # Remove the frontend timestamp and let backend generate it
+    if 'timestamp' in feedback_dict:
+        del feedback_dict['timestamp']
     feedback_obj = SymptomFeedback(**feedback_dict)
     _ = await db.symptom_feedback.insert_one(feedback_obj.dict())
     logger.info(f"Symptom feedback saved: {feedback_obj.feedback} for session {feedback_obj.sessionId}")
