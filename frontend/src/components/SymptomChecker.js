@@ -244,38 +244,58 @@ const SymptomChecker = ({ onClose }) => {
   const generateFollowUpQuestions = (symptoms, context) => {
     const questions = [];
     
-    // Symptom-specific questions based on WikiEM protocols
+    // Comprehensive symptom-specific questions
     if (symptoms.some(s => s.includes('flank pain') || s.includes('colicky pain'))) {
+      questions.push('When exactly did the pain start? (hours/days ago)');
+      questions.push('On a scale of 1-10, how severe is the pain?');
       questions.push('Does the pain radiate from your back/flank to your groin or genitals?');
       questions.push('Is the pain colicky (comes in waves) or constant?');
       questions.push('Have you noticed any blood in your urine or changes in urination?');
       questions.push('Any nausea, vomiting, or fever?');
       questions.push('Have you had kidney stones before?');
+      questions.push('Are you currently taking any medications?');
+      questions.push('Any family history of kidney stones?');
     } else if (symptoms.some(s => s.includes('chest pain'))) {
-      questions.push('Is the pain crushing, squeezing, or sharp?');
-      questions.push('Does it radiate to your arm, jaw, or back?');
-      questions.push('Any shortness of breath or sweating?');
-      questions.push('Does the pain worsen with breathing or movement?');
+      questions.push('When did the chest pain start?');
+      questions.push('Rate the pain severity from 1-10?');
+      questions.push('Is the pain crushing, squeezing, sharp, or burning?');
+      questions.push('Does it radiate to your arm, jaw, neck, or back?');
+      questions.push('Any shortness of breath, sweating, or nausea?');
+      questions.push('Does the pain worsen with breathing, movement, or exertion?');
+      questions.push('Any history of heart problems or high blood pressure?');
+      questions.push('Are you currently taking any heart medications?');
     } else if (symptoms.some(s => s.includes('headache'))) {
+      questions.push('When did this headache start?');
       questions.push('Is this the worst headache of your life?');
+      questions.push('Rate the severity from 1-10?');
       questions.push('Is it one-sided or both sides of your head?');
-      questions.push('Any visual changes, nausea, or sensitivity to light?');
+      questions.push('Any visual changes, nausea, or sensitivity to light/sound?');
       questions.push('Did it start suddenly or gradually?');
+      questions.push('Any recent head injury or neck stiffness?');
+      questions.push('Do you get regular headaches or migraines?');
     } else if (symptoms.some(s => s.includes('abdominal pain'))) {
+      questions.push('When did the abdominal pain start?');
       questions.push('Where exactly is the pain located?');
+      questions.push('Rate the pain from 1-10?');
       questions.push('Does the pain move or radiate anywhere?');
+      questions.push('Is it constant or comes and goes?');
       questions.push('Any nausea, vomiting, or changes in bowel movements?');
       questions.push('Does eating make it better or worse?');
+      questions.push('Any fever or recent dietary changes?');
     }
     
-    // Always ask about timeline and severity if not already specified
+    // General comprehensive questions if no specific symptoms
     if (!questions.length) {
-      questions.push('When did these symptoms start?');
-      questions.push('On a scale of 1-10, how severe are they?');
+      questions.push('When exactly did these symptoms start?');
+      questions.push('Rate your overall discomfort from 1-10?');
       questions.push('Have you experienced anything like this before?');
+      questions.push('Are you currently taking any medications?');
+      questions.push('Any recent changes in diet, activity, or stress levels?');
+      questions.push('Any family history of similar symptoms?');
+      questions.push('Do you have any known medical conditions?');
     }
     
-    return questions.slice(0, 4); // Limit to 4 questions
+    return questions; // Return all questions, don't limit
   };
   
   const performDifferentialDiagnosis = async (userInput) => {
