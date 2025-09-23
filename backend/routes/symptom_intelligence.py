@@ -90,9 +90,51 @@ Be intelligent - extract multiple pieces of information from each response."""
     
     return chat
 
+def detect_emergency_keywords(message: str, conversation_state: dict) -> tuple[bool, str]:
+    """Detect emergency situations before LLM processing"""
+    message_lower = message.lower()
+    
+    # Critical device emergencies
+    if any(device in conversation_state.get('medicalDevices', []) for device in ['LVAD', 'lvad', 'VAD']):
+        if any(word in message_lower for word in ['alarm', 'ringing', 'beeping', 'alert']):
+            return True, "🚨 **CRITICAL EMERGENCY** - LVAD alarm detected. This indicates a serious device malfunction that requires immediate medical attention. Call 911 or go to the nearest emergency room NOW. LVAD alarms can indicate pump failure, thrombosis, or power issues that can be life-threatening."
+    
+    # Other critical emergencies
+    emergency_phrases = [
+        'cant breathe', "can't breathe", 'choking', 'unconscious',
+        'severe chest pain', 'heart attack', 'stroke',
+        'severe bleeding', 'bleeding heavily'
+    ]
+    
+    for phrase in emergency_phrases:
+        if phrase in message_lower:
+            return True, f"🚨 **MEDICAL EMERGENCY** - Your symptoms suggest a critical condition. Call 911 or go to the nearest emergency room immediately."
+    
+    # Device-specific keywords
+    if 'lvad' in message_lower or 'ventricular assist' in message_lower:
+        # Add LVAD to medical devices if not already there
+        if 'medicalDevices' not in conversation_state:
+            conversation_state['medicalDevices'] = []
+        if 'LVAD' not in conversation_state['medicalDevices']:
+            conversation_state['medicalDevices'].append('LVAD')
+    
+    return False, ""
+
 @router.post("/analyze-symptom", response_model=SymptomResponse)
 async def analyze_symptom_message(request: SymptomRequest):
     try:
+        # Pre-screen for emergencies
+        is_emergency, emergency_message = detect_emergency_keywords(request.user_message, request.conversation_state or {})
+        
+        if is_emergency:
+            return SymptomResponse(
+                assistant_message=emergency_message,
+                updated_state=request.conversation_state or {},
+                next_question=None,
+                assessment_ready=False,
+                emergency_detected=True
+            )
+        
         # Create chat instance for this session
         chat = create_symptom_chat(request.session_id)
         
