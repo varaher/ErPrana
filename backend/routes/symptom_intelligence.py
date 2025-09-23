@@ -206,8 +206,36 @@ Be intelligent: If user says "no pain" set pain.hasPain = false. If "no fever" s
 async def generate_medical_assessment(request: dict):
     try:
         state = request.get("conversation_state", {})
+        chief_complaint = state.get("chiefComplaint", "").lower()
         
-        # Create assessment chat
+        # Use clinical knowledge base for chest pain cases
+        if "chest pain" in chief_complaint or "chest" in chief_complaint:
+            
+            # Extract patient factors from conversation state
+            patient_factors = {
+                "risk_factors": state.get("pastMedicalHistory", []) + state.get("riskFactors", []),
+                "age": state.get("age"),
+                "gender": state.get("gender")
+            }
+            
+            # Use chest pain knowledge base
+            clinical_assessment = analyze_chest_pain_symptoms(
+                {"description": chief_complaint + " " + str(state.get("associatedSymptoms", []))},
+                patient_factors
+            )
+            
+            return {
+                "summary": f"Patient presents with {chief_complaint}. Onset: {state.get('onset', 'unclear')}. Associated symptoms: {', '.join(state.get('associatedSymptoms', []))}",
+                "diagnoses": clinical_assessment["differentials"],
+                "triage": {
+                    "level": clinical_assessment["urgency"],
+                    "recommendation": get_triage_recommendation(clinical_assessment["urgency"])
+                },
+                "immediate_actions": clinical_assessment["immediate_actions"],
+                "disclaimer": "This AI assessment uses evidence-based clinical protocols but cannot replace professional medical evaluation. Seek immediate medical attention for any concerning symptoms."
+            }
+        
+        # Fallback to LLM-based assessment for other complaints
         session_id = request.get("session_id", "assessment")
         chat = create_symptom_chat(session_id + "_assessment")
         
@@ -260,3 +288,13 @@ Format as JSON:
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating assessment: {str(e)}")
+
+def get_triage_recommendation(urgency_level: str) -> str:
+    """Get triage recommendation based on urgency level"""
+    recommendations = {
+        "EMERGENCY": "🚨 Call 911 or go to the nearest emergency room immediately. This condition requires immediate medical attention.",
+        "URGENT": "⚡ Seek medical care within 2-4 hours. Go to urgent care or emergency department.",
+        "LESS_URGENT": "🏥 Schedule medical appointment within 24-48 hours with your healthcare provider.",
+        "NON_URGENT": "📞 Schedule routine appointment with healthcare provider within 1-2 weeks."
+    }
+    return recommendations.get(urgency_level, recommendations["LESS_URGENT"])
