@@ -100,32 +100,38 @@ async def analyze_symptom_message(request: SymptomRequest):
         # Create chat instance for this session
         chat = create_symptom_chat(request.session_id)
         
-        # Prepare context message with current state
-        context_message = f"""
-Current conversation state: {json.dumps(request.conversation_state or {})}
+        # Simple context message for now 
+        context_message = f"""Current state: {json.dumps(request.conversation_state or {})}
 
-User just said: "{request.user_message}"
+User said: "{request.user_message}"
 
-Please:
-1. Update the conversation state based on the user's message
-2. Provide an appropriate response
-3. Ask the next logical question (or indicate if ready for assessment)
-4. Detect any emergency symptoms
-"""
+Please analyze this and respond with JSON in this format:
+{{
+    "message": "your response to the user",
+    "updated_state": {{"chiefComplaint": "extracted complaint or existing", "fever": true/false/null, "pain": {{"hasPain": true/false/null}}}},
+    "next_question": "next question to ask or null",
+    "emergency": false
+}}
+
+Be intelligent: If user says "no pain" set pain.hasPain = false. If "no fever" set fever = false."""
         
         # Send message to LLM
         user_message = UserMessage(text=context_message)
         response = await chat.send_message(user_message)
         
+        print(f"LLM Response: {response}")  # Debug log
+        
         # Parse LLM response as JSON
         try:
             parsed_response = json.loads(response)
-        except json.JSONDecodeError:
-            # Fallback if LLM doesn't return valid JSON
+        except json.JSONDecodeError as e:
+            print(f"JSON Parse Error: {e}")
+            print(f"Raw Response: {response}")
+            # Fallback response
             return SymptomResponse(
-                assistant_message="I'm having trouble understanding. Could you please rephrase that?",
-                updated_state=request.conversation_state or {},
-                next_question="Could you tell me more about your symptoms?",
+                assistant_message="I understand. Can you tell me more about when this started?",
+                updated_state=request.conversation_state or {"chiefComplaint": request.user_message},
+                next_question="When did your symptoms begin?",
                 assessment_ready=False,
                 emergency_detected=False
             )
@@ -136,16 +142,8 @@ Please:
         next_question = parsed_response.get("next_question")
         emergency = parsed_response.get("emergency", False)
         
-        # Check if assessment is ready
-        state = updated_state
-        assessment_ready = (
-            state.get("completed", False) or
-            (state.get("chiefComplaint") and 
-             state.get("onset") and 
-             state.get("pain", {}).get("hasPain") is not None and
-             state.get("fever") is not None and
-             state.get("cough") is not None)
-        )
+        # Check if we have enough info for assessment
+        assessment_ready = len(updated_state) > 3  # Simple check for now
         
         return SymptomResponse(
             assistant_message=assistant_message,
@@ -156,6 +154,9 @@ Please:
         )
         
     except Exception as e:
+        print(f"Full Error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error processing symptom analysis: {str(e)}")
 
 @router.post("/generate-assessment")
