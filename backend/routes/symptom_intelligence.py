@@ -225,7 +225,7 @@ async def generate_medical_assessment(request: dict):
         state = request.get("conversation_state", {})
         chief_complaint = state.get("chiefComplaint", "").lower()
         
-        # Use clinical knowledge base for chest pain cases
+        # Use clinical knowledge base for specific complaints
         if "chest pain" in chief_complaint or "chest" in chief_complaint:
             
             # Extract patient factors from conversation state
@@ -250,6 +250,36 @@ async def generate_medical_assessment(request: dict):
                 },
                 "immediate_actions": clinical_assessment["immediate_actions"],
                 "disclaimer": "This AI assessment uses evidence-based clinical protocols but cannot replace professional medical evaluation. Seek immediate medical attention for any concerning symptoms."
+            }
+            
+        # Use altered mental status knowledge base for confusion/AMS
+        elif any(keyword in chief_complaint for keyword in 
+                ["confused", "disoriented", "altered mental status", "not making sense", 
+                 "acting strange", "agitated", "lethargic", "delirious"]):
+            
+            patient_factors = {
+                "medical_history": state.get("pastMedicalHistory", []),
+                "medications": state.get("medications", []),
+                "age": state.get("age", 0)
+            }
+            
+            # Use AMS knowledge base
+            clinical_assessment = analyze_altered_mental_status(
+                {"description": chief_complaint + " " + str(state.get("associatedSymptoms", []))},
+                patient_factors
+            )
+            
+            return {
+                "summary": f"Patient presents with altered mental status: {chief_complaint}. This requires systematic evaluation using AEIOU TIPS approach.",
+                "diagnoses": clinical_assessment["differentials"],
+                "triage": {
+                    "level": "EMERGENCY",  # AMS is always emergency until proven otherwise
+                    "recommendation": "🚨 Altered mental status requires immediate emergency evaluation. Call 911 or go to ER now."
+                },
+                "immediate_actions": clinical_assessment["immediate_actions"],
+                "essential_workup": clinical_assessment["essential_workup"],
+                "red_flags": clinical_assessment.get("red_flags_present", []),
+                "disclaimer": "Altered mental status can be life-threatening. This assessment cannot replace immediate professional medical evaluation."
             }
         
         # Fallback to LLM-based assessment for other complaints
