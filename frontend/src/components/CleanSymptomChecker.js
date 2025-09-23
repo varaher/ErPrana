@@ -235,8 +235,9 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       return { message: 'Any difficulty breathing or shortness of breath? (yes/no)' };
     }
     
-    // Ask for vitals if none provided
-    if (!state.vitals.temp && !state.vitals.HR && !state.vitals.BP && !state.vitals.SpO2) {
+    // Ask for vitals if none provided and we have core symptoms covered
+    if (state.onset && state.pain.hasPain !== null && state.fever !== null && 
+        !state.vitals.temp && !state.vitals.HR && !state.vitals.BP && !state.vitals.SpO2) {
       return { message: 'Do you know any of your vital signs? (temperature, heart rate, blood pressure) If not, just say "unknown"' };
     }
     
