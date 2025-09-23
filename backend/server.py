@@ -92,8 +92,9 @@ async def get_symptom_feedback():
     feedback_list = await db.symptom_feedback.find().to_list(1000)
     return [SymptomFeedback(**feedback) for feedback in feedback_list]
 
-# Include the router in the main app
+# Include the routers in the main app
 app.include_router(api_router)
+app.include_router(symptom_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
