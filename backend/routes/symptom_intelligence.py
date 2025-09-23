@@ -6,6 +6,11 @@ import json
 import asyncio
 from dotenv import load_dotenv
 
+# Import medical knowledge
+import sys
+sys.path.append('/app/backend')
+from medical_knowledge.chest_pain import analyze_chest_pain_symptoms, CHEST_PAIN_KNOWLEDGE
+
 # Load environment variables
 load_dotenv()
 
