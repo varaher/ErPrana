@@ -66,6 +66,10 @@ class BackendAPITester:
         """Test getting all status checks"""
         return self.run_test("Get Status Checks", "GET", "status", 200)
     
+    def test_health_endpoint(self):
+        """Test the health endpoint specifically"""
+        return self.run_test("Health Check Endpoint", "GET", "health", 200)
+    
     def test_symptom_feedback_endpoint(self):
         """Test the symptom feedback endpoint that frontend uses"""
         test_feedback = {
@@ -83,6 +87,10 @@ class BackendAPITester:
             200,
             data=test_feedback
         )
+    
+    def test_get_symptom_feedback(self):
+        """Test getting symptom feedback"""
+        return self.run_test("Get Symptom Feedback", "GET", "symptom-feedback", 200)
 
 def main():
     print("🚀 Starting Backend API Tests for ErMate Application")
