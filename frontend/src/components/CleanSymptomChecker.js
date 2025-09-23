@@ -132,7 +132,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     
     // Fever detection
     if (/\bfever\b/.test(m) && !/\bno fever\b/.test(m)) updates.fever = true;
-    if (/\bno fever|afebrile|normal temp//.test(m)) updates.fever = false;
+    if (/\bno fever|afebrile|normal temp\b/.test(m)) updates.fever = false;
     
     // Cough detection
     if (/\bcough\b/.test(m) && !/\bno cough\b/.test(m)) updates.cough = true;
