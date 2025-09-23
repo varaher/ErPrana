@@ -5,180 +5,263 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background: #f8f9fa;
   min-height: 100vh;
   color: #333;
 }
 
-.container {
+/* ErPrana App Styles */
+.erprana-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Top Navigation */
+.top-nav {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.app-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  text-decoration: none;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-greeting {
+  color: #666;
+  font-weight: 500;
+}
+
+.profile-btn, .logout-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-btn {
+  border-radius: 20px;
+  width: auto;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.profile-btn:hover, .logout-btn:hover {
+  background: #f1f3f4;
+  border-color: #667eea;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 40px 20px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  width: 100%;
 }
 
-.header {
+/* Dashboard */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 40px 0;
+}
+
+.welcome-section {
+  margin-bottom: 50px;
   color: white;
 }
 
-.header h1 {
-  font-size: 3rem;
-  margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+.welcome-section h2 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.header p {
+.welcome-section p {
   font-size: 1.2rem;
   opacity: 0.9;
+  font-weight: 300;
 }
 
+/* Feature Cards */
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 30px;
-  margin-top: 40px;
-}
-
-.feature-card {
-  background: white;
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-}
-
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.feature-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #333;
-  text-align: center;
-}
-
-.feature-description {
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.feature-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 25px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.3s ease;
   width: 100%;
+  max-width: 1000px;
 }
 
-.feature-button:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
-}
-
-.emergency-btn {
-  background: #e74c3c;
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
+.clean-feature-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 35px 25px;
   cursor: pointer;
-  box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
-  animation: pulse 2s infinite;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
+.clean-feature-card::before {
+  content: '';
+  position: absolute;
   top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
-.modal-content {
-  background-color: white;
-  margin: 10% auto;
-  padding: 30px;
-  border-radius: 15px;
-  width: 90%;
-  max-width: 500px;
-  text-align: center;
+.clean-feature-card:hover::before {
+  transform: scaleX(1);
 }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
+.clean-feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 1);
 }
 
-.close:hover {
-  color: black;
+.card-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #667eea20, #764ba220);
 }
 
-.status-indicator {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
+.card-content {
+  flex: 1;
 }
 
-.online { background-color: #27ae60; }
-.offline { background-color: #e74c3c; }
-
-.api-status {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: white;
-  padding: 10px 15px;
-  border-radius: 25px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  font-size: 0.9rem;
+.card-content h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 
+.card-content p {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.card-arrow {
+  font-size: 1.2rem;
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+.clean-feature-card:hover .card-arrow {
+  color: #667eea;
+  transform: translateX(4px);
+}
+
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  .header h1 {
+  .top-nav {
+    padding: 12px 20px;
+  }
+  
+  .app-name {
+    font-size: 1.3rem;
+  }
+  
+  .user-greeting {
+    display: none;
+  }
+  
+  .main-content {
+    padding: 25px 15px;
+  }
+  
+  .welcome-section h2 {
     font-size: 2rem;
   }
+  
+  .welcome-section p {
+    font-size: 1.1rem;
+  }
+  
   .features-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  .container {
-    padding: 10px;
+  
+  .clean-feature-card {
+    padding: 25px 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .card-content h3 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-section h2 {
+    font-size: 1.7rem;
+  }
+  
+  .clean-feature-card {
+    padding: 20px 18px;
+  }
+  
+  .card-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
   }
 }
