@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import sys
 sys.path.append('/app/backend')
 from medical_knowledge.chest_pain import analyze_chest_pain_symptoms, CHEST_PAIN_KNOWLEDGE
+from medical_knowledge.altered_mental_status import analyze_altered_mental_status, ALTERED_MENTAL_STATUS_KNOWLEDGE
 
 # Load environment variables
 load_dotenv()
