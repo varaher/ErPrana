@@ -93,11 +93,17 @@ class BackendAPITester:
         return self.run_test("Get Symptom Feedback", "GET", "symptom-feedback", 200)
 
 def main():
-    print("🚀 Starting Backend API Tests for ErMate Application")
+    print("🚀 Starting Backend API Tests for ErPrana Application")
     print("=" * 60)
     
     # Setup
     tester = BackendAPITester()
+    
+    # Test health endpoint specifically (as requested)
+    print("\n🏥 Testing Health Endpoint...")
+    success, _ = tester.test_health_endpoint()
+    if not success:
+        print("❌ Health endpoint failed - Critical for frontend health checks")
     
     # Test basic connectivity
     print("\n📡 Testing API Connectivity...")
@@ -120,10 +126,16 @@ def main():
         print("❌ Status check retrieval failed")
 
     # Test symptom feedback endpoint (critical for frontend)
-    print("\n🩺 Testing Symptom Feedback Endpoint...")
+    print("\n🩺 Testing Symptom Feedback Creation...")
     success, _ = tester.test_symptom_feedback_endpoint()
     if not success:
         print("❌ Symptom feedback endpoint failed - Frontend feedback system won't work")
+    
+    # Test symptom feedback retrieval
+    print("\n📊 Testing Symptom Feedback Retrieval...")
+    success, _ = tester.test_get_symptom_feedback()
+    if not success:
+        print("❌ Symptom feedback retrieval failed")
 
     # Print final results
     print("\n" + "=" * 60)
