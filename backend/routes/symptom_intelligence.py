@@ -105,6 +105,22 @@ def detect_emergency_keywords(message: str, conversation_state: dict) -> tuple[b
         if any(word in message_lower for word in ['alarm', 'ringing', 'beeping', 'alert']):
             return True, "🚨 **CRITICAL EMERGENCY** - LVAD alarm detected. This indicates a serious device malfunction that requires immediate medical attention. Call 911 or go to the nearest emergency room NOW. LVAD alarms can indicate pump failure, thrombosis, or power issues that can be life-threatening."
     
+    # Altered mental status emergencies
+    ams_keywords = [
+        'confused', 'disoriented', 'not making sense', 'acting strange',
+        'unconscious', 'unresponsive', 'lethargic', 'altered mental status',
+        'agitated', 'combative', 'delirious'
+    ]
+    
+    if any(keyword in message_lower for keyword in ams_keywords):
+        # Check for immediate danger signs
+        danger_signs = [
+            'unconscious', 'unresponsive', 'not breathing properly',
+            'seizure', 'convulsion', 'very high fever'
+        ]
+        if any(sign in message_lower for sign in danger_signs):
+            return True, "🚨 **MEDICAL EMERGENCY** - Unconsciousness or severe altered mental status requires immediate medical attention. Call 911 or go to the nearest emergency room NOW. Check ABCs (Airway, Breathing, Circulation) and be prepared to perform CPR if needed."
+    
     # Other critical emergencies
     emergency_phrases = [
         'cant breathe', "can't breathe", 'choking', 'unconscious',
