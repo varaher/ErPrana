@@ -145,9 +145,9 @@ const UserProfile = ({ user, onUpdateUser, onClose }) => {
             </div>
           </div>
           
-          {/* Medical Professional */}
+          {/* Health Care Professional */}
           <div className="profile-section">
-            <h3>👨‍⚕️ Medical Professional</h3>
+            <h3>👨‍⚕️ Health Care Professional</h3>
             <div className="professional-toggle">
               <label className="toggle-switch">
                 <input
@@ -158,7 +158,7 @@ const UserProfile = ({ user, onUpdateUser, onClose }) => {
                 <span className="slider"></span>
               </label>
               <div className="toggle-info">
-                <strong>I am a medical professional</strong>
+                <strong>I am a health care professional</strong>
                 <p>Enable professional mode for advanced features and contribute to AI learning</p>
               </div>
             </div>
