@@ -161,20 +161,32 @@ async def analyze_symptom_message(request: SymptomRequest):
         # Create chat instance for this session
         chat = create_symptom_chat(request.session_id)
         
-        # Simple context message for now 
+        # Simple context message for conversational flow
         context_message = f"""Current state: {json.dumps(request.conversation_state or {})}
 
 User said: "{request.user_message}"
 
-Please analyze this and respond with JSON in this format:
+You are ARYA, a medical assistant. Be conversational and ask ONE follow-up question at a time based on what the user just told you. DON'T repeat information they already provided.
+
+Key principles:
+1. If they mention specific symptoms, acknowledge them and ask for ONE related detail
+2. Ask about timing/onset if not provided
+3. Ask about severity or character if relevant  
+4. Build conversation naturally - don't interrogate
+5. Be empathetic and professional
+
+Respond with JSON:
 {{
-    "message": "your response to the user",
-    "updated_state": {{"chiefComplaint": "extracted complaint or existing", "fever": true/false/null, "pain": {{"hasPain": true/false/null}}}},
-    "next_question": "next question to ask or null",
+    "message": "acknowledge what they said + ask ONE conversational follow-up question",
+    "updated_state": {{"chiefComplaint": "main concern", "onset": "timing if mentioned", "associatedSymptoms": ["list symptoms mentioned"], "severity": "if mentioned"}},
+    "next_question": "ONE specific follow-up question or null if you have enough info",
     "emergency": false
 }}
 
-Be intelligent: If user says "no pain" set pain.hasPain = false. If "no fever" set fever = false."""
+Example: If user says "I have chest pain since this morning"
+Response: "I understand you're having chest pain that started this morning. Can you describe what the pain feels like - is it sharp, crushing, or more like pressure?"
+
+Be conversational, not robotic. Ask questions a real doctor would ask."""
         
         # Send message to LLM
         user_message = UserMessage(text=context_message)
