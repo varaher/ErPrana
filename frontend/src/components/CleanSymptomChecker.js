@@ -76,6 +76,13 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     addMessage('user', userMessage);
     setIsTyping(true);
     
+    // Re-focus the input after a short delay to prevent cursor disappearing
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
+
     try {
       // Send message to intelligent backend
       const response = await fetch(`${BACKEND_URL}/api/analyze-symptom`, {
@@ -110,18 +117,38 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       setTimeout(() => {
         addMessage('assistant', data.assistant_message);
         
+        // Ask conversational follow-up question if provided
+        if (data.next_question && !data.assessment_ready) {
+          setTimeout(() => {
+            addMessage('assistant', data.next_question);
+          }, 1500);
+        }
+        
         // If assessment is ready, generate medical assessment
         if (data.assessment_ready && !data.next_question) {
           setTimeout(() => {
             generateAssessment();
-          }, 1500);
+          }, 2000);
         }
+        
+        // Re-focus input after response
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }, 100);
       }, 800);
       
     } catch (error) {
       console.error('Error getting intelligent response:', error);
       setTimeout(() => {
-        addMessage('assistant', 'I apologize, but I\'m having trouble understanding right now. Could you please rephrase that?');
+        addMessage('assistant', 'I apologize, but I\'m having trouble understanding right now. Could you please rephrase that or provide more details about your symptoms?');
+        // Re-focus input after error
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }, 100);
       }, 800);
     } finally {
       setIsTyping(false);
