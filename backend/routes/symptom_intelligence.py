@@ -282,6 +282,36 @@ async def generate_medical_assessment(request: dict):
                 "red_flags": clinical_assessment.get("red_flags_present", []),
                 "disclaimer": "Altered mental status can be life-threatening. This assessment cannot replace immediate professional medical evaluation."
             }
+            
+        # Use poisoning/toxidrome knowledge base for overdose/poisoning
+        elif any(keyword in chief_complaint for keyword in 
+                ["overdose", "poisoning", "took pills", "drunk", "high", "drugs", 
+                 "cocaine", "heroin", "pills", "medication overdose", "toxic"]):
+            
+            patient_factors = {
+                "substances": state.get("substanceHistory", []),
+                "medications": state.get("medications", []),
+                "age": state.get("age", 0)
+            }
+            
+            # Use poisoning knowledge base
+            clinical_assessment = analyze_poisoning_symptoms(
+                {"description": chief_complaint + " " + str(state.get("associatedSymptoms", []))},
+                patient_factors
+            )
+            
+            return {
+                "summary": f"Patient presents with suspected poisoning/overdose: {chief_complaint}. Requires immediate toxidrome assessment and antidote consideration.",
+                "diagnoses": clinical_assessment["differential_diagnosis"],
+                "triage": {
+                    "level": "EMERGENCY",  # All poisoning is emergency
+                    "recommendation": "🚨 Suspected poisoning/overdose requires immediate emergency care. Call 911 or go to ER now."
+                },
+                "immediate_actions": clinical_assessment["immediate_actions"],
+                "antidotes": clinical_assessment.get("antidotes", []),
+                "toxidromes": clinical_assessment.get("toxidromes", []),
+                "disclaimer": "Poisoning/overdose is a medical emergency. This assessment cannot replace immediate professional medical evaluation and treatment."
+            }
         
         # Fallback to LLM-based assessment for other complaints
         session_id = request.get("session_id", "assessment")
