@@ -66,10 +66,6 @@ function App() {
     return (
       <div className="full-page">
         <CleanSymptomChecker user={user} onBack={() => setCurrentView('dashboard')} />
-        <VoiceAssistant 
-          userId={user.id}
-          onVoiceResponse={setVoiceResponse}
-        />
       </div>
     );
   }
