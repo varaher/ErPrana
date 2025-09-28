@@ -200,7 +200,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         if (temp >= 95 && temp <= 110) {
           state.temperature = temp;
           state.temperatureUnit = 'F';
-          console.log('✅ Temperature extracted:', temp + 'F');
           break;
         }
       }
