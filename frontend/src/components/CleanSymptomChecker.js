@@ -415,86 +415,182 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     return assessment;
   };
 
-  const generateProvisionalDiagnoses = (state) => {
+  const generateProvisionalDiagnoses = (collectedData) => {
     const diagnoses = [];
+    const symptom = collectedData.primarySymptom;
+    const location = collectedData.location?.toLowerCase() || '';
+    
+    // Chest pain diagnoses
+    if (symptom === 'chest pain') {
+      diagnoses.push({
+        name: "Musculoskeletal chest pain",
+        probability: "45%",
+        reasoning: "Most common cause of chest pain in younger patients without cardiac risk factors",
+        triage: "🟡 MODERATE - Monitor, seek care if worsening"
+      });
+      
+      diagnoses.push({
+        name: "Gastroesophageal reflux (GERD)",
+        probability: "35%",
+        reasoning: "Burning chest pain, often related to meals or lying down",
+        triage: "🟢 LOW-MODERATE - Dietary modifications, antacids"
+      });
+      
+      diagnoses.push({
+        name: "Anxiety/Panic disorder",
+        probability: "25%",
+        reasoning: "Chest tightness with associated anxiety symptoms",
+        triage: "🟢 LOW - Stress management, rule out cardiac causes"
+      });
+      
+      diagnoses.push({
+        name: "Cardiac chest pain",
+        probability: "20%",
+        reasoning: "Especially with risk factors, exertional symptoms, or radiation",
+        triage: "🔴 HIGH - Immediate medical evaluation required"
+      });
+      
+      diagnoses.push({
+        name: "Pulmonary embolism",
+        probability: "10%",
+        reasoning: "Less common but serious cause, especially with shortness of breath",
+        triage: "🔴 HIGH - Emergency evaluation if breathing difficulties"
+      });
+    }
     
     // Abdominal pain diagnoses
-    if ((state.chiefComplaint === 'pain' || state.chiefComplaint === 'abdominal pain') && state.location === 'lower abdomen') {
-      diagnoses.push({
-        name: "Gastroenteritis",
-        probability: "60%",
-        reasoning: "Lower abdominal pain with acute onset - common cause of GI discomfort",
-        triage: "🟡 MODERATE - Monitor symptoms, ensure hydration"
-      });
+    else if (symptom === 'abdominal pain') {
+      if (location.includes('lower')) {
+        diagnoses.push({
+          name: "Gastroenteritis",
+          probability: "50%",
+          reasoning: "Lower abdominal pain with acute onset - common GI cause",
+          triage: "🟡 MODERATE - Monitor symptoms, ensure hydration"
+        });
+        
+        diagnoses.push({
+          name: "Appendicitis (early)",
+          probability: "30%",
+          reasoning: "Lower abdominal pain, especially right-sided - needs monitoring",
+          triage: "🟡 MODERATE - Seek care if pain worsens or fever develops"
+        });
+      } else {
+        diagnoses.push({
+          name: "Gastritis/Peptic ulcer",
+          probability: "45%",
+          reasoning: "Upper abdominal pain, often related to meals or stress",
+          triage: "🟡 MODERATE - Monitor, avoid NSAIDs, seek care if severe"
+        });
+        
+        diagnoses.push({
+          name: "Gallbladder disease",
+          probability: "35%",
+          reasoning: "Right upper abdominal pain, especially after fatty meals",
+          triage: "🟡 MODERATE - Seek medical evaluation for diagnosis"
+        });
+      }
       
+      // Add common diagnoses for any abdominal pain
       diagnoses.push({
-        name: "Urinary Tract Infection (UTI)",
-        probability: "45%",
-        reasoning: "Lower abdominal pain can be associated with bladder/urinary tract issues",
-        triage: "🟡 MODERATE - Consider urinalysis if pain persists"
-      });
-      
-      diagnoses.push({
-        name: "Appendicitis (early)",
-        probability: "35%",
-        reasoning: "Lower abdominal pain, especially if progressing - needs monitoring",
-        triage: "🟡 MODERATE - Seek care if pain worsens or fever develops"
+        name: "Urinary Tract Infection",
+        probability: "25%",
+        reasoning: "Can cause lower abdominal discomfort",
+        triage: "🟡 MODERATE - Urinalysis recommended"
       });
       
       diagnoses.push({
         name: "Muscle strain/Gas pain",
         probability: "40%",
-        reasoning: "Benign causes of lower abdominal discomfort",
-        triage: "🟢 LOW - Conservative management, monitor progression"
+        reasoning: "Benign causes of abdominal discomfort",
+        triage: "🟢 LOW - Conservative management"
       });
       
       diagnoses.push({
-        name: "Gynecological causes (if female)",
-        probability: "30%",
-        reasoning: "Ovarian cysts, menstrual-related pain in lower abdomen",
-        triage: "🟢 LOW-MODERATE - Monitor, gynecologic evaluation if persistent"
-      });
-    }
-    
-    // Fever diagnoses (existing code)
-    else if (state.symptoms.fever && state.symptoms.nausea && state.symptoms['body aches']) {
-      diagnoses.push({
-        name: "Viral Gastroenteritis",
-        probability: "75%",
-        reasoning: "Classic triad of fever, nausea, and body aches with 2-day duration",
-        triage: "🟡 MODERATE - Monitor, seek care if worsening"
-      });
-      
-      diagnoses.push({
-        name: "Viral Syndrome (URI/Flu-like)",
-        probability: "65%",
-        reasoning: "Systemic symptoms with fever pattern responsive to antipyretics",
-        triage: "🟡 MODERATE - Symptomatic care, monitor progression"
-      });
-      
-      diagnoses.push({
-        name: "Early Bacterial Infection",
-        probability: "45%",
-        reasoning: "Fever pattern with recurrence despite medication suggests possible bacterial component",
-        triage: "🟡 MODERATE - Consider medical evaluation if fever persists >3 days"
-      });
-      
-      diagnoses.push({
-        name: "Food Poisoning/Toxin-mediated illness",
-        probability: "35%",
-        reasoning: "GI symptoms with fever and body aches, short duration",
-        triage: "🟢 LOW-MODERATE - Supportive care unless severe dehydration"
-      });
-      
-      diagnoses.push({
-        name: "Medication reaction/Heat-related illness",
+        name: "Gynecological causes",
         probability: "20%",
-        reasoning: "Less likely but possible given fever pattern",
-        triage: "🟢 LOW - Monitor, discontinue any new medications"
+        reasoning: "Ovarian or uterine causes in females",
+        triage: "🟢 LOW-MODERATE - Consider gynecologic evaluation"
       });
     }
     
-    return diagnoses;
+    // Headache diagnoses
+    else if (symptom === 'headache') {
+      diagnoses.push({
+        name: "Tension headache",
+        probability: "60%",
+        reasoning: "Most common type of headache, often stress-related",
+        triage: "🟢 LOW - Rest, hydration, over-the-counter pain relief"
+      });
+      
+      diagnoses.push({
+        name: "Migraine",
+        probability: "25%",
+        reasoning: "Throbbing headache, often with associated symptoms",
+        triage: "🟡 MODERATE - Avoid triggers, consider migraine medication"
+      });
+      
+      diagnoses.push({
+        name: "Sinusitis",
+        probability: "20%",
+        reasoning: "Headache with facial pressure or nasal congestion",
+        triage: "🟡 MODERATE - Consider decongestants, seek care if persistent"
+      });
+      
+      diagnoses.push({
+        name: "Cluster headache",
+        probability: "10%",
+        reasoning: "Severe, unilateral headache with autonomic symptoms",
+        triage: "🟡 MODERATE - Specialized treatment may be needed"
+      });
+      
+      diagnoses.push({
+        name: "Secondary headache",
+        probability: "5%",
+        reasoning: "Due to underlying condition - concerning if sudden/severe",
+        triage: "🔴 HIGH - Seek immediate care if sudden onset or worst ever"
+      });
+    }
+    
+    // Default/other symptoms
+    else {
+      diagnoses.push({
+        name: "Viral illness",
+        probability: "50%",
+        reasoning: "Common cause of various symptoms",
+        triage: "🟢 LOW-MODERATE - Supportive care, monitor symptoms"
+      });
+      
+      diagnoses.push({
+        name: "Stress/Anxiety related",
+        probability: "30%",
+        reasoning: "Physical symptoms from psychological stress",
+        triage: "🟢 LOW - Stress management, rule out physical causes"
+      });
+      
+      diagnoses.push({
+        name: "Medication side effect",
+        probability: "20%",
+        reasoning: "Side effect from current medications",
+        triage: "🟡 MODERATE - Review medications with healthcare provider"
+      });
+      
+      diagnoses.push({
+        name: "Dehydration/Fatigue",
+        probability: "25%",
+        reasoning: "Common cause of various non-specific symptoms",
+        triage: "🟢 LOW - Rest, hydration, monitor improvement"
+      });
+      
+      diagnoses.push({
+        name: "Underlying medical condition",
+        probability: "15%",
+        reasoning: "May require further evaluation",
+        triage: "🟡 MODERATE - Consider medical evaluation if persistent"
+      });
+    }
+    
+    // Ensure we always return 5 diagnoses
+    return diagnoses.slice(0, 5);
   };
 
   const generateIntelligentFollowUp = (state, extractedInfo) => {
