@@ -306,12 +306,57 @@ async def analyze_symptom_message(request: SymptomRequest):
         # Create chat instance for this session
         chat = create_symptom_chat(request.session_id)
         
+        # Get personalized data if user confirmed it's for themselves
+        personalized_data = {}
+        use_personal_data = conversation_state.get('use_personal_data', False)
+        personalized_analysis = False
+        
+        if use_personal_data and request.user_id:
+            personalized_data = await get_personalized_health_data(request.user_id)
+            personalized_analysis = True
+        
         # Enhanced context message using clinical framework
+        personal_data_context = ""
+        if personalized_analysis and personalized_data:
+            # Summarize personal data for context
+            wearables_summary = ""
+            if personalized_data.get('wearables_data'):
+                recent_hr = [d for d in personalized_data['wearables_data'] if d.get('data_type') == 'heart_rate']
+                recent_steps = [d for d in personalized_data['wearables_data'] if d.get('data_type') == 'steps']
+                
+                if recent_hr:
+                    avg_hr = sum(int(d['value']) for d in recent_hr[:10]) / min(len(recent_hr), 10)
+                    wearables_summary += f"Recent heart rate avg: {avg_hr:.0f} bpm. "
+                
+                if recent_steps:
+                    avg_steps = sum(int(d['value']) for d in recent_steps[:7]) / min(len(recent_steps), 7)
+                    wearables_summary += f"Daily steps avg: {avg_steps:.0f}. "
+            
+            medications_summary = ""
+            if personalized_data.get('medications'):
+                meds = [med['name'] for med in personalized_data['medications'][:5]]
+                medications_summary = f"Current medications: {', '.join(meds)}. "
+            
+            personal_data_context = f"""
+PERSONALIZED HEALTH DATA AVAILABLE:
+{wearables_summary}
+{medications_summary}
+Note: This is the user's own health data - incorporate relevant information into your analysis.
+"""
+        elif conversation_state.get('user_confirmed') == 'other':
+            personal_data_context = """
+THIRD-PARTY CONSULTATION:
+User is asking about someone else's symptoms. Do NOT use any personal health data. 
+Provide general medical guidance only with appropriate disclaimers.
+"""
+        
         context_message = f"""You are ARYA, an experienced emergency medicine physician. Use natural, professional medical dialogue.
 
-CURRENT CONVERSATION STATE: {json.dumps(request.conversation_state or {})}
+CURRENT CONVERSATION STATE: {json.dumps(conversation_state)}
 
 PATIENT JUST SAID: "{request.user_message}"
+
+{personal_data_context}
 
 MEDICAL INTERVIEW APPROACH:
 - Use the CONE technique: Open → Focused → Red Flags
