@@ -70,7 +70,7 @@ class ProfessionalModeRequest(BaseModel):
     specialty: str
     institution: str
 
-@router.post("/api/professional/register")
+@router.post("/professional/register")
 async def register_professional(request: ProfessionalModeRequest):
     """Register a healthcare professional"""
     try:
@@ -98,7 +98,7 @@ async def register_professional(request: ProfessionalModeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/professional/profile/{user_id}")
+@router.get("/professional/profile/{user_id}")
 async def get_professional_profile(user_id: str):
     """Get professional profile by user ID"""
     try:
@@ -110,7 +110,7 @@ async def get_professional_profile(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/professional/patients")
+@router.post("/professional/patients")
 async def create_patient_record(record: PatientRecord):
     """Create a new patient record"""
     try:
@@ -128,7 +128,7 @@ async def create_patient_record(record: PatientRecord):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/professional/patients/{professional_id}")
+@router.get("/professional/patients/{professional_id}")
 async def get_professional_patients(professional_id: str, limit: int = 50):
     """Get all patients for a professional"""
     try:
@@ -144,7 +144,7 @@ async def get_professional_patients(professional_id: str, limit: int = 50):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/professional/patient/{patient_id}")
+@router.get("/professional/patient/{patient_id}")
 async def get_patient_record(patient_id: str):
     """Get detailed patient record"""
     try:
@@ -164,7 +164,7 @@ async def get_patient_record(patient_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/professional/assessment")
+@router.post("/professional/assessment")
 async def create_clinical_assessment(assessment: ClinicalAssessment):
     """Create a clinical assessment"""
     try:
@@ -182,7 +182,7 @@ async def create_clinical_assessment(assessment: ClinicalAssessment):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/professional/assessments/{professional_id}")
+@router.get("/professional/assessments/{professional_id}")
 async def get_professional_assessments(professional_id: str, limit: int = 50):
     """Get all assessments by a professional"""
     try:
@@ -198,7 +198,7 @@ async def get_professional_assessments(professional_id: str, limit: int = 50):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/professional/teaching-case")
+@router.post("/professional/teaching-case")
 async def create_teaching_case(case: TeachingCase):
     """Create a teaching case"""
     try:
@@ -216,7 +216,7 @@ async def create_teaching_case(case: TeachingCase):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/professional/teaching-cases")
+@router.get("/professional/teaching-cases")
 async def get_teaching_cases(specialty: Optional[str] = None, limit: int = 20):
     """Get teaching cases, optionally filtered by specialty"""
     try:
@@ -234,7 +234,7 @@ async def get_teaching_cases(specialty: Optional[str] = None, limit: int = 20):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/professional/teaching-case/{case_id}")
+@router.get("/professional/teaching-case/{case_id}")
 async def get_teaching_case(case_id: str):
     """Get detailed teaching case"""
     try:
@@ -246,7 +246,7 @@ async def get_teaching_case(case_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/api/professional/patient/{patient_id}")
+@router.put("/professional/patient/{patient_id}")
 async def update_patient_record(patient_id: str, updates: Dict):
     """Update patient record"""
     try:
@@ -267,7 +267,7 @@ async def update_patient_record(patient_id: str, updates: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/professional/dashboard/{professional_id}")
+@router.get("/professional/dashboard/{professional_id}")
 async def get_professional_dashboard(professional_id: str):
     """Get dashboard data for healthcare professional"""
     try:
@@ -299,7 +299,7 @@ async def get_professional_dashboard(professional_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/professional/verify/{professional_id}")
+@router.post("/professional/verify/{professional_id}")
 async def verify_professional(professional_id: str, verification_data: Dict):
     """Verify a healthcare professional (admin function)"""
     try:
