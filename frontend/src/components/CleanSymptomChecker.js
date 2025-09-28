@@ -171,9 +171,19 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const generateStatefulResponse = (messageLower, state) => {
-    // Handle greetings
-    if (messageLower.match(/^(hi|hello|hey)$/)) {
+    // Handle greetings and non-medical responses
+    if (messageLower.match(/^(hi|hello|hey|good morning|good afternoon|good evening)$/)) {
       return "Hello! I'm here to help with your health concerns. What symptoms are you experiencing?";
+    }
+    
+    // Handle general conversation that's not medical
+    if (messageLower.match(/^(how are you|thank you|thanks|ok|okay)$/)) {
+      return "I'm here to help with any health concerns you might have. What brings you in today?";
+    }
+    
+    // Handle non-medical queries
+    if (!isHealthRelated(messageLower) && !state.chiefComplaint) {
+      return "I'm ARYA, your health assistant. I'm designed to help with medical symptoms and health concerns. What health issue would you like to discuss?";
     }
     
     // Check for red flags first
