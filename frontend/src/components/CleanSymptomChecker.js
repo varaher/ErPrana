@@ -389,7 +389,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     return diagnoses.slice(0, 5);
   };
 
-  // Old generateIntelligentFollowUp function removed
+ 
 
   const extractPrimarySymptom = (message) => {
     const messageLower = message.toLowerCase();
