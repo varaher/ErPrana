@@ -194,6 +194,56 @@ def detect_emergency_keywords(message: str, conversation_state: dict) -> tuple[b
     
     return False, ""
 
+async def get_personalized_health_data(user_id: str) -> Dict[str, Any]:
+    """Get user's wearables data and health records for personalized analysis"""
+    try:
+        from motor.motor_asyncio import AsyncIOMotorClient
+        
+        # Database connection
+        MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+        DB_NAME = os.environ.get("DB_NAME", "test_database") 
+        client = AsyncIOMotorClient(MONGO_URL)
+        db = client[DB_NAME]
+        
+        # Get recent wearables data (last 7 days)
+        wearables_data = await db.wearable_data.find(
+            {"user_id": user_id}
+        ).sort("timestamp", -1).limit(100).to_list(length=None)
+        
+        # Get health records
+        health_records = await db.health_records.find(
+            {"user_id": user_id}
+        ).to_list(length=None)
+        
+        # Get medications
+        medications = await db.medications.find(
+            {"user_id": user_id, "active": True}
+        ).to_list(length=None)
+        
+        return {
+            "wearables_data": wearables_data,
+            "health_records": health_records,
+            "medications": medications
+        }
+        
+    except Exception as e:
+        print(f"Error getting personalized data: {e}")
+        return {"wearables_data": [], "health_records": [], "medications": []}
+
+def create_confirmation_message() -> str:
+    """Create the user confirmation message"""
+    return """Before I provide analysis, I need to clarify something important:
+
+🔒 **Privacy & Personalization Check**
+
+Are the symptoms and health concerns you're describing:
+
+**A) For yourself** - I can provide personalized analysis using your wearable data, health history, and medication records
+
+**B) For someone else** (family member, friend, etc.) - I'll provide general medical guidance without using your personal health data
+
+Please respond with "A" for yourself or "B" for someone else. This helps me give you the most appropriate and safe medical guidance while protecting your privacy."""
+
 @router.post("/analyze-symptom", response_model=SymptomResponse)
 async def analyze_symptom_message(request: SymptomRequest):
     try:
