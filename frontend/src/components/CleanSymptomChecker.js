@@ -169,7 +169,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         const num = parseInt(match[1]);
         if (num >= 1 && num <= 10) {
           state.severity = num;
-          console.log('✅ Severity extracted:', state.severity);
           break;
         }
       }
