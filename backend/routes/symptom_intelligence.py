@@ -4,6 +4,7 @@ from typing import Dict, Any, Optional
 import os
 import json
 import asyncio
+import uuid
 from dotenv import load_dotenv
 
 # Import medical knowledge
