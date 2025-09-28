@@ -476,8 +476,22 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const hasEnoughInfoForAssessment = (state) => {
-    return state.chiefComplaint && 
-           (state.fever?.temperature || state.cough?.type || state.dyspnea?.severity);
+    console.log('🤔 Checking if ready for assessment:', state);
+    
+    if (!state.chiefComplaint) return false;
+    
+    // For fever: need duration + (temperature OR severity) + associated symptoms checked
+    if (state.chiefComplaint === 'fever') {
+      const hasDuration = state.duration || state.onset;
+      const hasSeverityInfo = state.temperature || state.severity;
+      const hasCheckedAssociated = state.hasAskedAssociated;
+      
+      console.log('Fever assessment check:', { hasDuration, hasSeverityInfo, hasCheckedAssociated });
+      return hasDuration && hasSeverityInfo && hasCheckedAssociated;
+    }
+    
+    // For other complaints: need onset + severity + basic details
+    return state.onset && state.severity;
   };
 
   const isHealthRelated = (messageLower) => {
