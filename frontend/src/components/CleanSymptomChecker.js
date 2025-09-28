@@ -6,7 +6,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     {
       id: 1,
       type: 'assistant',
-      message: `Hello! I'm ARYA. What is your main concern today?`,
+      message: `Hello! I'm ARYA, your emergency medicine physician. I'm here to help understand your symptoms using a systematic approach. What brings you in today?`,
       timestamp: new Date()
     }
   ]);
@@ -14,6 +14,9 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [assessmentComplete, setAssessmentComplete] = useState(false);
+  const [finalDiagnoses, setFinalDiagnoses] = useState([]);
   
   // Simple conversation state - LLM will manage the intelligence
   const [conversationState, setConversationState] = useState({});
