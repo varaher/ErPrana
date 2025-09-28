@@ -98,13 +98,46 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
     }, 100);
 
-    // Process with enhanced medical knowledge
-    const response = processSymptomWithMedicalKnowledge(userMessage);
-    
-    setTimeout(() => {
+    try {
+      // Call backend API for proper medical processing
+      const response = await fetch(`${BACKEND_URL}/api/symptom-intelligence/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id || user.email,
+          message: userMessage,
+          session_id: conversationState.sessionId || null
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Update conversation state with backend response
+      setConversationState(prev => ({
+        ...prev,
+        currentStep: data.next_step,
+        requiresFollowup: data.requires_followup,
+        urgencyLevel: data.urgency_level,
+        sessionId: data.session_id
+      }));
+
+      // Add assistant response
+      addMessage('assistant', data.response, data.urgency_level);
+      
+    } catch (error) {
+      console.error('API Error:', error);
+      // Fallback to local processing
+      const response = processSymptomWithMedicalKnowledge(userMessage);
       addMessage('assistant', response);
-      setIsTyping(false);
-    }, 1000);
+    }
+    
+    setIsTyping(false);
   };
 
   const processSymptomWithMedicalKnowledge = (userMessage) => {
