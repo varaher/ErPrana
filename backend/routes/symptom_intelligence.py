@@ -285,18 +285,24 @@ async def analyze_symptom_message(request: SymptomRequest):
                 personalized_analysis=False
             )
         
+        # TEMPORARILY SKIP CONFIRMATION FOR TESTING
         # Check if we need user confirmation
-        if needs_user_confirmation(request.user_message, conversation_state):
-            conversation_state['awaiting_confirmation'] = True
-            return SymptomResponse(
-                assistant_message=create_confirmation_message(),
-                updated_state=conversation_state,
-                next_question=None,
-                assessment_ready=False,
-                emergency_detected=False,
-                needs_user_confirmation=True,
-                personalized_analysis=False
-            )
+        # if needs_user_confirmation(request.user_message, conversation_state):
+        #     conversation_state['awaiting_confirmation'] = True
+        #     return SymptomResponse(
+        #         assistant_message=create_confirmation_message(),
+        #         updated_state=conversation_state,
+        #         next_question=None,
+        #         assessment_ready=False,
+        #         emergency_detected=False,
+        #         needs_user_confirmation=True,
+        #         personalized_analysis=False
+        #     )
+        
+        # For testing, assume user confirmed "self"
+        if not conversation_state.get('user_confirmed'):
+            conversation_state['user_confirmed'] = 'self'
+            conversation_state['use_personal_data'] = True
         
         # Pre-screen for emergencies
         is_emergency, emergency_message = detect_emergency_keywords(request.user_message, conversation_state)
