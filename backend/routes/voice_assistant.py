@@ -39,7 +39,7 @@ class TextToSpeechRequest(BaseModel):
     voice: str = "alloy"  # OpenAI voice options: alloy, echo, fable, onyx, nova, shimmer
     speed: float = 1.0
 
-@router.post("/api/voice/speech-to-text")
+@router.post("/voice/speech-to-text")
 async def speech_to_text(
     file: UploadFile = File(...),
     user_id: str = None,
@@ -90,7 +90,7 @@ async def speech_to_text(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Speech to text failed: {str(e)}")
 
-@router.post("/api/voice/text-to-speech")
+@router.post("/voice/text-to-speech")
 async def text_to_speech(request: TextToSpeechRequest):
     """Convert text to speech using OpenAI TTS"""
     try:
@@ -119,7 +119,7 @@ async def text_to_speech(request: TextToSpeechRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Text to speech failed: {str(e)}")
 
-@router.post("/api/voice/conversation")
+@router.post("/voice/conversation")
 async def voice_conversation(message: VoiceMessage):
     """Handle a complete voice conversation with ARYA"""
     try:
@@ -167,7 +167,7 @@ async def voice_conversation(message: VoiceMessage):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Voice conversation failed: {str(e)}")
 
-@router.get("/api/voice/session/{session_id}/audio")
+@router.get("/voice/session/{session_id}/audio")
 async def get_session_audio(session_id: str):
     """Get the audio response for a session"""
     try:
@@ -177,7 +177,7 @@ async def get_session_audio(session_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/voice/voices")
+@router.get("/voice/voices")
 async def get_available_voices():
     """Get list of available voices for TTS"""
     return {
@@ -192,7 +192,7 @@ async def get_available_voices():
         "default_voice": "nova"
     }
 
-@router.post("/api/voice/realtime/session")
+@router.post("/voice/realtime/session")
 async def create_realtime_session():
     """Create a new realtime voice session"""
     try:
@@ -203,7 +203,7 @@ async def create_realtime_session():
         raise HTTPException(status_code=500, detail=f"Failed to create realtime session: {str(e)}")
 
 # Add health check for voice assistant
-@router.get("/api/voice/health")
+@router.get("/voice/health")
 async def voice_health_check():
     """Health check for voice assistant functionality"""
     try:
