@@ -533,7 +533,88 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     return `I understand your concern. Could you tell me your main symptom that brought you here today?`;
   };
 
-  // Removed individual symptom handlers - now using comprehensive processing
+  const extractPrimarySymptom = (message) => {
+    const messageLower = message.toLowerCase();
+    
+    // Define symptom patterns
+    const symptomPatterns = [
+      { pattern: /chest pain|chest hurt|heart pain/i, symptom: 'chest pain' },
+      { pattern: /headache|head pain|head hurt/i, symptom: 'headache' },
+      { pattern: /stomach pain|abdominal pain|belly pain|stomach hurt/i, symptom: 'abdominal pain' },
+      { pattern: /fever|temperature|hot|chills/i, symptom: 'fever' },
+      { pattern: /cough|coughing/i, symptom: 'cough' },
+      { pattern: /nausea|nauseous|sick|vomit/i, symptom: 'nausea' },
+      { pattern: /dizzy|dizziness|lightheaded/i, symptom: 'dizziness' },
+      { pattern: /shortness of breath|breathing|breath/i, symptom: 'breathing difficulty' },
+      { pattern: /back pain|back hurt/i, symptom: 'back pain' },
+      { pattern: /sore throat|throat pain|throat hurt/i, symptom: 'sore throat' }
+    ];
+    
+    for (const { pattern, symptom } of symptomPatterns) {
+      if (pattern.test(messageLower)) {
+        return symptom;
+      }
+    }
+    
+    return null;
+  };
+
+  const assessUrgency = (message) => {
+    const emergencyKeywords = [
+      'chest pain', 'heart attack', 'stroke', 'severe pain', 'can\'t breathe',
+      'shortness of breath', 'crushing pain', 'sudden weakness'
+    ];
+    
+    const messageLower = message.toLowerCase();
+    return emergencyKeywords.some(keyword => messageLower.includes(keyword)) ? 'emergency' : 'low';
+  };
+
+  const generateStructuredAssessment = (collectedData) => {
+    let assessment = "**CLINICAL ASSESSMENT**\n\n";
+    
+    // Chief complaint summary
+    assessment += `**Chief Complaint:** ${collectedData.primarySymptom}`;
+    if (collectedData.location) assessment += ` in ${collectedData.location}`;
+    if (collectedData.duration) assessment += ` for ${collectedData.duration}`;
+    assessment += "\n\n";
+    
+    // Details
+    if (collectedData.description) {
+      assessment += `**Description:** ${collectedData.description}\n\n`;
+    }
+    
+    if (collectedData.severity) {
+      assessment += `**Severity:** ${collectedData.severity}/10\n\n`;
+    }
+    
+    if (collectedData.associatedSymptoms) {
+      assessment += `**Associated Symptoms:** ${collectedData.associatedSymptoms}\n\n`;
+    }
+    
+    // Generate 5 provisional diagnoses based on collected data
+    const diagnoses = generateProvisionalDiagnoses(collectedData);
+    assessment += "**PROVISIONAL DIAGNOSES (in order of likelihood):**\n\n";
+    
+    diagnoses.forEach((diagnosis, index) => {
+      assessment += `${index + 1}. **${diagnosis.name}** (${diagnosis.probability})\n`;
+      assessment += `   - ${diagnosis.reasoning}\n`;
+      assessment += `   - Triage: ${diagnosis.triage}\n\n`;
+    });
+    
+    // Recommendations
+    assessment += "**RECOMMENDATIONS:**\n";
+    assessment += "• Monitor symptoms closely\n";
+    assessment += "• Seek medical attention if symptoms worsen\n";
+    assessment += "• Stay hydrated and rest as needed\n";
+    
+    if (collectedData.primarySymptom === 'chest pain') {
+      assessment += "• Seek immediate care if chest pain worsens or is accompanied by sweating, nausea, or shortness of breath\n";
+    }
+    
+    assessment += "\n⚠️ **Disclaimer:** This assessment is for educational purposes. Please consult a healthcare professional for proper diagnosis and treatment.";
+    
+    return assessment;
+  };
   
   const startVoiceInput = () => {
     if (recognitionRef.current && !isListening) {
