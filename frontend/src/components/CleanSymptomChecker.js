@@ -208,10 +208,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     // 6. Extract user's own diagnosis/thoughts
     if (messageLower.includes('viral fever') || messageLower.includes('viral infection')) {
       state.userDiagnosis = 'viral fever';
-      console.log('✅ User diagnosis:', state.userDiagnosis);
     }
-    
-    console.log('📊 Updated state:', state);
   };
     
     // Extract fever information
