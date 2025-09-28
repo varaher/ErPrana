@@ -242,7 +242,7 @@ frontend:
         comment: "✅ COMPLETED: Implemented wearables data sync with device connection, permission system, sample data generation, and secure privacy controls. Backend API and frontend UI both ready for testing."
 
   - task: "Voice assistant with OpenAI speech models"
-    implemented: false
+    implemented: true
     working: "NA"
     file: "/app/frontend/src/components/VoiceAssistant.js"
     stuck_count: 0
@@ -251,7 +251,7 @@ frontend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Starting implementation of OpenAI speech-to-text and text-to-speech for ARYA"
+        comment: "✅ COMPLETED: Implemented full voice assistant with OpenAI speech-to-text, text-to-speech, realtime audio processing, voice settings, and ARYA integration. Uses Emergent LLM key for seamless voice conversations."
 
   - task: "Health care professional mode complete UI"
     implemented: false
