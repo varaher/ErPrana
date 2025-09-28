@@ -333,11 +333,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Infinite conversation flow for ARYA symptom checker"
-    - "API endpoint fix for symptom-intelligence/analyze"
-    - "ChatGPT-style conversation continuity"
+    - "Voice assistant OpenAI API key issue resolution"
+    - "SAH emergency pattern detection improvement"
   stuck_tasks:
-    - "Frontend authentication redirects and conversation flow"
+    - "OpenAI speech integration backend (API key authentication failing)"
   test_all: false
   test_priority: "high_first"
 
