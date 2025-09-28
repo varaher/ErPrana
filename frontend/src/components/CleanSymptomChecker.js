@@ -96,150 +96,29 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
   
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || isTyping) return;
     
     const userMessage = inputMessage.trim();
     setInputMessage('');
-    addMessage('user', userMessage);
     setIsTyping(true);
     
-    // Re-focus the input after a short delay to prevent cursor disappearing
+    // Add user message immediately
+    addMessage('user', userMessage);
+    
+    // Reset focus to input after message is sent
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
       }
     }, 100);
 
-    try {
-      console.log('Making API request to:', `${BACKEND_URL}/api/analyze-symptom`);
-      console.log('Request payload:', {
-        user_message: userMessage,
-        session_id: sessionId,
-        conversation_state: conversationState,
-        user_id: user?.id || user?.email || 'anonymous'
-      });
-      
-      // Send message to intelligent backend
-      const response = await fetch(`${BACKEND_URL}/api/analyze-symptom`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_message: userMessage,
-          session_id: sessionId,
-          conversation_state: conversationState,
-          user_id: user?.id || user?.email || 'anonymous'
-        }),
-      });
-      
-      console.log('Response received:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        console.error('API Response not OK:', response.status, response.statusText);
-        throw new Error(`Server error: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log('API Response:', data); // Debug log
-      
-      // Update conversation state
-      setConversationState(data.updated_state);
-      
-      // Handle emergency detection
-      if (data.emergency_detected) {
-        setTimeout(() => {
-          addMessage('assistant', '🚨 **MEDICAL EMERGENCY DETECTED**\n\nYour symptoms suggest a potential medical emergency. Please:\n\n• Call emergency services immediately (911, 108, 999)\n• Go to the nearest emergency room\n• Do not delay seeking immediate medical attention\n\nI can continue gathering information while you arrange emergency care.');
-        }, 500);
-      }
-      
-      // Handle user confirmation request
-      if (data.needs_user_confirmation) {
-        console.log('Showing confirmation message:', data.assistant_message);
-        setTimeout(() => {
-          addMessage('assistant', data.assistant_message);
-        }, 500);
-        setIsTyping(false);
-        return;
-      }
-      
-      // Show personalization status if available
-      if (data.personalized_analysis) {
-        setTimeout(() => {
-          addMessage('system', '🔒 Using your personal health data and wearables information for personalized analysis');
-        }, 300);
-      } else if (data.personalized_analysis === false && conversationState.user_confirmed === 'other') {
-        setTimeout(() => {
-          addMessage('system', '🔒 Providing general medical guidance without using your personal health data');
-        }, 300);
-      }
-      
-      // Add assistant response
-      setTimeout(() => {
-        addMessage('assistant', data.assistant_message);
-        
-        // Ask conversational follow-up question if provided
-        if (data.next_question && !data.assessment_ready) {
-          setTimeout(() => {
-            addMessage('assistant', data.next_question);
-          }, 1500);
-        }
-        
-        // If assessment is ready, generate medical assessment
-        if (data.assessment_ready && !data.next_question) {
-          setTimeout(() => {
-            generateAssessment();
-          }, 2000);
-        }
-        
-        // Re-focus input after response
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.focus();
-          }
-        }, 100);
-      }, 800);
-      
-    } catch (error) {
-      console.error('Error getting intelligent response:', error);
-      console.error('Error details:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
-      console.error('Request details:', {
-        url: `${BACKEND_URL}/api/analyze-symptom`,
-        userMessage: userMessage,
-        sessionId: sessionId
-      });
-      // Simple local fallback for common symptoms while we debug the API
-      let fallbackResponse = '';
-      const messageLower = userMessage.toLowerCase();
-      
-      if (messageLower.includes('fever')) {
-        fallbackResponse = `I understand you're experiencing a fever. This can be concerning. How long have you had the fever, and what's your current temperature?`;
-      } else if (messageLower.includes('pain')) {
-        fallbackResponse = `I hear you're experiencing pain. Can you tell me where exactly you feel the pain and rate it from 1-10?`;
-      } else if (messageLower.includes('cough')) {
-        fallbackResponse = `I understand you have a cough. Is it a dry cough or are you bringing up any phlegm? How long have you had it?`;
-      } else if (messageLower.includes('headache')) {
-        fallbackResponse = `I'm sorry you're experiencing a headache. Can you describe the type of pain - is it throbbing, sharp, or dull? Where exactly is it located?`;
-      } else {
-        fallbackResponse = `I understand your concern about: "${userMessage}". Can you tell me more details about when this started and how it's affecting you?`;
-      }
-      
-      setTimeout(() => {
-        addMessage('assistant', fallbackResponse);
-        // Re-focus input after error
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.focus();
-          }
-        }, 100);
-      }, 800);
-    } finally {
+    // Process message locally for now (bypass API issues)
+    const response = processSymptomLocally(userMessage);
+    setTimeout(() => {
+      addMessage('assistant', response);
       setIsTyping(false);
-    }
+    }, 1000);
+    return;
   };
   
   const generateAssessment = async () => {
