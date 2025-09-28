@@ -429,7 +429,9 @@ Remember: You're a skilled emergency physician having a natural conversation wit
             updated_state=updated_state,
             next_question=next_question,
             assessment_ready=assessment_ready,
-            emergency_detected=emergency
+            emergency_detected=emergency,
+            needs_user_confirmation=False,
+            personalized_analysis=personalized_analysis
         )
         
     except Exception as e:
