@@ -248,6 +248,11 @@ async def get_teaching_cases(specialty: Optional[str] = None, limit: int = 20):
         
         cases = await db.teaching_cases.find(query).sort("created_at", -1).limit(limit).to_list(length=None)
         
+        # Convert ObjectId to string for JSON serialization
+        for case in cases:
+            if "_id" in case:
+                case["_id"] = str(case["_id"])
+        
         return {
             "case_count": len(cases),
             "specialty_filter": specialty,
