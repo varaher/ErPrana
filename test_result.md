@@ -318,10 +318,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Wearables data sync implementation"
-    - "OpenAI voice assistant integration"
-    - "Health care professional mode completion"
-  stuck_tasks: []
+    - "Infinite conversation flow for ARYA symptom checker"
+    - "API endpoint fix for symptom-intelligence/analyze"
+    - "ChatGPT-style conversation continuity"
+  stuck_tasks:
+    - "Frontend authentication redirects and conversation flow"
   test_all: false
   test_priority: "high_first"
 
