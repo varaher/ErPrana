@@ -464,6 +464,267 @@ class BackendAPITester:
             200
         )
 
+    # ========== INFINITE CONVERSATION FLOW TESTS ==========
+    
+    def test_symptom_intelligence_analyze_endpoint(self):
+        """Test the new /api/symptom-intelligence/analyze endpoint for frontend compatibility"""
+        test_data = {
+            "user_id": "test@example.com",
+            "message": "I have chest pain",
+            "session_id": "test123"
+        }
+        success, response = self.run_test(
+            "Symptom Intelligence - Analyze Endpoint",
+            "POST",
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Verify infinite conversation structure
+            if "next_step" in response and response["next_step"] == "conversation_continue":
+                print("✅ Infinite conversation flow confirmed - next_step is 'conversation_continue'")
+            else:
+                print(f"❌ Missing or incorrect next_step: {response.get('next_step')}")
+            
+            if "requires_followup" in response and response["requires_followup"]:
+                print("✅ Requires followup confirmed")
+            else:
+                print(f"❌ Missing or incorrect requires_followup: {response.get('requires_followup')}")
+        
+        return success, response
+    
+    def test_existing_analyze_symptom_endpoint(self):
+        """Test the existing /api/analyze-symptom endpoint"""
+        test_data = {
+            "user_message": "I have chest pain",
+            "session_id": "test123",
+            "user_id": "test@example.com"
+        }
+        return self.run_test(
+            "Existing Analyze Symptom Endpoint",
+            "POST",
+            "analyze-symptom",
+            200,
+            data=test_data
+        )
+    
+    def test_infinite_conversation_chest_pain(self):
+        """Test infinite conversation flow with chest pain scenario"""
+        session_id = str(uuid.uuid4())
+        
+        # Initial chest pain message
+        test_data = {
+            "user_id": "test@example.com",
+            "message": "I have chest pain",
+            "session_id": session_id
+        }
+        
+        success, response = self.run_test(
+            "Infinite Conversation - Initial Chest Pain",
+            "POST",
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success and response.get("next_step") == "conversation_continue":
+            print("✅ First message: Conversation continues as expected")
+        else:
+            print(f"❌ First message: Expected conversation_continue, got {response.get('next_step')}")
+        
+        return success, response
+    
+    def test_infinite_conversation_followup(self):
+        """Test follow-up question in infinite conversation"""
+        session_id = str(uuid.uuid4())
+        
+        # Follow-up message
+        test_data = {
+            "user_id": "test@example.com", 
+            "message": "It started an hour ago",
+            "session_id": session_id
+        }
+        
+        success, response = self.run_test(
+            "Infinite Conversation - Follow-up Question",
+            "POST",
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success and response.get("next_step") == "conversation_continue":
+            print("✅ Follow-up: Conversation continues as expected")
+        else:
+            print(f"❌ Follow-up: Expected conversation_continue, got {response.get('next_step')}")
+        
+        return success, response
+    
+    def test_emergency_detection_with_continuation(self):
+        """Test emergency detection while maintaining conversation flow"""
+        session_id = str(uuid.uuid4())
+        
+        # Emergency scenario
+        test_data = {
+            "user_id": "test@example.com",
+            "message": "I can't breathe and have severe chest pain",
+            "session_id": session_id
+        }
+        
+        success, response = self.run_test(
+            "Emergency Detection - Severe Symptoms",
+            "POST",
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if emergency is detected
+            urgency = response.get("urgency_level", "").lower()
+            if "emergency" in urgency:
+                print("✅ Emergency correctly detected")
+            else:
+                print(f"❌ Emergency not detected, urgency_level: {urgency}")
+            
+            # Check if conversation still continues
+            if response.get("next_step") == "conversation_continue":
+                print("✅ Emergency detected but conversation can still continue")
+            else:
+                print(f"❌ Emergency should allow conversation continuation, got: {response.get('next_step')}")
+        
+        return success, response
+    
+    def test_emergency_keywords_sah(self):
+        """Test emergency detection for SAH (worst headache)"""
+        test_data = {
+            "user_id": "test@example.com",
+            "message": "I have the worst headache of my life, like nothing I've ever experienced",
+            "session_id": str(uuid.uuid4())
+        }
+        
+        success, response = self.run_test(
+            "Emergency Keywords - SAH (Worst Headache)",
+            "POST",
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            urgency = response.get("urgency_level", "").lower()
+            if "emergency" in urgency:
+                print("✅ SAH emergency pattern detected")
+            else:
+                print(f"⚠️ SAH pattern may not be detected, urgency: {urgency}")
+        
+        return success, response
+    
+    def test_conversation_context_awareness(self):
+        """Test multi-turn conversation with context awareness"""
+        session_id = str(uuid.uuid4())
+        
+        # First message
+        test_data_1 = {
+            "user_id": "test@example.com",
+            "message": "I have been having chest pain for 2 hours",
+            "session_id": session_id
+        }
+        
+        success_1, response_1 = self.run_test(
+            "Context Awareness - Turn 1",
+            "POST",
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Second message with context
+        test_data_2 = {
+            "user_id": "test@example.com",
+            "message": "The pain is getting worse and I feel nauseous",
+            "session_id": session_id
+        }
+        
+        success_2, response_2 = self.run_test(
+            "Context Awareness - Turn 2",
+            "POST", 
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data_2
+        )
+        
+        if success_2 and response_2.get("next_step") == "conversation_continue":
+            print("✅ Multi-turn conversation maintains context and continues")
+        else:
+            print(f"❌ Context awareness issue, next_step: {response_2.get('next_step')}")
+        
+        return success_2, response_2
+    
+    def test_conversation_never_ends(self):
+        """Test that conversation never ends with 'assessment complete'"""
+        test_data = {
+            "user_id": "test@example.com",
+            "message": "What should I do next?",
+            "session_id": str(uuid.uuid4())
+        }
+        
+        success, response = self.run_test(
+            "Never Ending Conversation - What Should I Do Next",
+            "POST",
+            "symptom-intelligence/analyze", 
+            200,
+            data=test_data
+        )
+        
+        if success:
+            response_text = response.get("response", "").lower()
+            next_step = response.get("next_step", "")
+            
+            # Check that response doesn't contain "assessment complete" or similar
+            if "assessment complete" in response_text or "consultation complete" in response_text:
+                print("❌ Conversation ended with 'assessment complete' - violates infinite conversation requirement")
+            else:
+                print("✅ Conversation does not end with 'assessment complete'")
+            
+            # Check that next_step allows continuation
+            if next_step == "conversation_continue":
+                print("✅ Conversation continues as expected")
+            else:
+                print(f"❌ Expected conversation_continue, got: {next_step}")
+        
+        return success, response
+    
+    def test_llm_integration_with_emergent_key(self):
+        """Test that LLM integration works with Emergent key"""
+        test_data = {
+            "user_id": "test@example.com",
+            "message": "Hello ARYA, I need help with my symptoms",
+            "session_id": str(uuid.uuid4())
+        }
+        
+        success, response = self.run_test(
+            "LLM Integration - Emergent Key Test",
+            "POST",
+            "symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            response_text = response.get("response", "")
+            if response_text and len(response_text) > 10:
+                print("✅ LLM integration working - received meaningful response")
+            else:
+                print(f"❌ LLM integration issue - response too short: {response_text}")
+        
+        return success, response
+
 def main():
     print("🚀 Starting Comprehensive Backend API Tests for Phase 2 Advanced Features")
     print("=" * 80)
