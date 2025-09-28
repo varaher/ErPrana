@@ -335,35 +335,29 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       // For fever: need duration, severity/temperature, associated symptoms
       
       if (!state.duration && !state.onset) {
-        console.log('❌ Missing: duration/onset');
         return "How long have you had this fever? Did it start suddenly or gradually?";
       }
       
       if (!state.severity && !state.temperature) {
-        console.log('❌ Missing: severity and temperature');
         return "How severe would you say this fever is on a scale of 1-10?";
       }
       
       if (!state.temperature && state.severity) {
-        console.log('❌ Missing: temperature (have severity)');
         return "What's your current temperature? Have you measured it recently?";
       }
       
       // If we have basic fever info, check for associated symptoms
       if (!state.hasAskedAssociated) {
-        console.log('❌ Missing: associated symptoms');
         state.hasAskedAssociated = true; // Mark that we asked
         return "Besides the fever, are you experiencing any other symptoms like cough, body aches, headache, or digestive issues?";
       }
       
       // If we have associated symptoms mentioned, get more details
       if (state.symptoms?.cough?.present && !state.symptoms.cough.type) {
-        console.log('❌ Missing: cough details');
         return "Tell me about your cough - is it dry, or are you bringing up any phlegm?";
       }
       
       if (state.symptoms?.diarrhea?.present && !state.symptoms.diarrhea.frequency) {
-        console.log('❌ Missing: diarrhea details');
         return "How often are you having loose stools? Any blood or mucus?";
       }
     }
