@@ -140,6 +140,11 @@ async def get_professional_patients(professional_id: str, limit: int = 50):
             {"professional_id": professional_id}
         ).sort("created_at", -1).limit(limit).to_list(length=None)
         
+        # Convert ObjectId to string for JSON serialization
+        for patient in patients:
+            if "_id" in patient:
+                patient["_id"] = str(patient["_id"])
+        
         return {
             "professional_id": professional_id,
             "patient_count": len(patients),
