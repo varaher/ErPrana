@@ -2,6 +2,8 @@ import requests
 import sys
 from datetime import datetime
 import json
+import uuid
+import io
 
 class BackendAPITester:
     def __init__(self, base_url="https://medassist-28.preview.emergentagent.com"):
@@ -9,11 +11,15 @@ class BackendAPITester:
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
+        self.test_user_id = str(uuid.uuid4())
+        self.test_professional_id = str(uuid.uuid4())
+        self.test_device_id = str(uuid.uuid4())
+        self.test_patient_id = str(uuid.uuid4())
 
-    def run_test(self, name, method, endpoint, expected_status, data=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, files=None):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}" if endpoint else self.api_url
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json'} if not files else {}
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
@@ -23,7 +29,12 @@ class BackendAPITester:
             if method == 'GET':
                 response = requests.get(url, headers=headers, timeout=10)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=10)
+                if files:
+                    response = requests.post(url, files=files, data=data, timeout=10)
+                else:
+                    response = requests.post(url, json=data, headers=headers, timeout=10)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers, timeout=10)
 
             success = response.status_code == expected_status
             if success:
