@@ -209,13 +209,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     return response;
   };
 
-  // Old extractComprehensiveInfo function removed
-
-  // Old updateConversationState function removed
-
-  // Old hasEnoughInfoForAssessment function removed
-
-  // Old generateClinicalAssessment function removed
+  // Old functions removed - now using structured conversation approach
 
   const generateProvisionalDiagnoses = (collectedData) => {
     const diagnoses = [];
