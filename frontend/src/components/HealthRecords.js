@@ -502,6 +502,103 @@ const HealthRecords = ({ onClose, userId }) => {
             </div>
           )}
           
+          {activeTab === 'medications' && (
+            <div className="medications-view">
+              <div className="medications-header">
+                <h3>💊 Current Medications</h3>
+                <button 
+                  className="add-medication-btn"
+                  onClick={() => setShowMedicationModal(true)}
+                >
+                  + Add Medication
+                </button>
+              </div>
+              
+              {/* Today's Medication Reminders */}
+              <div className="todays-reminders">
+                <h4>📅 Today's Medication Schedule</h4>
+                {todayReminders.length === 0 ? (
+                  <p className="no-reminders">No medication reminders for today</p>
+                ) : (
+                  <div className="reminders-list">
+                    {todayReminders.map(reminder => (
+                      <div 
+                        key={reminder.reminder_id} 
+                        className={`reminder-card ${reminder.taken ? 'taken' : reminder.skipped ? 'skipped' : 'pending'}`}
+                      >
+                        <div className="reminder-info">
+                          <h5>{reminder.medication?.name}</h5>
+                          <p>{reminder.medication?.dosage}</p>
+                          <span className="reminder-time">
+                            {new Date(reminder.scheduled_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </span>
+                        </div>
+                        <div className="reminder-actions">
+                          {!reminder.taken && !reminder.skipped && (
+                            <>
+                              <button 
+                                className="take-btn"
+                                onClick={() => markMedicationTaken(reminder.reminder_id)}
+                              >
+                                ✅ Take
+                              </button>
+                              <button 
+                                className="skip-btn"
+                                onClick={() => skipMedication(reminder.reminder_id)}
+                              >
+                                ⏭️ Skip
+                              </button>
+                            </>
+                          )}
+                          {reminder.taken && (
+                            <span className="status-badge taken">✅ Taken</span>
+                          )}
+                          {reminder.skipped && (
+                            <span className="status-badge skipped">⏭️ Skipped</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* All Medications List */}
+              <div className="medications-list">
+                <h4>📋 All Medications</h4>
+                {medications.length === 0 ? (
+                  <p className="no-medications">No medications added yet</p>
+                ) : (
+                  <div className="medications-grid">
+                    {medications.map(medication => (
+                      <div key={medication.medication_id} className="medication-card">
+                        <div className="medication-header">
+                          <h5>{medication.name}</h5>
+                          <span className={`med-status ${medication.active ? 'active' : 'inactive'}`}>
+                            {medication.active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <div className="medication-details">
+                          <p><strong>Dosage:</strong> {medication.dosage}</p>
+                          <p><strong>Frequency:</strong> {medication.frequency}</p>
+                          <p><strong>Times:</strong> {medication.times?.join(', ')}</p>
+                          <p><strong>Instructions:</strong> {medication.instructions}</p>
+                          {medication.prescribing_doctor && (
+                            <p><strong>Doctor:</strong> {medication.prescribing_doctor}</p>
+                          )}
+                        </div>
+                        <div className="medication-actions">
+                          <button className="edit-med-btn">✏️ Edit</button>
+                          <button className="stop-med-btn">🛑 Stop</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           {activeTab === 'documents' && (
             <div className="documents-view">
               <div className="documents-grid">
