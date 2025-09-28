@@ -193,6 +193,42 @@ frontend:
         agent: "main"
         comment: "Fixed missing imports, clean dashboard with top navigation, proper routing between all components - COMPLETED AND VERIFIED"
 
+  - task: "Wearables data sync with permission system"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/components/WearablesSync.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Starting implementation of wearables data sync feature with permission request system"
+
+  - task: "Voice assistant with OpenAI speech models"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/components/VoiceAssistant.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Starting implementation of OpenAI speech-to-text and text-to-speech for ARYA"
+
+  - task: "Health care professional mode complete UI"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/components/ProfessionalDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Starting implementation of complete health care professional mode with separate UI and doctor data input"
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
