@@ -108,6 +108,36 @@
   color: white;
 }
 
+.message-wrapper.system {
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.message-wrapper.system .message-content {
+  background: #e8f5e8;
+  border: 1px solid #c3e6c3;
+  border-radius: 20px;
+  padding: 8px 16px;
+  max-width: 80%;
+}
+
+.message-wrapper.system .avatar {
+  display: none;
+}
+
+.message-wrapper.system .message-bubble {
+  background: transparent;
+  padding: 0;
+  font-size: 0.9em;
+  color: #2d8930;
+  text-align: center;
+}
+
+.system-avatar {
+  background: #28a745;
+  color: white;
+}
+
 .message-text {
   line-height: 1.5;
   white-space: pre-wrap;
