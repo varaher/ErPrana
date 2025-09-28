@@ -793,6 +793,23 @@ def main():
     tester.test_professional_get_teaching_cases()
     tester.test_professional_get_dashboard()
 
+    # Test INFINITE CONVERSATION FLOW - PRIORITY TESTING
+    print("\n🔄 INFINITE CONVERSATION FLOW TESTS - PRIORITY")
+    print("=" * 50)
+    
+    # Test both endpoints
+    tester.test_symptom_intelligence_analyze_endpoint()
+    tester.test_existing_analyze_symptom_endpoint()
+    
+    # Test infinite conversation scenarios
+    tester.test_infinite_conversation_chest_pain()
+    tester.test_infinite_conversation_followup()
+    tester.test_emergency_detection_with_continuation()
+    tester.test_emergency_keywords_sah()
+    tester.test_conversation_context_awareness()
+    tester.test_conversation_never_ends()
+    tester.test_llm_integration_with_emergent_key()
+
     # Print final results
     print("\n" + "=" * 80)
     print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
