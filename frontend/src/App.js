@@ -96,11 +96,29 @@ function App() {
       action: () => setCurrentView('vitals')
     },
     {
+      id: 'wearables-sync',
+      icon: '⌚',
+      title: 'Wearables Sync',
+      description: 'Connect and sync your fitness devices',
+      action: () => setCurrentView('wearables')
+    },
+    {
       id: 'health-records',
       icon: '📋',
       title: 'Health Records',
       description: 'View your medical history and reports',
       action: () => setCurrentView('records')
+    }
+  ];
+  
+  // Professional features (shown if user is health care professional)
+  const professionalFeatures = [
+    {
+      id: 'professional-dashboard',
+      icon: '🏥',
+      title: 'Professional Dashboard',
+      description: 'Manage patients and clinical assessments',
+      action: () => setCurrentView('professional')
     }
   ];
   
