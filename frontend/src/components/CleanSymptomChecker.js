@@ -117,6 +117,26 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         }, 500);
       }
       
+      // Handle user confirmation request
+      if (data.needs_user_confirmation) {
+        setTimeout(() => {
+          addMessage('assistant', data.assistant_message);
+        }, 500);
+        setIsTyping(false);
+        return;
+      }
+      
+      // Show personalization status if available
+      if (data.personalized_analysis) {
+        setTimeout(() => {
+          addMessage('system', '🔒 Using your personal health data and wearables information for personalized analysis');
+        }, 300);
+      } else if (data.personalized_analysis === false && conversationState.user_confirmed === 'other') {
+        setTimeout(() => {
+          addMessage('system', '🔒 Providing general medical guidance without using your personal health data');
+        }, 300);
+      }
+      
       // Add assistant response
       setTimeout(() => {
         addMessage('assistant', data.assistant_message);
