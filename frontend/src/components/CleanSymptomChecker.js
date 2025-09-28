@@ -168,6 +168,16 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       
     } catch (error) {
       console.error('Error getting intelligent response:', error);
+      console.error('Error details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+      console.error('Request details:', {
+        url: `${BACKEND_URL}/api/analyze-symptom`,
+        userMessage: userMessage,
+        sessionId: sessionId
+      });
       setTimeout(() => {
         addMessage('assistant', 'I understand your concern. Let me help you with that. Can you tell me more details about what you\'re experiencing?');
         // Re-focus input after error
