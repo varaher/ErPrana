@@ -204,13 +204,15 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const getNextPriorityQuestion = (state) => {
+    console.log('🎯 Checking next priority question for state:', state);
+    
     // Priority 1: Red flag symptoms
     if (state.dyspnea?.present && !state.dyspnea.severity) {
       return "Can you tell me how severe your breathing difficulty is? Are you able to speak in full sentences or do you need to pause for breath?";
     }
     
-    // Priority 2: Fever details if present
-    if (state.fever?.present && !state.fever.temperature) {
+    // Priority 2: Fever details if present but temperature not known
+    if (state.fever?.present && (state.fever.temperature === undefined || state.fever.temperature === null)) {
       return "What's your current temperature? Have you measured it recently?";
     }
     
@@ -225,10 +227,11 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     }
     
     // Priority 5: Associated symptoms
-    if ((state.fever?.present || state.cough?.present) && !state.associatedSymptoms) {
+    if ((state.fever?.present || state.cough?.present) && (!state.associatedSymptoms || state.associatedSymptoms.length === 0)) {
       return "Are you experiencing any other symptoms like body aches, headache, or chills?";
     }
     
+    console.log('✅ No priority questions needed');
     return null;
   };
 
