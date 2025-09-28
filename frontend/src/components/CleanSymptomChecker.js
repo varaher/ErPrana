@@ -270,6 +270,9 @@ const CleanSymptomChecker = ({ user, onBack }) => {
               {msg.type === 'user' && (
                 <div className="avatar user-avatar">{user.fullName[0]}</div>
               )}
+              {msg.type === 'system' && (
+                <div className="avatar system-avatar">🔒</div>
+              )}
               
               <div className="message-bubble">
                 <div className="message-text">{msg.message}</div>
