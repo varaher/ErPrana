@@ -137,15 +137,18 @@ backend:
 
   - task: "OpenAI speech integration backend"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/routes/voice_assistant.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "✅ COMPLETED: Implemented OpenAI speech backend with Whisper STT, TTS, realtime voice chat, emergentintegrations integration, and ARYA conversation processing. Full voice pipeline ready."
+      - working: false
+        agent: "testing"
+        comment: "❌ VOICE API PARTIAL FAILURE: 4/5 endpoints working. CRITICAL ISSUE: OpenAI API key (EMERGENT_LLM_KEY) authentication failing with 401 error - 'Incorrect API key provided'. This blocks TTS functionality. Other endpoints working: voices list, conversation (with fallback), realtime session creation. Fixed route prefix and import issues. REQUIRES: Valid OpenAI API key to enable full voice functionality."
 
   - task: "Professional mode backend APIs"
     implemented: true
