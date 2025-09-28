@@ -390,6 +390,12 @@ const HealthRecords = ({ onClose, userId }) => {
             📊 Vitals History
           </button>
           <button
+            className={`tab-btn ${activeTab === 'medications' ? 'active' : ''}`}
+            onClick={() => setActiveTab('medications')}
+          >
+            💊 Medications
+          </button>
+          <button
             className={`tab-btn ${activeTab === 'documents' ? 'active' : ''}`}
             onClick={() => setActiveTab('documents')}
           >
