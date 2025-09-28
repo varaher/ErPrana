@@ -581,7 +581,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       addMessage('assistant', response);
       setIsTyping(false);
     }, 1000);
-    return;
   };
   
   const startVoiceInput = () => {
