@@ -109,19 +109,13 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     const tempMatch = messageLower.match(/(\d+\.?\d*)\s*(?:degrees?|°|f|fahrenheit|c|celsius|temp|temperature)?/);
     if (tempMatch) {
       const temp = parseFloat(tempMatch[1]);
-      console.log('🌡️ Found potential temperature:', temp);
       // If it's a reasonable temperature range (95-110 F or 35-45 C)
       if ((temp >= 95 && temp <= 110) || (temp >= 35 && temp <= 45)) {
         state.fever = state.fever || {};
         state.fever.present = true;
         state.fever.temperature = temp;
         state.fever.unit = messageLower.includes('c') || messageLower.includes('celsius') ? 'C' : 'F';
-        console.log('✅ Temperature extracted:', temp, state.fever.unit);
-      } else {
-        console.log('❌ Temperature out of range:', temp);
       }
-    } else {
-      console.log('❌ No temperature pattern found in:', messageLower);
     }
     
     // Extract duration
