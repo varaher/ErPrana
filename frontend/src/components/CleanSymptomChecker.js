@@ -207,32 +207,122 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const getNextPriorityQuestion = (state) => {
-    // Priority 1: Red flag symptoms
+    // Use clinical framework approach
+    
+    // Priority 1: Red flag symptoms (Emergency screening)
     if (state.dyspnea?.present && !state.dyspnea.severity) {
-      return "Can you tell me how severe your breathing difficulty is? Are you able to speak in full sentences or do you need to pause for breath?";
+      return "⚠️ Breathing difficulty can be serious. Are you able to speak in full sentences right now, or do you need to pause for breath?";
     }
     
-    // Priority 2: Fever details if present but temperature not known
+    if (state.chestPain?.present && !state.chestPain.severity) {
+      return "⚠️ Can you rate your chest pain from 1-10, with 10 being the worst pain imaginable? Does it feel like pressure, crushing, or sharp stabbing?";
+    }
+    
+    // Priority 2: Chief complaint PQRST analysis
+    if (state.chiefComplaint && !state.onset) {
+      // Timing - when did it start?
+      return getTimingQuestion(state.chiefComplaint);
+    }
+    
+    if (state.chiefComplaint && state.onset && !state.severity) {
+      // Severity 
+      return getSeverityQuestion(state.chiefComplaint);
+    }
+    
+    if (state.chiefComplaint && state.severity && !state.quality) {
+      // Quality/Character
+      return getQualityQuestion(state.chiefComplaint);
+    }
+    
+    // Priority 3: System-specific details
     if (state.fever?.present && (state.fever.temperature === undefined || state.fever.temperature === null)) {
-      return "What's your current temperature? Have you measured it recently?";
+      return "What's your current temperature? Have you taken it recently?";
     }
     
-    // Priority 3: Cough details if present but not characterized
     if (state.cough?.present && !state.cough.type) {
-      return "Is your cough dry or are you bringing up any phlegm or mucus?";
+      return "Tell me about your cough - is it dry and hacking, or are you bringing up any phlegm or mucus?";
     }
     
-    // Priority 4: Duration of main symptoms
-    if (state.chiefComplaint && !state.fever?.duration && !state.onset) {
-      return "How long have you been experiencing these symptoms?";
+    // Priority 4: Associated symptoms
+    if (state.chiefComplaint && (!state.associatedSymptoms || state.associatedSymptoms.length === 0)) {
+      return getAssociatedSymptomsQuestion(state.chiefComplaint);
     }
     
-    // Priority 5: Associated symptoms
-    if ((state.fever?.present || state.cough?.present) && (!state.associatedSymptoms || state.associatedSymptoms.length === 0)) {
-      return "Are you experiencing any other symptoms like body aches, headache, or chills?";
+    // Priority 5: Context and risk factors
+    if (state.chiefComplaint && !state.context) {
+      return getContextQuestion(state.chiefComplaint);
     }
     
     return null;
+  };
+  
+  const getTimingQuestion = (chiefComplaint) => {
+    switch(chiefComplaint) {
+      case 'chest pain':
+        return "When did this chest pain start? Was it sudden and severe, or did it come on gradually?";
+      case 'fever':
+        return "How long have you had this fever? Did it start suddenly or gradually?";
+      case 'cough':
+        return "How long have you had this cough? When did you first notice it?";
+      case 'headache':
+        return "When did this headache start? Is this sudden or has it been building up?";
+      default:
+        return `When did this ${chiefComplaint} start? Was it sudden or gradual?`;
+    }
+  };
+  
+  const getSeverityQuestion = (chiefComplaint) => {
+    switch(chiefComplaint) {
+      case 'chest pain':
+        return "On a scale of 1-10, how severe is your chest pain right now? Is it the worst pain you've ever felt?";
+      case 'headache':
+        return "How severe is this headache on a scale of 1-10? Is it worse than your usual headaches?";
+      case 'pain':
+        return "How would you rate this pain from 1-10, with 10 being unbearable?";
+      default:
+        return `How severe would you say this ${chiefComplaint} is on a scale of 1-10?`;
+    }
+  };
+  
+  const getQualityQuestion = (chiefComplaint) => {
+    switch(chiefComplaint) {
+      case 'chest pain':
+        return "Can you describe what the chest pain feels like? Is it crushing, pressure-like, sharp and stabbing, or burning?";
+      case 'headache':
+        return "What does this headache feel like? Is it throbbing, sharp, dull and aching, or like a tight band?";
+      case 'cough':
+        return "What does your cough sound like? Is it barking, whooping, or more of a hack?";
+      default:
+        return `Can you describe what this ${chiefComplaint} feels like?`;
+    }
+  };
+  
+  const getAssociatedSymptomsQuestion = (chiefComplaint) => {
+    switch(chiefComplaint) {
+      case 'chest pain':
+        return "Along with the chest pain, are you experiencing any shortness of breath, sweating, nausea, or pain radiating to your arm or jaw?";
+      case 'fever':
+        return "Besides the fever, are you having any chills, body aches, headache, cough, or sore throat?";
+      case 'headache':
+        return "With this headache, are you experiencing any nausea, vomiting, vision changes, or sensitivity to light?";
+      case 'cough':
+        return "Along with the cough, do you have any fever, shortness of breath, chest pain, or fatigue?";
+      default:
+        return `Are you experiencing any other symptoms along with the ${chiefComplaint}?`;
+    }
+  };
+  
+  const getContextQuestion = (chiefComplaint) => {
+    switch(chiefComplaint) {
+      case 'chest pain':
+        return "What were you doing when the chest pain started? Were you at rest, exercising, or under stress?";
+      case 'fever':
+        return "Have you been around anyone sick recently, or traveled anywhere? Any recent illness in your household?";
+      case 'headache':
+        return "Is there anything that seems to trigger these headaches? Stress, certain foods, lack of sleep?";
+      default:
+        return `Is there anything that seems to make this ${chiefComplaint} better or worse?`;
+    }
   };
 
   const hasEnoughInfoForAssessment = (state) => {
