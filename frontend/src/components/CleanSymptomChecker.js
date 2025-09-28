@@ -456,8 +456,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const hasEnoughInfoForAssessment = (state) => {
-    console.log('🤔 Checking if ready for assessment:', state);
-    
     if (!state.chiefComplaint) return false;
     
     // For fever: need duration + (temperature OR severity) + associated symptoms checked
@@ -466,7 +464,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       const hasSeverityInfo = state.temperature || state.severity;
       const hasCheckedAssociated = state.hasAskedAssociated;
       
-      console.log('Fever assessment check:', { hasDuration, hasSeverityInfo, hasCheckedAssociated });
       return hasDuration && hasSeverityInfo && hasCheckedAssociated;
     }
     
