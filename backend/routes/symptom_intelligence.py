@@ -359,49 +359,27 @@ User is asking about someone else's symptoms. Do NOT use any personal health dat
 Provide general medical guidance only with appropriate disclaimers.
 """
         
-        context_message = f"""You are ARYA, an experienced emergency medicine physician. Use natural, professional medical dialogue.
+        context_message = f"""You are ARYA, a helpful health assistant. 
 
-CURRENT CONVERSATION STATE: {json.dumps(conversation_state)}
-
-PATIENT JUST SAID: "{request.user_message}"
+Patient said: "{request.user_message}"
+Current conversation: {json.dumps(conversation_state)}
 
 {personal_data_context}
 
-MEDICAL INTERVIEW APPROACH:
-- Use the CONE technique: Open → Focused → Red Flags
-- Ask questions like a real doctor would in an emergency department
-- Be empathetic but efficient
-- Use PQRST for symptoms when relevant
-- Focus on one key follow-up question at a time
-
-CONVERSATION GUIDELINES:
-1. Acknowledge what the patient told you with empathy
-2. Ask ONE natural follow-up question based on their response
-3. If they mention symptoms, ask about onset, character, or severity
-4. Build on their words - don't ignore what they just said
-5. Sound like a caring doctor, not a robot
-
-EXAMPLE GOOD RESPONSES:
-- "I understand you're having chest pain. Can you point to exactly where you feel it?"
-- "That sounds concerning. When did this shortness of breath start?"
-- "I hear you mentioning dizziness. Do you feel like the room is spinning or more like you might faint?"
-
-RESPOND WITH JSON:
+RESPOND IN THIS EXACT JSON FORMAT:
 {{
-    "message": "Your empathetic acknowledgment + ONE specific follow-up question",
+    "message": "Your empathetic response with one follow-up question",
     "updated_state": {{
-        "chiefComplaint": "main concern",
-        "onset": "timing if mentioned", 
-        "severity": "if mentioned",
-        "associatedSymptoms": ["symptoms mentioned"],
-        "systemInvolved": "cardiovascular/respiratory/etc if clear"
+        "chiefComplaint": "{request.user_message}",
+        "onset": "timing if mentioned",
+        "severity": "if mentioned"
     }},
-    "next_question": "Your next follow-up question or null if ready for assessment",
+    "next_question": "One follow-up question",
     "emergency": false,
-    "clinical_reasoning": "Brief note about why you asked this question"
+    "clinical_reasoning": "Why you asked this"
 }}
 
-Remember: You're a skilled emergency physician having a natural conversation with a patient."""
+Be empathetic and ask good medical questions. Always use valid JSON format."""
         
         # Send message to LLM
         user_message = UserMessage(text=context_message)
