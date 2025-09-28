@@ -87,6 +87,14 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     }, 100);
 
     try {
+      console.log('Making API request to:', `${BACKEND_URL}/api/analyze-symptom`);
+      console.log('Request payload:', {
+        user_message: userMessage,
+        session_id: sessionId,
+        conversation_state: conversationState,
+        user_id: user?.id || user?.email || 'anonymous'
+      });
+      
       // Send message to intelligent backend
       const response = await fetch(`${BACKEND_URL}/api/analyze-symptom`, {
         method: 'POST',
@@ -100,6 +108,8 @@ const CleanSymptomChecker = ({ user, onBack }) => {
           user_id: user?.id || user?.email || 'anonymous'
         }),
       });
+      
+      console.log('Response received:', response.status, response.statusText);
       
       if (!response.ok) {
         console.error('API Response not OK:', response.status, response.statusText);
