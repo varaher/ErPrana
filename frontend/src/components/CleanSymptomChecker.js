@@ -341,8 +341,46 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const generateProvisionalDiagnoses = (state) => {
     const diagnoses = [];
     
-    // Analyze symptom pattern for fever + nausea + body aches + 2 days duration
-    if (state.symptoms.fever && state.symptoms.nausea && state.symptoms['body aches']) {
+    // Abdominal pain diagnoses
+    if ((state.chiefComplaint === 'pain' || state.chiefComplaint === 'abdominal pain') && state.location === 'lower abdomen') {
+      diagnoses.push({
+        name: "Gastroenteritis",
+        probability: "60%",
+        reasoning: "Lower abdominal pain with acute onset - common cause of GI discomfort",
+        triage: "🟡 MODERATE - Monitor symptoms, ensure hydration"
+      });
+      
+      diagnoses.push({
+        name: "Urinary Tract Infection (UTI)",
+        probability: "45%",
+        reasoning: "Lower abdominal pain can be associated with bladder/urinary tract issues",
+        triage: "🟡 MODERATE - Consider urinalysis if pain persists"
+      });
+      
+      diagnoses.push({
+        name: "Appendicitis (early)",
+        probability: "35%",
+        reasoning: "Lower abdominal pain, especially if progressing - needs monitoring",
+        triage: "🟡 MODERATE - Seek care if pain worsens or fever develops"
+      });
+      
+      diagnoses.push({
+        name: "Muscle strain/Gas pain",
+        probability: "40%",
+        reasoning: "Benign causes of lower abdominal discomfort",
+        triage: "🟢 LOW - Conservative management, monitor progression"
+      });
+      
+      diagnoses.push({
+        name: "Gynecological causes (if female)",
+        probability: "30%",
+        reasoning: "Ovarian cysts, menstrual-related pain in lower abdomen",
+        triage: "🟢 LOW-MODERATE - Monitor, gynecologic evaluation if persistent"
+      });
+    }
+    
+    // Fever diagnoses (existing code)
+    else if (state.symptoms.fever && state.symptoms.nausea && state.symptoms['body aches']) {
       diagnoses.push({
         name: "Viral Gastroenteritis",
         probability: "75%",
