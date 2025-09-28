@@ -264,62 +264,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     return;
   };
   
-  const generateAssessment = async () => {
-    addMessage('assistant', '📊 **CLINICAL ASSESSMENT**\n\nLet me analyze your symptoms using medical protocols...');
-    
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/generate-assessment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          conversation_state: conversationState,
-          session_id: sessionId
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to generate assessment');
-      }
-      
-      const assessment = await response.json();
-      
-      // Display symptom summary
-      setTimeout(() => {
-        addMessage('assistant', `**CLINICAL SUMMARY:**\n${assessment.summary}`);
-      }, 2000);
-      
-      // Display differential diagnoses
-      setTimeout(() => {
-        const diagnosesText = assessment.diagnoses.map((dx, i) => 
-          `**${i+1}. ${dx.condition}** - ${dx.likelihood}% likelihood\n${dx.description}\n*Clinical reasoning: ${dx.rationale}*`
-        ).join('\n\n');
-        
-        addMessage('assistant', `**DIFFERENTIAL DIAGNOSIS:**\n\n${diagnosesText}`);
-        setFinalDiagnoses(assessment.diagnoses);
-      }, 4000);
-      
-      // Display triage recommendation
-      setTimeout(() => {
-        addMessage('assistant', `🚦 **MEDICAL RECOMMENDATION: ${assessment.triage.level}**\n${assessment.triage.recommendation}\n\n⚠️ ${assessment.disclaimer}`);
-        
-        // Show feedback options after complete assessment
-        setTimeout(() => {
-          setAssessmentComplete(true);
-          addMessage('assistant', `I've completed my assessment. How did I do? Your feedback helps me become a better physician assistant.`);
-          setShowFeedback(true);
-        }, 3000);
-      }, 6000);
-      
-    } catch (error) {
-      console.error('Error generating assessment:', error);
-      setTimeout(() => {
-        addMessage('assistant', 'I apologize, but I\'m having trouble generating a complete assessment right now. Please consult with a healthcare provider for proper medical evaluation.');
-      }, 2000);
-    }
-  };
-  
   const startVoiceInput = () => {
     if (recognitionRef.current && !isListening) {
       recognitionRef.current.start();
