@@ -182,6 +182,11 @@ async def get_wearable_data(user_id: str, data_type: Optional[str] = None, limit
         
         data = await db.wearable_data.find(query).sort("timestamp", -1).limit(limit).to_list(length=None)
         
+        # Convert ObjectId to string for JSON serialization
+        for item in data:
+            if "_id" in item:
+                item["_id"] = str(item["_id"])
+        
         return {
             "user_id": user_id,
             "data_type": data_type,
