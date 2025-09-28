@@ -687,6 +687,116 @@ const HealthRecords = ({ onClose, userId }) => {
             </div>
           </div>
         )}
+        
+        {/* Medication Modal */}
+        {showMedicationModal && (
+          <div className="medication-modal-overlay" onClick={() => setShowMedicationModal(false)}>
+            <div className="medication-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>💊 Add New Medication</h3>
+                <button onClick={() => setShowMedicationModal(false)}>×</button>
+              </div>
+              
+              <div className="modal-form">
+                <div className="form-group">
+                  <label>Medication Name</label>
+                  <input
+                    type="text"
+                    value={medicationForm.name}
+                    onChange={e => setMedicationForm({...medicationForm, name: e.target.value})}
+                    placeholder="e.g. Metformin"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Dosage</label>
+                  <input
+                    type="text"
+                    value={medicationForm.dosage}
+                    onChange={e => setMedicationForm({...medicationForm, dosage: e.target.value})}
+                    placeholder="e.g. 500mg"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Frequency</label>
+                  <select
+                    value={medicationForm.frequency}
+                    onChange={e => setMedicationForm({...medicationForm, frequency: e.target.value})}
+                  >
+                    <option value="daily">Once Daily</option>
+                    <option value="twice_daily">Twice Daily</option>
+                    <option value="three_times_daily">Three Times Daily</option>
+                    <option value="weekly">Weekly</option>
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label>Times (HH:MM format)</label>
+                  <div className="times-input">
+                    {medicationForm.times.map((time, index) => (
+                      <input
+                        key={index}
+                        type="time"
+                        value={time}
+                        onChange={e => {
+                          const newTimes = [...medicationForm.times];
+                          newTimes[index] = e.target.value;
+                          setMedicationForm({...medicationForm, times: newTimes});
+                        }}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setMedicationForm({
+                        ...medicationForm,
+                        times: [...medicationForm.times, '12:00']
+                      })}
+                    >
+                      + Add Time
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label>Instructions</label>
+                  <textarea
+                    value={medicationForm.instructions}
+                    onChange={e => setMedicationForm({...medicationForm, instructions: e.target.value})}
+                    placeholder="e.g. Take with food"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Prescribing Doctor (Optional)</label>
+                  <input
+                    type="text"
+                    value={medicationForm.prescribing_doctor}
+                    onChange={e => setMedicationForm({...medicationForm, prescribing_doctor: e.target.value})}
+                    placeholder="e.g. Dr. Smith"
+                  />
+                </div>
+                
+                <div className="modal-actions">
+                  <button 
+                    type="button" 
+                    className="cancel-btn"
+                    onClick={() => setShowMedicationModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="button" 
+                    className="save-btn"
+                    onClick={addMedication}
+                  >
+                    Add Medication
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
