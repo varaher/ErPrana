@@ -590,7 +590,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       handleSendMessage();
     }
   };
-  
+
   return (
     <div className="clean-chat-container">
       <div className="chat-header">
