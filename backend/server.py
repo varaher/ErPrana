@@ -10,8 +10,9 @@ from typing import List
 import uuid
 from datetime import datetime
 
-# Import the new symptom intelligence router
+# Import the new feedback router
 from routes.symptom_intelligence import router as symptom_router
+from routes.feedback_system import router as feedback_router
 
 
 ROOT_DIR = Path(__file__).parent
