@@ -10,9 +10,12 @@ from typing import List
 import uuid
 from datetime import datetime
 
-# Import the new feedback router
+# Import all routers
 from routes.symptom_intelligence import router as symptom_router
 from routes.feedback_system import router as feedback_router
+from routes.wearables_sync import router as wearables_router
+from routes.voice_assistant import router as voice_router
+from routes.professional_mode import router as professional_router
 
 
 ROOT_DIR = Path(__file__).parent
