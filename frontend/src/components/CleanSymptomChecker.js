@@ -15,16 +15,21 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
-  // Conversation state to track symptoms and build clinical picture
+  // Structured conversation state following Cursor approach
   const [conversationState, setConversationState] = useState({
-    chiefComplaint: '',
-    symptoms: {},
-    timeline: {},
-    severity: null,
-    associatedSymptoms: [],
-    currentSystem: null,
-    questionCount: 0,
-    hasEnoughInfo: false
+    currentStep: 'initial_assessment',
+    collectedData: {
+      primarySymptom: '',
+      location: '',
+      duration: '',
+      severity: '',
+      associatedSymptoms: [],
+      triggerFactors: '',
+      relievingFactors: ''
+    },
+    urgencyLevel: 'low',
+    requiresFollowup: true,
+    conversationHistory: []
   });
   
   const messagesEndRef = useRef(null);
