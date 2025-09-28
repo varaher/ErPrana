@@ -44,7 +44,7 @@ class PermissionRequest(BaseModel):
     device_type: str
     requested_permissions: List[str]
 
-@router.get("/api/wearables/devices/{user_id}")
+@router.get("/wearables/devices/{user_id}")
 async def get_user_devices(user_id: str):
     """Get all wearable devices for a user"""
     try:
@@ -53,7 +53,7 @@ async def get_user_devices(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/wearables/request-permission")
+@router.post("/wearables/request-permission")
 async def request_wearable_permission(request: PermissionRequest):
     """Request permission to access wearable data"""
     try:
@@ -80,7 +80,7 @@ async def request_wearable_permission(request: PermissionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/wearables/grant-permission")
+@router.post("/wearables/grant-permission")
 async def grant_permission(permission_data: WearablePermission):
     """Grant permission for wearable data access"""
     try:
@@ -115,7 +115,7 @@ async def grant_permission(permission_data: WearablePermission):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/wearables/connect-device")
+@router.post("/wearables/connect-device")
 async def connect_device(device: WearableDevice):
     """Connect a new wearable device"""
     try:
@@ -138,7 +138,7 @@ async def connect_device(device: WearableDevice):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/wearables/sync-data")
+@router.post("/wearables/sync-data")
 async def sync_wearable_data(data_list: List[WearableData]):
     """Sync wearable data from connected devices"""
     try:
@@ -172,7 +172,7 @@ async def sync_wearable_data(data_list: List[WearableData]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/wearables/data/{user_id}")
+@router.get("/wearables/data/{user_id}")
 async def get_wearable_data(user_id: str, data_type: Optional[str] = None, limit: int = 100):
     """Get wearable data for a user"""
     try:
@@ -191,7 +191,7 @@ async def get_wearable_data(user_id: str, data_type: Optional[str] = None, limit
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/wearables/permissions/{user_id}")
+@router.get("/wearables/permissions/{user_id}")
 async def get_user_permissions(user_id: str):
     """Get user's wearable permissions"""
     try:
@@ -200,7 +200,7 @@ async def get_user_permissions(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/api/wearables/disconnect/{device_id}")
+@router.delete("/wearables/disconnect/{device_id}")
 async def disconnect_device(device_id: str):
     """Disconnect a wearable device"""
     try:
