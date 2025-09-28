@@ -104,6 +104,7 @@ app.include_router(feedback_router, prefix="/api/feedback")
 app.include_router(wearables_router, prefix="/api")
 app.include_router(voice_router, prefix="/api")
 app.include_router(professional_router, prefix="/api")
+app.include_router(medication_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
