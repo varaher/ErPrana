@@ -120,6 +120,42 @@ backend:
         agent: "testing"
         comment: "COMPREHENSIVE BACKEND TESTING COMPLETED ✅ All endpoints working perfectly: 1) Health endpoint (/api/health) returns 200 OK 2) Root endpoint (/api/) working 3) Status check CRUD operations working 4) Symptom feedback CRUD operations working 5) MongoDB connection established 6) CORS properly configured 7) FastAPI server running on port 8001 accessible via REACT_APP_BACKEND_URL. NOTE: Authentication endpoints not implemented in current FastAPI backend (exist in Node.js version but not active). All 6/6 backend tests passed successfully."
 
+  - task: "Wearables data sync backend API"
+    implemented: false
+    working: "NA"
+    file: "/app/backend/routes/wearables_sync.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Starting implementation of backend API for wearables data sync and permissions"
+
+  - task: "OpenAI speech integration backend"
+    implemented: false
+    working: "NA"
+    file: "/app/backend/routes/voice_assistant.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Starting implementation of OpenAI speech models integration using emergentintegrations"
+
+  - task: "Professional mode backend APIs"
+    implemented: false
+    working: "NA"
+    file: "/app/backend/routes/professional_mode.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Starting implementation of backend APIs for health care professional mode with doctor data input"
+
 frontend:
   - task: "LoginPage component"
     implemented: true
