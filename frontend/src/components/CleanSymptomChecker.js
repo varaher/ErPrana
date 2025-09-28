@@ -74,25 +74,168 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const processSymptomLocally = (userMessage) => {
     const messageLower = userMessage.toLowerCase();
     
-    if (messageLower.includes('fever')) {
-      return `I understand you're experiencing a fever. This can be concerning. How long have you had the fever, and what's your current temperature? Any other symptoms like chills, body aches, or headache?`;
-    } else if (messageLower.includes('pain') || messageLower.includes('hurt')) {
-      return `I hear you're experiencing pain. Can you tell me where exactly you feel the pain and rate it from 1-10? Is it constant or does it come and go?`;
-    } else if (messageLower.includes('cough')) {
-      return `I understand you have a cough. Is it a dry cough or are you bringing up any phlegm? How long have you had it? Any associated symptoms like fever or shortness of breath?`;
-    } else if (messageLower.includes('headache')) {
-      return `I'm sorry you're experiencing a headache. Can you describe the type of pain - is it throbbing, sharp, or dull? Where exactly is it located? Any triggers you can think of?`;
-    } else if (messageLower.includes('nausea') || messageLower.includes('vomit')) {
-      return `I understand you're feeling nauseous. Have you actually vomited or just feeling sick? When did this start? Any associated symptoms like fever or abdominal pain?`;
-    } else if (messageLower.includes('dizzy') || messageLower.includes('lightheaded')) {
-      return `I hear you're feeling dizzy. Is the room spinning or do you feel lightheaded? When does it happen - when standing up, lying down, or all the time?`;
-    } else if (messageLower.includes('chest pain') || messageLower.includes('chest hurt')) {
-      return `⚠️ Chest pain can be serious. Can you describe the pain - is it sharp, crushing, or burning? Does it radiate to your arm, jaw, or back? Rate it 1-10. If severe, please consider seeking immediate medical attention.`;
-    } else if (messageLower.includes('shortness of breath') || messageLower.includes('breathing')) {
-      return `I understand you're having trouble breathing. Is this sudden or gradual? Are you at rest or does it happen with activity? Any chest pain or wheezing?`;
-    } else {
-      return `I understand your concern about: "${userMessage}". Can you tell me more details about when this started, how severe it is, and how it's affecting your daily activities?`;
+    // Update conversation state with new information
+    const newState = { ...conversationState };
+    
+    // Extract information from user message
+    extractAndUpdateState(messageLower, newState);
+    
+    // Generate response based on current state and priorities
+    const response = generateStatefulResponse(messageLower, newState);
+    
+    // Update the conversation state
+    setConversationState(newState);
+    
+    return response;
+  };
+
+  const extractAndUpdateState = (messageLower, state) => {
+    // Extract chief complaint
+    if (!state.chiefComplaint) {
+      if (messageLower.includes('fever')) state.chiefComplaint = 'fever';
+      else if (messageLower.includes('cough')) state.chiefComplaint = 'cough';
+      else if (messageLower.includes('pain')) state.chiefComplaint = 'pain';
+      else if (messageLower.includes('headache')) state.chiefComplaint = 'headache';
+      else if (messageLower.includes('breathing') || messageLower.includes('shortness')) state.chiefComplaint = 'breathing difficulty';
     }
+    
+    // Extract fever information
+    if (messageLower.includes('fever')) {
+      state.fever = state.fever || {};
+      state.fever.present = true;
+      
+      // Extract temperature
+      const tempMatch = messageLower.match(/(\d+\.?\d*)\s*(?:degrees?|°|f|fahrenheit|c|celsius)?/);
+      if (tempMatch) {
+        state.fever.temperature = tempMatch[1];
+      }
+      
+      // Extract duration
+      if (messageLower.includes('days') || messageLower.includes('day')) {
+        const daysMatch = messageLower.match(/(\d+)\s*days?/);
+        if (daysMatch) state.fever.duration = `${daysMatch[1]} days`;
+      }
+    }
+    
+    // Extract cough information
+    if (messageLower.includes('cough')) {
+      state.cough = state.cough || {};
+      state.cough.present = true;
+      
+      if (messageLower.includes('dry')) {
+        state.cough.type = 'dry';
+      } else if (messageLower.includes('phlegm') || messageLower.includes('sputum') || messageLower.includes('bringing')) {
+        state.cough.type = 'productive';
+        state.cough.phlegm = true;
+      }
+    }
+    
+    // Extract breathing difficulty
+    if (messageLower.includes('shortness') || messageLower.includes('breathing') || messageLower.includes('breath')) {
+      state.dyspnea = state.dyspnea || {};
+      state.dyspnea.present = true;
+      
+      if (messageLower.includes('sudden')) {
+        state.dyspnea.onset = 'sudden';
+        state.redFlags = state.redFlags || [];
+        if (!state.redFlags.includes('sudden dyspnea')) {
+          state.redFlags.push('sudden dyspnea');
+        }
+      }
+    }
+    
+    // Extract associated symptoms
+    if (messageLower.includes('body ache') || messageLower.includes('bodyache')) {
+      state.associatedSymptoms = state.associatedSymptoms || [];
+      if (!state.associatedSymptoms.includes('body aches')) {
+        state.associatedSymptoms.push('body aches');
+      }
+    }
+    
+    if (messageLower.includes('headache')) {
+      state.associatedSymptoms = state.associatedSymptoms || [];
+      if (!state.associatedSymptoms.includes('headache')) {
+        state.associatedSymptoms.push('headache');
+      }
+    }
+  };
+
+  const generateStatefulResponse = (messageLower, state) => {
+    // Handle greetings
+    if (messageLower.match(/^(hi|hello|hey)$/)) {
+      return "Hello! I'm here to help with your health concerns. What symptoms are you experiencing?";
+    }
+    
+    // Check for red flags first
+    if (state.redFlags && state.redFlags.length > 0) {
+      if (state.redFlags.includes('sudden dyspnea')) {
+        return "⚠️ Sudden shortness of breath can be serious. Are you able to speak in full sentences? Do you have chest pain? If you're having severe difficulty breathing, please seek immediate medical attention.";
+      }
+    }
+    
+    // Prioritize next question based on what's missing
+    const nextQuestion = getNextPriorityQuestion(state);
+    if (nextQuestion) return nextQuestion;
+    
+    // If we have enough information, provide assessment
+    if (hasEnoughInfoForAssessment(state)) {
+      return generateAssessment(state);
+    }
+    
+    // Default response if we can't determine next step
+    return "Can you tell me more about your main concern and when it started?";
+  };
+
+  const getNextPriorityQuestion = (state) => {
+    // Priority 1: Red flag symptoms
+    if (state.dyspnea?.present && !state.dyspnea.severity) {
+      return "Can you tell me how severe your breathing difficulty is? Are you able to speak in full sentences or do you need to pause for breath?";
+    }
+    
+    // Priority 2: Fever details if present
+    if (state.fever?.present && !state.fever.temperature) {
+      return "What's your current temperature? Have you measured it recently?";
+    }
+    
+    // Priority 3: Cough details if present but not characterized
+    if (state.cough?.present && !state.cough.type) {
+      return "Is your cough dry or are you bringing up any phlegm or mucus?";
+    }
+    
+    // Priority 4: Duration of main symptoms
+    if (state.chiefComplaint && !state.fever?.duration && !state.onset) {
+      return "How long have you been experiencing these symptoms?";
+    }
+    
+    // Priority 5: Associated symptoms
+    if ((state.fever?.present || state.cough?.present) && !state.associatedSymptoms) {
+      return "Are you experiencing any other symptoms like body aches, headache, or chills?";
+    }
+    
+    return null;
+  };
+
+  const hasEnoughInfoForAssessment = (state) => {
+    return state.chiefComplaint && 
+           (state.fever?.temperature || state.cough?.type || state.dyspnea?.severity);
+  };
+
+  const generateAssessment = (state) => {
+    let assessment = "Based on what you've told me:\n\n";
+    
+    if (state.fever?.present && state.cough?.present && state.dyspnea?.present) {
+      assessment += "🔴 You have fever, cough with phlegm, and sudden breathing difficulty. This combination suggests a possible respiratory infection that may need prompt medical evaluation.\n\n";
+      assessment += "**Recommendations:**\n";
+      assessment += "• Consider seeing a healthcare provider today\n";
+      assessment += "• Monitor your temperature and breathing\n";
+      assessment += "• If breathing worsens, seek immediate care\n";
+      assessment += "• Stay hydrated and rest\n\n";
+      assessment += "⚠️ This is not a medical diagnosis. Please consult a healthcare professional for proper evaluation.";
+    } else {
+      assessment += "I'd recommend discussing these symptoms with a healthcare provider for proper evaluation and treatment.";
+    }
+    
+    return assessment;
   };
   
   const handleSendMessage = async () => {
