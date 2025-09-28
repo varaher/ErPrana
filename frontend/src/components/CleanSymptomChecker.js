@@ -319,8 +319,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const getNextPriorityQuestion = (state) => {
-    console.log('🎯 Planning next question for state:', state);
-    
     // SYMPTOM INTERVIEW ENGINE - Check what slots are MISSING
     
     // Priority 1: Red flag symptoms (Emergency screening)
