@@ -201,6 +201,12 @@ async def get_user_permissions(user_id: str):
     """Get user's wearable permissions"""
     try:
         permissions = await db.wearable_permissions.find({"user_id": user_id}).to_list(length=None)
+        
+        # Convert ObjectId to string for JSON serialization
+        for item in permissions:
+            if "_id" in item:
+                item["_id"] = str(item["_id"])
+        
         return {"permissions": permissions}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
