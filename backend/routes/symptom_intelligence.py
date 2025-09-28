@@ -247,16 +247,60 @@ Please respond with "A" for yourself or "B" for someone else. This helps me give
 @router.post("/analyze-symptom", response_model=SymptomResponse)
 async def analyze_symptom_message(request: SymptomRequest):
     try:
+        conversation_state = request.conversation_state or {}
+        
+        # Handle user confirmation responses
+        message_lower = request.user_message.lower().strip()
+        if message_lower in ['a', 'option a', 'for myself', 'myself', 'me']:
+            conversation_state['user_confirmed'] = 'self'
+            conversation_state['use_personal_data'] = True
+            return SymptomResponse(
+                assistant_message="Thank you for confirming. I'll now provide personalized analysis using your health data and wearable information. Please continue describing your symptoms or concerns.",
+                updated_state=conversation_state,
+                next_question=None,
+                assessment_ready=False,
+                emergency_detected=False,
+                needs_user_confirmation=False,
+                personalized_analysis=True
+            )
+        elif message_lower in ['b', 'option b', 'someone else', 'third party', 'other person', 'not me']:
+            conversation_state['user_confirmed'] = 'other'
+            conversation_state['use_personal_data'] = False
+            return SymptomResponse(
+                assistant_message="Thank you for clarifying. I'll provide general medical guidance without using your personal health data. Please continue describing the symptoms or concerns for the other person.",
+                updated_state=conversation_state,
+                next_question=None,
+                assessment_ready=False,
+                emergency_detected=False,
+                needs_user_confirmation=False,
+                personalized_analysis=False
+            )
+        
+        # Check if we need user confirmation
+        if needs_user_confirmation(request.user_message, conversation_state):
+            conversation_state['awaiting_confirmation'] = True
+            return SymptomResponse(
+                assistant_message=create_confirmation_message(),
+                updated_state=conversation_state,
+                next_question=None,
+                assessment_ready=False,
+                emergency_detected=False,
+                needs_user_confirmation=True,
+                personalized_analysis=False
+            )
+        
         # Pre-screen for emergencies
-        is_emergency, emergency_message = detect_emergency_keywords(request.user_message, request.conversation_state or {})
+        is_emergency, emergency_message = detect_emergency_keywords(request.user_message, conversation_state)
         
         if is_emergency:
             return SymptomResponse(
                 assistant_message=emergency_message,
-                updated_state=request.conversation_state or {},
+                updated_state=conversation_state,
                 next_question=None,
                 assessment_ready=False,
-                emergency_detected=True
+                emergency_detected=True,
+                needs_user_confirmation=False,
+                personalized_analysis=False
             )
         
         # Create chat instance for this session
