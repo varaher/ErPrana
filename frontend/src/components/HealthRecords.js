@@ -24,7 +24,11 @@ const HealthRecords = ({ onClose, userId }) => {
   
   useEffect(() => {
     loadHealthData();
-  }, []);
+    if (userId) {
+      loadMedications();
+      loadTodayReminders();
+    }
+  }, [userId]);
   
   const loadHealthData = () => {
     // Simulate loading health records
