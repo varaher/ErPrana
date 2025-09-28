@@ -106,6 +106,10 @@ async def get_professional_profile(user_id: str):
         if not profile:
             raise HTTPException(status_code=404, detail="Professional profile not found")
         
+        # Convert ObjectId to string for JSON serialization
+        if "_id" in profile:
+            profile["_id"] = str(profile["_id"])
+        
         return {"profile": profile}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
