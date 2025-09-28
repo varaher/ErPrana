@@ -207,6 +207,11 @@ async def get_professional_assessments(professional_id: str, limit: int = 50):
             {"professional_id": professional_id}
         ).sort("created_at", -1).limit(limit).to_list(length=None)
         
+        # Convert ObjectId to string for JSON serialization
+        for assessment in assessments:
+            if "_id" in assessment:
+                assessment["_id"] = str(assessment["_id"])
+        
         return {
             "professional_id": professional_id,
             "assessment_count": len(assessments),
