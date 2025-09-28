@@ -6,7 +6,7 @@ import uuid
 import io
 
 class BackendAPITester:
-    def __init__(self, base_url="https://medassist-28.preview.emergentagent.com"):
+    def __init__(self, base_url="https://erprana-health.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
