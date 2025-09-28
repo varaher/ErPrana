@@ -110,17 +110,27 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     if (messageLower.includes('fever')) {
       state.fever = state.fever || {};
       state.fever.present = true;
-      
-      // Extract temperature
-      const tempMatch = messageLower.match(/(\d+\.?\d*)\s*(?:degrees?|°|f|fahrenheit|c|celsius)?/);
-      if (tempMatch) {
-        state.fever.temperature = tempMatch[1];
+    }
+    
+    // Extract temperature (check for any number that could be temperature)
+    const tempMatch = messageLower.match(/(\d+\.?\d*)\s*(?:degrees?|°|f|fahrenheit|c|celsius)?/);
+    if (tempMatch) {
+      const temp = parseFloat(tempMatch[1]);
+      // If it's a reasonable temperature range (95-110 F or 35-45 C)
+      if ((temp >= 95 && temp <= 110) || (temp >= 35 && temp <= 45)) {
+        state.fever = state.fever || {};
+        state.fever.present = true;
+        state.fever.temperature = temp;
+        state.fever.unit = messageLower.includes('c') || messageLower.includes('celsius') ? 'C' : 'F';
       }
-      
-      // Extract duration
-      if (messageLower.includes('days') || messageLower.includes('day')) {
-        const daysMatch = messageLower.match(/(\d+)\s*days?/);
-        if (daysMatch) state.fever.duration = `${daysMatch[1]} days`;
+    }
+    
+    // Extract duration
+    if (messageLower.includes('days') || messageLower.includes('day')) {
+      const daysMatch = messageLower.match(/(\d+)\s*days?/);
+      if (daysMatch) {
+        state.fever = state.fever || {};
+        state.fever.duration = `${daysMatch[1]} days`;
       }
     }
     
