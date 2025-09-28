@@ -250,17 +250,21 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       newState.symptoms[symptom] = {
         present: true,
         severity: extractedInfo.severity,
-        duration: extractedInfo.duration
+        duration: extractedInfo.duration,
+        location: extractedInfo.location
       };
     });
     
     // Update other info
+    if (extractedInfo.location) newState.location = extractedInfo.location;
     if (extractedInfo.temperature) newState.temperature = extractedInfo.temperature;
     if (extractedInfo.duration) newState.duration = extractedInfo.duration;
     if (extractedInfo.timeline) newState.timeline = extractedInfo.timeline;
-    if (extractedInfo.medications.length > 0) newState.medications = extractedInfo.medications;
+    if (extractedInfo.medications && extractedInfo.medications.length > 0) newState.medications = extractedInfo.medications;
     
     newState.questionCount += 1;
+    
+    console.log('Updated conversation state:', newState); // Debug log
     
     // Update state
     setConversationState(newState);
