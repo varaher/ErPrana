@@ -96,6 +96,7 @@ async def get_symptom_feedback():
 # Include the routers in the main app
 app.include_router(api_router)
 app.include_router(symptom_router, prefix="/api")
+app.include_router(feedback_router, prefix="/api/feedback")
 
 app.add_middleware(
     CORSMiddleware,
