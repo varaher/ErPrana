@@ -329,7 +329,9 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const getNextPriorityQuestion = (state) => {
-    // Use clinical framework approach
+    console.log('🎯 Planning next question for state:', state);
+    
+    // SYMPTOM INTERVIEW ENGINE - Check what slots are MISSING
     
     // Priority 1: Red flag symptoms (Emergency screening)
     if (state.dyspnea?.present && !state.dyspnea.severity) {
@@ -340,42 +342,68 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       return "⚠️ Can you rate your chest pain from 1-10, with 10 being the worst pain imaginable? Does it feel like pressure, crushing, or sharp stabbing?";
     }
     
-    // Priority 2: Chief complaint PQRST analysis
-    if (state.chiefComplaint && !state.onset) {
-      // Timing - when did it start?
-      return getTimingQuestion(state.chiefComplaint);
+    // Priority 2: Chief complaint analysis - Check if we have the essential info
+    if (state.chiefComplaint === 'fever') {
+      // For fever: need duration, severity/temperature, associated symptoms
+      
+      if (!state.duration && !state.onset) {
+        console.log('❌ Missing: duration/onset');
+        return "How long have you had this fever? Did it start suddenly or gradually?";
+      }
+      
+      if (!state.severity && !state.temperature) {
+        console.log('❌ Missing: severity and temperature');
+        return "How severe would you say this fever is on a scale of 1-10?";
+      }
+      
+      if (!state.temperature && state.severity) {
+        console.log('❌ Missing: temperature (have severity)');
+        return "What's your current temperature? Have you measured it recently?";
+      }
+      
+      // If we have basic fever info, check for associated symptoms
+      if (!state.hasAskedAssociated) {
+        console.log('❌ Missing: associated symptoms');
+        state.hasAskedAssociated = true; // Mark that we asked
+        return "Besides the fever, are you experiencing any other symptoms like cough, body aches, headache, or digestive issues?";
+      }
+      
+      // If we have associated symptoms mentioned, get more details
+      if (state.symptoms?.cough?.present && !state.symptoms.cough.type) {
+        console.log('❌ Missing: cough details');
+        return "Tell me about your cough - is it dry, or are you bringing up any phlegm?";
+      }
+      
+      if (state.symptoms?.diarrhea?.present && !state.symptoms.diarrhea.frequency) {
+        console.log('❌ Missing: diarrhea details');
+        return "How often are you having loose stools? Any blood or mucus?";
+      }
     }
     
-    if (state.chiefComplaint && state.onset && !state.severity) {
-      // Severity 
-      return getSeverityQuestion(state.chiefComplaint);
+    // Priority 3: Other chief complaints
+    if (state.chiefComplaint && state.chiefComplaint !== 'fever') {
+      if (!state.onset && !state.duration) {
+        return getTimingQuestion(state.chiefComplaint);
+      }
+      
+      if (!state.severity) {
+        return getSeverityQuestion(state.chiefComplaint);
+      }
+      
+      if (!state.quality) {
+        return getQualityQuestion(state.chiefComplaint);
+      }
     }
     
-    if (state.chiefComplaint && state.severity && !state.quality) {
-      // Quality/Character
-      return getQualityQuestion(state.chiefComplaint);
+    // Priority 4: Ready for assessment?
+    if (hasEnoughInfoForAssessment(state)) {
+      console.log('✅ Ready for assessment');
+      return null; // This will trigger assessment
     }
     
-    // Priority 3: System-specific details
-    if (state.fever?.present && (state.fever.temperature === undefined || state.fever.temperature === null)) {
-      return "What's your current temperature? Have you taken it recently?";
-    }
-    
-    if (state.cough?.present && !state.cough.type) {
-      return "Tell me about your cough - is it dry and hacking, or are you bringing up any phlegm or mucus?";
-    }
-    
-    // Priority 4: Associated symptoms
-    if (state.chiefComplaint && (!state.associatedSymptoms || state.associatedSymptoms.length === 0)) {
-      return getAssociatedSymptomsQuestion(state.chiefComplaint);
-    }
-    
-    // Priority 5: Context and risk factors
-    if (state.chiefComplaint && !state.context) {
-      return getContextQuestion(state.chiefComplaint);
-    }
-    
-    return null;
+    // Priority 5: Fallback
+    console.log('❓ No specific question needed, asking for more info');
+    return "Can you tell me more about how you're feeling right now?";
   };
   
   const getTimingQuestion = (chiefComplaint) => {
