@@ -383,20 +383,34 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const generateIntelligentFollowUp = (state, extractedInfo) => {
+    console.log('Follow-up check:', { state, extractedInfo }); // Debug
+    
     // If we have some info but not enough, ask targeted questions
     if (state.chiefComplaint) {
-      const missingInfo = [];
       
-      if (!state.temperature && state.symptoms.fever) {
+      // For abdominal/stomach pain
+      if ((state.chiefComplaint === 'pain' || state.chiefComplaint === 'abdominal pain') && !state.location && !extractedInfo.location) {
+        return "You mentioned abdominal pain. Where exactly is the pain located? (upper abdomen, lower abdomen, right side, left side)";
+      }
+      
+      // If we have location but no duration
+      if (state.location && !state.duration && !extractedInfo.duration) {
+        return `I see you have ${state.location} pain. When did this start? How long have you had this pain?`;
+      }
+      
+      // For fever without temperature
+      if (state.symptoms.fever && !state.temperature) {
         return "I see you have a fever. What's your current temperature reading?";
       }
       
-      if (!state.duration) {
-        return `You mentioned ${state.chiefComplaint}. When did this start? How many days ago?`;
+      // If we have basic info but need associated symptoms
+      if (state.duration && (state.location || state.temperature) && Object.keys(state.symptoms).length < 2) {
+        return `Besides ${state.chiefComplaint}, are you experiencing any other symptoms like nausea, vomiting, fever, or changes in bowel movements?`;
       }
       
-      if (Object.keys(state.symptoms).length < 2) {
-        return `Besides ${state.chiefComplaint}, are you experiencing any other symptoms like nausea, headache, body aches, or cough?`;
+      // If we still don't have duration after multiple attempts
+      if (!state.duration && state.questionCount > 1) {
+        return `To help assess your ${state.chiefComplaint}, I need to know when this started. Was it today, yesterday, or several days ago?`;
       }
     }
     
