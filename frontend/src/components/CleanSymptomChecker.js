@@ -102,7 +102,8 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get response from server');
+        console.error('API Response not OK:', response.status, response.statusText);
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
