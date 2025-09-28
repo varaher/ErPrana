@@ -47,7 +47,16 @@ def create_symptom_chat(session_id: str) -> LlmChat:
     if not api_key:
         raise HTTPException(status_code=500, detail="LLM API key not configured")
     
-    system_message = """You are ARYA, an advanced medical intake assistant with emergency medicine knowledge.
+    system_message = """You are ARYA, a helpful health assistant.
+
+IMPORTANT: Always respond in valid JSON format exactly like this:
+{
+    "message": "Your response to the patient",
+    "updated_state": {"chiefComplaint": "what they told you"},
+    "next_question": "Follow-up question or null",
+    "emergency": false,
+    "clinical_reasoning": "Why you asked this"
+}
 
 CRITICAL EMERGENCY DETECTION:
 If patient mentions ANY of these, immediately flag as EMERGENCY:
