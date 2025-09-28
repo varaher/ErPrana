@@ -343,6 +343,68 @@ async def generate_medical_assessment(request: dict):
                 "toxidromes": clinical_assessment.get("toxidromes", []),
                 "disclaimer": "Poisoning/overdose is a medical emergency. This assessment cannot replace immediate professional medical evaluation and treatment."
             }
+            
+        # Use trauma knowledge base for trauma presentations
+        elif any(keyword in chief_complaint for keyword in 
+                ["trauma", "accident", "crash", "fall", "hit", "stabbing", "gunshot",
+                 "motor vehicle", "mvc", "injured", "bleeding"]):
+            
+            patient_factors = {
+                "mechanism": state.get("mechanism", ""),
+                "age": state.get("age", 0),
+                "comorbidities": state.get("pastMedicalHistory", [])
+            }
+            
+            # Use trauma knowledge base
+            clinical_assessment = analyze_trauma_presentation(
+                {"description": chief_complaint + " " + str(state.get("associatedSymptoms", []))},
+                patient_factors
+            )
+            
+            return {
+                "summary": f"Patient presents with trauma: {chief_complaint}. Requires systematic ABCDE assessment and trauma protocols.",
+                "diagnoses": clinical_assessment["differential_diagnosis"],
+                "triage": {
+                    "level": "EMERGENCY",  # All significant trauma is emergency
+                    "recommendation": "🚨 Trauma requires immediate emergency evaluation. Call 911 or go to nearest trauma center."
+                },
+                "immediate_actions": clinical_assessment["immediate_actions"],
+                "abcde_assessment": clinical_assessment["abcde_assessment"],
+                "big_decisions": clinical_assessment.get("big_decisions", []),
+                "trauma_alerts": clinical_assessment.get("trauma_alerts", []),
+                "disclaimer": "Trauma is a medical emergency requiring systematic evaluation. This assessment cannot replace immediate professional trauma care."
+            }
+            
+        # Use cardiac arrest knowledge base for arrest presentations
+        elif any(keyword in chief_complaint for keyword in 
+                ["cardiac arrest", "not breathing", "no pulse", "collapsed", "cpr"]):
+            
+            patient_factors = {
+                "rhythm": state.get("rhythm", ""),
+                "witnessed": state.get("witnessed", False),
+                "downtime": state.get("downtime", "")
+            }
+            
+            # Use cardiac arrest knowledge base
+            clinical_assessment = analyze_cardiac_arrest(
+                {"description": chief_complaint + " " + str(state.get("associatedSymptoms", []))},
+                patient_factors
+            )
+            
+            return {
+                "summary": f"CARDIAC ARREST: {chief_complaint}. Immediate ACLS protocols required.",
+                "diagnoses": [{"condition": "Cardiac Arrest", "likelihood": 100, "description": "Loss of cardiac output requiring immediate resuscitation", "rationale": "Clinical presentation consistent with cardiac arrest", "urgency": "EMERGENCY"}],
+                "triage": {
+                    "level": "EMERGENCY",
+                    "recommendation": "🚨 CARDIAC ARREST - Begin CPR immediately! Call 911 and start chest compressions NOW."
+                },
+                "immediate_actions": clinical_assessment["immediate_actions"],
+                "cpr_guidelines": clinical_assessment["cpr_guidelines"],
+                "protocols": clinical_assessment.get("protocols", {}),
+                "medications": clinical_assessment.get("medications", []),
+                "reversible_causes": clinical_assessment.get("reversible_causes", []),
+                "disclaimer": "Cardiac arrest is immediately life-threatening. Begin CPR and call 911 NOW."
+            }
         
         # Fallback to LLM-based assessment for other complaints
         session_id = request.get("session_id", "assessment")
