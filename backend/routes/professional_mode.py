@@ -166,6 +166,14 @@ async def get_patient_record(patient_id: str):
             {"patient_id": patient_id}
         ).sort("created_at", -1).to_list(length=None)
         
+        # Convert ObjectId to string for JSON serialization
+        if "_id" in patient:
+            patient["_id"] = str(patient["_id"])
+        
+        for assessment in assessments:
+            if "_id" in assessment:
+                assessment["_id"] = str(assessment["_id"])
+        
         return {
             "patient_record": patient,
             "assessments": assessments
