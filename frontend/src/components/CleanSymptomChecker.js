@@ -74,17 +74,24 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const processSymptomLocally = (userMessage) => {
     const messageLower = userMessage.toLowerCase();
     
+    console.log('🔍 Processing message:', userMessage);
+    console.log('📊 Current state before:', conversationState);
+    
     // Update conversation state with new information
     const newState = { ...conversationState };
     
     // Extract information from user message
     extractAndUpdateState(messageLower, newState);
     
+    console.log('📊 New state after extraction:', newState);
+    
     // Generate response based on current state and priorities
     const response = generateStatefulResponse(messageLower, newState);
     
     // Update the conversation state
     setConversationState(newState);
+    
+    console.log('💬 Generated response:', response);
     
     return response;
   };
