@@ -274,11 +274,26 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const hasEnoughInfoForAssessment = (state) => {
     // Check if we have sufficient information for clinical assessment
     const hasChiefComplaint = !!state.chiefComplaint;
-    const hasTemperature = !!state.temperature;
+    const hasLocation = !!state.location;
     const hasDuration = !!state.duration;
-    const hasAssociatedSymptoms = Object.keys(state.symptoms).length >= 2;
+    const hasTemperature = !!state.temperature;
     
-    return hasChiefComplaint && (hasTemperature || hasDuration) && hasAssociatedSymptoms;
+    console.log('Assessment check:', { hasChiefComplaint, hasLocation, hasDuration, hasTemperature, state }); // Debug
+    
+    // For abdominal pain: need location + duration OR temperature
+    if (state.chiefComplaint === 'pain' || state.chiefComplaint === 'abdominal pain') {
+      return hasChiefComplaint && hasLocation && (hasDuration || hasTemperature);
+    }
+    
+    // For fever: need temperature + duration + associated symptoms
+    if (state.chiefComplaint === 'fever') {
+      const hasAssociatedSymptoms = Object.keys(state.symptoms).length >= 2;
+      return hasChiefComplaint && hasTemperature && hasDuration && hasAssociatedSymptoms;
+    }
+    
+    // General rule: need chief complaint + at least 2 pieces of key information
+    const keyInfoCount = [hasLocation, hasDuration, hasTemperature].filter(Boolean).length;
+    return hasChiefComplaint && keyInfoCount >= 2;
   };
 
   const generateClinicalAssessment = (state) => {
