@@ -379,12 +379,10 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     
     // Priority 4: Ready for assessment?
     if (hasEnoughInfoForAssessment(state)) {
-      console.log('✅ Ready for assessment');
       return null; // This will trigger assessment
     }
     
     // Priority 5: Fallback
-    console.log('❓ No specific question needed, asking for more info');
     return "Can you tell me more about how you're feeling right now?";
   };
   
