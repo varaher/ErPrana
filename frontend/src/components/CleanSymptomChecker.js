@@ -117,43 +117,245 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       return "Is there anything specific about your health that's concerning you? Please describe your main symptoms.";
     }
     
-    // Cardiovascular System
-    if (messageLower.includes('chest pain') || messageLower.includes('heart') || messageLower.includes('palpitation')) {
-      return handleCardiovascularSymptoms(messageLower);
+    // Extract all medical information from the current message
+    const extractedInfo = extractComprehensiveInfo(userMessage);
+    
+    // Update conversation state with new information
+    const updatedState = updateConversationState(extractedInfo);
+    
+    // Check if we have enough information for assessment
+    if (hasEnoughInfoForAssessment(updatedState)) {
+      return generateClinicalAssessment(updatedState);
     }
     
-    // Respiratory System  
-    if (messageLower.includes('cough') || messageLower.includes('breathing') || messageLower.includes('shortness of breath')) {
-      return handleRespiratorySymptoms(messageLower);
+    // If not enough info, ask intelligent follow-up questions
+    return generateIntelligentFollowUp(updatedState, extractedInfo);
+  };
+
+  const extractComprehensiveInfo = (userMessage) => {
+    const messageLower = userMessage.toLowerCase();
+    const extractedInfo = {
+      symptoms: [],
+      temperature: null,
+      duration: null,
+      severity: null,
+      associatedSymptoms: [],
+      timeline: null,
+      triggers: [],
+      relievingFactors: [],
+      medications: []
+    };
+    
+    // Extract temperature
+    const tempMatches = [
+      /(\d+\.?\d*)\s*(?:degrees?|°|f|fahrenheit)/gi,
+      /temp(?:erature)?\s*(?:is|of)?\s*(\d+\.?\d*)/gi,
+      /(\d{2,3})\s*(?:fever|temp)/gi
+    ];
+    
+    for (const pattern of tempMatches) {
+      const match = messageLower.match(pattern);
+      if (match) {
+        extractedInfo.temperature = parseFloat(match[1]);
+        break;
+      }
     }
     
-    // Neurological System
-    if (messageLower.includes('headache') || messageLower.includes('weakness') || messageLower.includes('dizzy') || messageLower.includes('seizure')) {
-      return handleNeurologicalSymptoms(messageLower);
+    // Extract duration
+    const durationPatterns = [
+      /(\d+)\s*days?/gi,
+      /(\d+)\s*hours?/gi,
+      /(\d+)\s*weeks?/gi,
+      /since\s*(\d+)\s*days?/gi,
+      /for\s*(\d+)\s*days?/gi
+    ];
+    
+    for (const pattern of durationPatterns) {
+      const match = messageLower.match(pattern);
+      if (match) {
+        extractedInfo.duration = match[0];
+        break;
+      }
     }
     
-    // Gastrointestinal System
-    if (messageLower.includes('stomach') || messageLower.includes('abdominal') || messageLower.includes('nausea') || messageLower.includes('vomit') || messageLower.includes('diarrhea')) {
-      return handleGastrointestinalSymptoms(messageLower);
+    // Extract symptoms
+    const symptomKeywords = [
+      'fever', 'headache', 'nausea', 'vomiting', 'cough', 'body aches', 
+      'chills', 'fatigue', 'weakness', 'dizziness', 'chest pain', 
+      'shortness of breath', 'abdominal pain', 'diarrhea', 'sore throat'
+    ];
+    
+    for (const symptom of symptomKeywords) {
+      if (messageLower.includes(symptom)) {
+        extractedInfo.symptoms.push(symptom);
+      }
     }
     
-    // Fever (multiple systems)
-    if (messageLower.includes('fever') || messageLower.includes('temperature')) {
-      return handleFeverSymptoms(messageLower);
+    // Extract medications
+    if (messageLower.includes('paracetamol') || messageLower.includes('acetaminophen') || messageLower.includes('tylenol')) {
+      extractedInfo.medications.push('paracetamol');
+    }
+    if (messageLower.includes('ibuprofen') || messageLower.includes('advil')) {
+      extractedInfo.medications.push('ibuprofen');
     }
     
-    // General pain
-    if (messageLower.includes('pain') || messageLower.includes('hurt')) {
-      return handleGeneralPain(messageLower);
+    // Extract pattern information
+    if (messageLower.includes('spike') || messageLower.includes('comes back')) {
+      extractedInfo.timeline = 'recurrent';
+    }
+    if (messageLower.includes('4 hours') || messageLower.includes('four hours')) {
+      extractedInfo.timeline = 'every_4_hours';
     }
     
-    // Default response for unrecognized symptoms
-    return `I understand you're experiencing: "${userMessage}". To help you better, could you please tell me:
+    return extractedInfo;
+  };
+
+  const updateConversationState = (extractedInfo) => {
+    const newState = { ...conversationState };
     
-1. When did this start? (suddenly or gradually)
-2. How would you rate the severity from 1-10?
-3. Are there any other symptoms you're experiencing?
-4. Does anything make it better or worse?`;
+    // Set chief complaint if first symptom mention
+    if (extractedInfo.symptoms.length > 0 && !newState.chiefComplaint) {
+      newState.chiefComplaint = extractedInfo.symptoms[0];
+    }
+    
+    // Update symptoms
+    extractedInfo.symptoms.forEach(symptom => {
+      newState.symptoms[symptom] = {
+        present: true,
+        severity: extractedInfo.severity,
+        duration: extractedInfo.duration
+      };
+    });
+    
+    // Update other info
+    if (extractedInfo.temperature) newState.temperature = extractedInfo.temperature;
+    if (extractedInfo.duration) newState.duration = extractedInfo.duration;
+    if (extractedInfo.timeline) newState.timeline = extractedInfo.timeline;
+    if (extractedInfo.medications.length > 0) newState.medications = extractedInfo.medications;
+    
+    newState.questionCount += 1;
+    
+    // Update state
+    setConversationState(newState);
+    return newState;
+  };
+
+  const hasEnoughInfoForAssessment = (state) => {
+    // Check if we have sufficient information for clinical assessment
+    const hasChiefComplaint = !!state.chiefComplaint;
+    const hasTemperature = !!state.temperature;
+    const hasDuration = !!state.duration;
+    const hasAssociatedSymptoms = Object.keys(state.symptoms).length >= 2;
+    
+    return hasChiefComplaint && (hasTemperature || hasDuration) && hasAssociatedSymptoms;
+  };
+
+  const generateClinicalAssessment = (state) => {
+    let assessment = "**CLINICAL ASSESSMENT**\n\n";
+    
+    // Chief complaint summary
+    assessment += `**Chief Complaint:** ${state.chiefComplaint}`;
+    if (state.temperature) assessment += ` with temperature ${state.temperature}°F`;
+    if (state.duration) assessment += ` for ${state.duration}`;
+    assessment += "\n\n";
+    
+    // Associated symptoms
+    const symptomList = Object.keys(state.symptoms).filter(s => s !== state.chiefComplaint);
+    if (symptomList.length > 0) {
+      assessment += `**Associated Symptoms:** ${symptomList.join(', ')}\n\n`;
+    }
+    
+    // Pattern analysis
+    if (state.timeline && state.medications) {
+      assessment += `**Pattern:** Fever responds to ${state.medications.join('/')} but recurs suggesting ongoing infectious/inflammatory process.\n\n`;
+    }
+    
+    // 5 Provisional Diagnoses
+    assessment += "**PROVISIONAL DIAGNOSES (in order of likelihood):**\n\n";
+    
+    const diagnoses = generateProvisionalDiagnoses(state);
+    diagnoses.forEach((diagnosis, index) => {
+      assessment += `${index + 1}. **${diagnosis.name}** (${diagnosis.probability})\n`;
+      assessment += `   - ${diagnosis.reasoning}\n`;
+      assessment += `   - Triage: ${diagnosis.triage}\n\n`;
+    });
+    
+    // Recommendations
+    assessment += "**RECOMMENDATIONS:**\n";
+    assessment += "• Continue fever monitoring\n";
+    assessment += "• Maintain hydration\n";
+    assessment += "• Seek medical attention if fever >102°F or symptoms worsen\n";
+    assessment += "• Consider blood tests if fever persists >3 days\n\n";
+    
+    assessment += "⚠️ **Disclaimer:** This assessment is for educational purposes. Please consult a healthcare professional for proper diagnosis and treatment.";
+    
+    return assessment;
+  };
+
+  const generateProvisionalDiagnoses = (state) => {
+    const diagnoses = [];
+    
+    // Analyze symptom pattern for fever + nausea + body aches + 2 days duration
+    if (state.symptoms.fever && state.symptoms.nausea && state.symptoms['body aches']) {
+      diagnoses.push({
+        name: "Viral Gastroenteritis",
+        probability: "75%",
+        reasoning: "Classic triad of fever, nausea, and body aches with 2-day duration",
+        triage: "🟡 MODERATE - Monitor, seek care if worsening"
+      });
+      
+      diagnoses.push({
+        name: "Viral Syndrome (URI/Flu-like)",
+        probability: "65%",
+        reasoning: "Systemic symptoms with fever pattern responsive to antipyretics",
+        triage: "🟡 MODERATE - Symptomatic care, monitor progression"
+      });
+      
+      diagnoses.push({
+        name: "Early Bacterial Infection",
+        probability: "45%",
+        reasoning: "Fever pattern with recurrence despite medication suggests possible bacterial component",
+        triage: "🟡 MODERATE - Consider medical evaluation if fever persists >3 days"
+      });
+      
+      diagnoses.push({
+        name: "Food Poisoning/Toxin-mediated illness",
+        probability: "35%",
+        reasoning: "GI symptoms with fever and body aches, short duration",
+        triage: "🟢 LOW-MODERATE - Supportive care unless severe dehydration"
+      });
+      
+      diagnoses.push({
+        name: "Medication reaction/Heat-related illness",
+        probability: "20%",
+        reasoning: "Less likely but possible given fever pattern",
+        triage: "🟢 LOW - Monitor, discontinue any new medications"
+      });
+    }
+    
+    return diagnoses;
+  };
+
+  const generateIntelligentFollowUp = (state, extractedInfo) => {
+    // If we have some info but not enough, ask targeted questions
+    if (state.chiefComplaint) {
+      const missingInfo = [];
+      
+      if (!state.temperature && state.symptoms.fever) {
+        return "I see you have a fever. What's your current temperature reading?";
+      }
+      
+      if (!state.duration) {
+        return `You mentioned ${state.chiefComplaint}. When did this start? How many days ago?`;
+      }
+      
+      if (Object.keys(state.symptoms).length < 2) {
+        return `Besides ${state.chiefComplaint}, are you experiencing any other symptoms like nausea, headache, body aches, or cough?`;
+      }
+    }
+    
+    // First interaction - identify chief complaint
+    return `I understand your concern. Could you tell me your main symptom that brought you here today?`;
   };
 
   const handleCardiovascularSymptoms = (messageLower) => {
