@@ -38,6 +38,8 @@ class SymptomResponse(BaseModel):
     next_question: Optional[str] = None
     assessment_ready: bool = False
     emergency_detected: bool = False
+    needs_user_confirmation: bool = False  # New field to trigger confirmation
+    personalized_analysis: bool = False  # Whether personal data was used
 
 # Initialize LLM chat instances (we'll create new ones per session)
 def create_symptom_chat(session_id: str) -> LlmChat:
