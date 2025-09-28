@@ -215,47 +215,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
 
   // Old hasEnoughInfoForAssessment function removed
 
-  const generateClinicalAssessment = (state) => {
-    let assessment = "**CLINICAL ASSESSMENT**\n\n";
-    
-    // Chief complaint summary
-    assessment += `**Chief Complaint:** ${state.chiefComplaint}`;
-    if (state.temperature) assessment += ` with temperature ${state.temperature}°F`;
-    if (state.duration) assessment += ` for ${state.duration}`;
-    assessment += "\n\n";
-    
-    // Associated symptoms
-    const symptomList = Object.keys(state.symptoms).filter(s => s !== state.chiefComplaint);
-    if (symptomList.length > 0) {
-      assessment += `**Associated Symptoms:** ${symptomList.join(', ')}\n\n`;
-    }
-    
-    // Pattern analysis
-    if (state.timeline && state.medications) {
-      assessment += `**Pattern:** Fever responds to ${state.medications.join('/')} but recurs suggesting ongoing infectious/inflammatory process.\n\n`;
-    }
-    
-    // 5 Provisional Diagnoses
-    assessment += "**PROVISIONAL DIAGNOSES (in order of likelihood):**\n\n";
-    
-    const diagnoses = generateProvisionalDiagnoses(state);
-    diagnoses.forEach((diagnosis, index) => {
-      assessment += `${index + 1}. **${diagnosis.name}** (${diagnosis.probability})\n`;
-      assessment += `   - ${diagnosis.reasoning}\n`;
-      assessment += `   - Triage: ${diagnosis.triage}\n\n`;
-    });
-    
-    // Recommendations
-    assessment += "**RECOMMENDATIONS:**\n";
-    assessment += "• Continue fever monitoring\n";
-    assessment += "• Maintain hydration\n";
-    assessment += "• Seek medical attention if fever >102°F or symptoms worsen\n";
-    assessment += "• Consider blood tests if fever persists >3 days\n\n";
-    
-    assessment += "⚠️ **Disclaimer:** This assessment is for educational purposes. Please consult a healthcare professional for proper diagnosis and treatment.";
-    
-    return assessment;
-  };
+  // Old generateClinicalAssessment function removed
 
   const generateProvisionalDiagnoses = (collectedData) => {
     const diagnoses = [];
