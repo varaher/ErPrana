@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Phase 1: Clean Dashboard & Navigation - Create top navigation component with clean, modern design (ChatGPT style for symptom checker), implement dashboard layout with proper routing between Login, Symptom Checker, Vitals, Health Records, and Profile, integrate medical professional mode toggle functionality from user profile, rename 'medical professional' to 'health care professional'"
+user_problem_statement: "Phase 2: Advanced Features Implementation - 1) Wearables data sync feature with permission system, 2) Voice assistant functionality using OpenAI latest speech models for ARYA, 3) Complete health care professional mode with separate UI and backend access for doctor data input"
 
 backend:
   - task: "Backend health check endpoint"
