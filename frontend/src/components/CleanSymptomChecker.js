@@ -505,19 +505,73 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const generateAssessment = (state) => {
-    let assessment = "Based on what you've told me:\n\n";
+    console.log('📋 Generating assessment for:', state);
     
-    if (state.fever?.present && state.cough?.present && state.dyspnea?.present) {
-      assessment += "🔴 You have fever, cough with phlegm, and sudden breathing difficulty. This combination suggests a possible respiratory infection that may need prompt medical evaluation.\n\n";
+    let assessment = "## Clinical Assessment\n\n";
+    
+    // Summarize what we know
+    assessment += "**Based on your symptoms:**\n";
+    
+    if (state.chiefComplaint === 'fever') {
+      assessment += `• Fever for ${state.duration || 'some time'}`;
+      if (state.temperature) {
+        assessment += ` (${state.temperature}°F)`;
+      }
+      if (state.severity) {
+        assessment += ` - severity ${state.severity}/10`;
+      }
+      assessment += "\n";
+      
+      // Add associated symptoms
+      if (state.symptoms?.cough?.present) {
+        assessment += "• Cough present\n";
+      }
+      if (state.symptoms?.diarrhea?.present) {
+        assessment += "• Loose stools/diarrhea\n";
+      }
+      if (state.symptoms?.bodyAche?.present) {
+        assessment += "• Body aches\n";
+      }
+      if (state.symptoms?.headache?.present) {
+        assessment += "• Headache\n";
+      }
+      
+      // Clinical reasoning
+      assessment += "\n**Clinical Impression:**\n";
+      
+      const symptomCount = Object.values(state.symptoms || {}).filter(s => s.present).length;
+      const hasGI = state.symptoms?.diarrhea?.present;
+      const hasResp = state.symptoms?.cough?.present;
+      
+      if (hasGI && symptomCount >= 2) {
+        assessment += "This combination of fever, GI symptoms (loose stools), and systemic symptoms (body aches) suggests a possible **viral gastroenteritis** or **viral syndrome**.\n\n";
+      } else if (hasResp && symptomCount >= 2) {
+        assessment += "Fever with respiratory symptoms suggests a possible **viral upper respiratory infection** or **flu-like illness**.\n\n";
+      } else {
+        assessment += "The constellation of symptoms suggests a **viral illness**.\n\n";
+      }
+      
+      // Triage level
+      if (state.temperature && state.temperature > 102) {
+        assessment += "🔴 **HIGH PRIORITY**: Temperature >102°F warrants medical evaluation today.\n\n";
+      } else if (symptomCount >= 3) {
+        assessment += "🟡 **MODERATE PRIORITY**: Multiple symptoms suggest you should see a healthcare provider within 24-48 hours.\n\n";
+      } else {
+        assessment += "🟢 **LOW PRIORITY**: Symptoms can likely be managed at home with monitoring.\n\n";
+      }
+      
+      // Recommendations
       assessment += "**Recommendations:**\n";
-      assessment += "• Consider seeing a healthcare provider today\n";
-      assessment += "• Monitor your temperature and breathing\n";
-      assessment += "• If breathing worsens, seek immediate care\n";
-      assessment += "• Stay hydrated and rest\n\n";
-      assessment += "⚠️ This is not a medical diagnosis. Please consult a healthcare professional for proper evaluation.";
-    } else {
-      assessment += "I'd recommend discussing these symptoms with a healthcare provider for proper evaluation and treatment.";
+      assessment += "• Stay hydrated - drink plenty of fluids\n";
+      assessment += "• Rest and monitor symptoms\n";
+      assessment += "• Take acetaminophen or ibuprofen for fever/aches\n";
+      if (hasGI) {
+        assessment += "• BRAT diet (bananas, rice, applesauce, toast) for GI symptoms\n";
+      }
+      assessment += "• Seek care if fever >102°F, severe dehydration, or symptoms worsen\n\n";
     }
+    
+    assessment += "⚠️ **Disclaimer:** This is not a medical diagnosis. Please consult a healthcare professional for proper evaluation and treatment.";
     
     return assessment;
   };
