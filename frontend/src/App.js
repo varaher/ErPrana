@@ -63,7 +63,20 @@ function App() {
   
   // Show symptom checker as separate page
   if (currentView === 'symptom-checker') {
-    return <CleanSymptomChecker user={user} onBack={() => setCurrentView('dashboard')} />;
+    return (
+      <div className="full-page">
+        <CleanSymptomChecker user={user} onBack={() => setCurrentView('dashboard')} />
+        <VoiceAssistant 
+          userId={user.id}
+          onVoiceResponse={setVoiceResponse}
+        />
+      </div>
+    );
+  }
+  
+  // Show professional dashboard as separate page
+  if (currentView === 'professional') {
+    return <ProfessionalDashboard userId={user.id} onBack={() => setCurrentView('dashboard')} />;
   }
   
   // Main dashboard features - clean and minimal
