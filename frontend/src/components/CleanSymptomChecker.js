@@ -197,8 +197,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const getNextPriorityQuestion = (state) => {
-    console.log('🎯 Checking next priority question for state:', state);
-    
     // Priority 1: Red flag symptoms
     if (state.dyspnea?.present && !state.dyspnea.severity) {
       return "Can you tell me how severe your breathing difficulty is? Are you able to speak in full sentences or do you need to pause for breath?";
@@ -224,7 +222,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       return "Are you experiencing any other symptoms like body aches, headache, or chills?";
     }
     
-    console.log('✅ No priority questions needed');
     return null;
   };
 
