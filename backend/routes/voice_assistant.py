@@ -176,8 +176,15 @@ async def get_available_voices():
 async def create_realtime_session():
     """Create a new realtime voice session"""
     try:
-        # This uses the registered realtime router from emergentintegrations
-        session_data = await chat.create_session()
+        # Create a simple session for now
+        session_id = str(uuid.uuid4())
+        session_data = {
+            "session_id": session_id,
+            "status": "created",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "voice_enabled": True,
+            "language": "en-US"
+        }
         return session_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create realtime session: {str(e)}")
