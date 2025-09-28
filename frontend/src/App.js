@@ -164,6 +164,25 @@ function App() {
                 </div>
               ))}
             </div>
+            
+            {/* Professional Features */}
+            {user.healthCareProfessional && (
+              <div className="professional-section">
+                <h3>🏥 Health Care Professional Features</h3>
+                <div className="features-grid">
+                  {professionalFeatures.map(feature => (
+                    <div key={feature.id} className="clean-feature-card professional-card" onClick={feature.action}>
+                      <div className="card-icon">{feature.icon}</div>
+                      <div className="card-content">
+                        <h3>{feature.title}</h3>
+                        <p>{feature.description}</p>
+                      </div>
+                      <div className="card-arrow">→</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
         
