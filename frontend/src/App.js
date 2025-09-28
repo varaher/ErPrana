@@ -13,8 +13,9 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
 
 function App() {
   const [user, setUser] = useState(null);
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, symptom-checker, vitals, records, profile
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, symptom-checker, vitals, records, profile, wearables, professional
   const [backendStatus, setBackendStatus] = useState('checking');
+  const [voiceResponse, setVoiceResponse] = useState(null);
   
   useEffect(() => {
     // Check for existing user session
