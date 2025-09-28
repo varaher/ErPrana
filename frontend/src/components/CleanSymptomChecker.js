@@ -92,11 +92,52 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const extractAndUpdateState = (messageLower, state) => {
     // Extract chief complaint
     if (!state.chiefComplaint) {
-      if (messageLower.includes('fever')) state.chiefComplaint = 'fever';
-      else if (messageLower.includes('cough')) state.chiefComplaint = 'cough';
-      else if (messageLower.includes('pain')) state.chiefComplaint = 'pain';
-      else if (messageLower.includes('headache')) state.chiefComplaint = 'headache';
-      else if (messageLower.includes('breathing') || messageLower.includes('shortness')) state.chiefComplaint = 'breathing difficulty';
+      if (messageLower.includes('chest pain') || (messageLower.includes('chest') && messageLower.includes('pain'))) {
+        state.chiefComplaint = 'chest pain';
+        state.chestPain = { present: true };
+      } else if (messageLower.includes('fever')) {
+        state.chiefComplaint = 'fever';
+      } else if (messageLower.includes('cough')) {
+        state.chiefComplaint = 'cough';
+      } else if (messageLower.includes('headache')) {
+        state.chiefComplaint = 'headache';
+      } else if (messageLower.includes('breathing') || messageLower.includes('shortness')) {
+        state.chiefComplaint = 'breathing difficulty';
+      } else if (messageLower.includes('pain')) {
+        state.chiefComplaint = 'pain';
+      }
+    }
+    
+    // Extract timing information
+    if (messageLower.includes('sudden') || messageLower.includes('suddenly')) {
+      state.onset = 'sudden';
+    } else if (messageLower.includes('gradual') || messageLower.includes('slowly')) {  
+      state.onset = 'gradual';
+    }
+    
+    // Extract severity (1-10 scale or descriptive)
+    const severityMatch = messageLower.match(/(\d+)\/10|(\d+)\s*out\s*of\s*10|rate.*?(\d+)|(\d+)\s*pain/);
+    if (severityMatch) {
+      state.severity = severityMatch[1] || severityMatch[2] || severityMatch[3] || severityMatch[4];
+    } else if (messageLower.includes('severe') || messageLower.includes('worst')) {
+      state.severity = 'severe';
+    } else if (messageLower.includes('mild')) {
+      state.severity = 'mild';
+    } else if (messageLower.includes('moderate')) {
+      state.severity = 'moderate';
+    }
+    
+    // Extract quality/character
+    if (messageLower.includes('crushing') || messageLower.includes('pressure')) {
+      state.quality = 'crushing/pressure';
+    } else if (messageLower.includes('sharp') || messageLower.includes('stabbing')) {
+      state.quality = 'sharp/stabbing';
+    } else if (messageLower.includes('burning')) {
+      state.quality = 'burning';
+    } else if (messageLower.includes('throbbing') || messageLower.includes('pounding')) {
+      state.quality = 'throbbing';
+    } else if (messageLower.includes('dull') || messageLower.includes('aching')) {
+      state.quality = 'dull/aching';
     }
     
     // Extract fever information
