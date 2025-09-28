@@ -259,15 +259,20 @@ async def analyze_symptom_message(request: SymptomRequest):
     return await analyze_symptom_core(request)
 
 # Add the route that frontend expects
+class FrontendSymptomRequest(BaseModel):
+    user_id: str
+    message: str
+    session_id: Optional[str] = None
+
 @router.post("/symptom-intelligence/analyze")
-async def symptom_intelligence_analyze(user_id: str = None, message: str = None, session_id: str = None):
+async def symptom_intelligence_analyze(request: FrontendSymptomRequest):
     # Convert to expected format
-    request = SymptomRequest(
-        user_message=message,
-        session_id=session_id or str(uuid.uuid4()),
-        user_id=user_id
+    symptom_request = SymptomRequest(
+        user_message=request.message,
+        session_id=request.session_id or str(uuid.uuid4()),
+        user_id=request.user_id
     )
-    result = await analyze_symptom_core(request)
+    result = await analyze_symptom_core(symptom_request)
     
     # Convert response to format expected by frontend
     return {
@@ -275,7 +280,7 @@ async def symptom_intelligence_analyze(user_id: str = None, message: str = None,
         "next_step": "conversation_continue",  # Always continue conversation
         "requires_followup": True,
         "urgency_level": "low" if not result.emergency_detected else "emergency",
-        "session_id": request.session_id
+        "session_id": symptom_request.session_id
     }
 
 async def analyze_symptom_core(request: SymptomRequest):
