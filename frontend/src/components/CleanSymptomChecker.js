@@ -15,6 +15,18 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
+  // Conversation state to track symptoms and build clinical picture
+  const [conversationState, setConversationState] = useState({
+    chiefComplaint: '',
+    symptoms: {},
+    timeline: {},
+    severity: null,
+    associatedSymptoms: [],
+    currentSystem: null,
+    questionCount: 0,
+    hasEnoughInfo: false
+  });
+  
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
