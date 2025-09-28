@@ -482,7 +482,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const generateAssessment = (state) => {
-    console.log('📋 Generating assessment for:', state);
     
     let assessment = "## Clinical Assessment\n\n";
     
