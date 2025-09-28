@@ -694,47 +694,4 @@ def get_triage_recommendation(urgency_level: str) -> str:
     }
     return recommendations.get(urgency_level, recommendations["LESS_URGENT"])
 
-def _format_medical_assessment(assessment: Dict[str, Any]) -> str:
-        """Format medical assessment for user - NEVER END THE CONVERSATION"""
-        
-        response = "**📋 Medical Assessment**\n\n"
-        
-        # Provisional diagnoses - Point-wise format
-        if assessment.get("provisional_diagnoses"):
-            response += "**🩺 Possible Conditions:**\n"
-            for i, diagnosis in enumerate(assessment["provisional_diagnoses"][:3], 1):
-                condition = diagnosis.get('condition', 'Unknown')
-                probability = diagnosis.get('probability', 'Unknown')
-                response += f"{i}. {condition} ({probability}% probability)\n"
-            response += "\n"
-        
-        # Urgency level
-        urgency = assessment.get("urgency_level", "low")
-        urgency_emoji = {"low": "🟢", "medium": "🟡", "high": "🟠", "emergency": "🔴"}
-        response += f"**⚡ Urgency Level:** {urgency_emoji.get(urgency, '🟢')} {urgency.upper()}\n\n"
-        
-        # Recommendations - Point-wise format
-        if assessment.get("recommendations"):
-            response += "**💡 Recommendations:**\n"
-            for i, rec in enumerate(assessment["recommendations"], 1):
-                response += f"{i}. {rec}\n"
-            response += "\n"
-        else:
-            # Default recommendations
-            response += "**💡 Recommendations:**\n"
-            response += "1. Monitor your symptoms closely\n"
-            response += "2. Stay hydrated and get adequate rest\n"
-            response += "3. Seek medical attention if symptoms worsen\n\n"
-        
-        # CRITICAL: Always continue conversation - ChatGPT style
-        response += "---\n\n"
-        response += "**💬 I'm ready to help with any questions about your health!**\n\n"
-        response += "Ask me anything:\n"
-        response += "• \"What does [condition] mean?\" - Get explanations\n"
-        response += "• \"What should I do?\" - Treatment options\n"
-        response += "• \"How can I prevent this?\" - Prevention advice\n"
-        response += "• \"I also have [symptom]\" - Report new symptoms\n"
-        response += "• \"Is this serious?\" - Emergency guidance\n\n"
-        response += "Type your question and I'll help! 🩺💙"
-        
-        return response
+# Removed duplicate function - this should be handled by the existing implementation
