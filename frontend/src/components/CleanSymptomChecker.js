@@ -106,6 +106,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
       
       const data = await response.json();
+      console.log('API Response:', data); // Debug log
       
       // Update conversation state
       setConversationState(data.updated_state);
