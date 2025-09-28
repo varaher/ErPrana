@@ -255,6 +255,29 @@ Please respond with "A" for yourself or "B" for someone else. This helps me give
 
 @router.post("/analyze-symptom", response_model=SymptomResponse)
 async def analyze_symptom_message(request: SymptomRequest):
+    return await analyze_symptom_core(request)
+
+# Add the route that frontend expects
+@router.post("/symptom-intelligence/analyze")
+async def symptom_intelligence_analyze(user_id: str = None, message: str = None, session_id: str = None):
+    # Convert to expected format
+    request = SymptomRequest(
+        user_message=message,
+        session_id=session_id or str(uuid.uuid4()),
+        user_id=user_id
+    )
+    result = await analyze_symptom_core(request)
+    
+    # Convert response to format expected by frontend
+    return {
+        "response": result.assistant_message,
+        "next_step": "conversation_continue",  # Always continue conversation
+        "requires_followup": True,
+        "urgency_level": "low" if not result.emergency_detected else "emergency",
+        "session_id": request.session_id
+    }
+
+async def analyze_symptom_core(request: SymptomRequest):
     try:
         conversation_state = request.conversation_state or {}
         
