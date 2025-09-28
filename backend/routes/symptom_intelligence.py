@@ -192,7 +192,7 @@ def detect_emergency_keywords(message: str, conversation_state: dict) -> tuple[b
     
     for phrase in emergency_phrases:
         if phrase in message_lower:
-            return True, f"🚨 **MEDICAL EMERGENCY** - Your symptoms suggest a critical condition. Call 911 or go to the nearest emergency room immediately."
+            return True, "🚨 **MEDICAL EMERGENCY** - Your symptoms suggest a critical condition. Call 911 or go to the nearest emergency room immediately."
     
     # Device-specific keywords
     if 'lvad' in message_lower or 'ventricular assist' in message_lower:
