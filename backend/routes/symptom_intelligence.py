@@ -393,13 +393,26 @@ Be empathetic and ask good medical questions. Always use valid JSON format."""
         except json.JSONDecodeError as e:
             print(f"JSON Parse Error: {e}")
             print(f"Raw Response: {response}")
-            # Fallback response
+            # Fallback response with better handling
+            chief_complaint = request.user_message.lower()
+            if "fever" in chief_complaint:
+                fallback_message = "I understand you've been having a fever for 2 days. That must be uncomfortable. Can you tell me what your temperature has been?"
+                fallback_question = "What's your current temperature?"
+            elif "pain" in chief_complaint:
+                fallback_message = "I hear you're experiencing pain. Can you tell me more about where exactly you feel it?"
+                fallback_question = "Where exactly do you feel the pain?"
+            else:
+                fallback_message = f"I understand you mentioned: {request.user_message}. Can you tell me more about when this started?"
+                fallback_question = "When did this begin?"
+                
             return SymptomResponse(
-                assistant_message="I understand. Can you tell me more about when this started?",
-                updated_state=request.conversation_state or {"chiefComplaint": request.user_message},
-                next_question="When did your symptoms begin?",
+                assistant_message=fallback_message,
+                updated_state={"chiefComplaint": request.user_message},
+                next_question=fallback_question,
                 assessment_ready=False,
-                emergency_detected=False
+                emergency_detected=False,
+                needs_user_confirmation=False,
+                personalized_analysis=False
             )
         
         # Extract information from parsed response
