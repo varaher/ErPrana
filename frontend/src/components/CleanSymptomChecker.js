@@ -6,7 +6,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     {
       id: 1,
       type: 'assistant',
-      message: `Hello! I'm ARYA, your emergency medicine physician. I'm here to help understand your symptoms using a systematic approach. What brings you in today?`,
+      message: `Hello! I'm ARYA, your health assistant. What is concerning you today? Hope your health is fine.`,
       timestamp: new Date()
     }
   ]);
