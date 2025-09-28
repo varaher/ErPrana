@@ -113,28 +113,100 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     // Handle greetings - don't treat as symptoms
     const greetingPatterns = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'];
     if (greetingPatterns.some(pattern => messageLower === pattern || messageLower.startsWith(pattern + ' '))) {
-      return "Hello! I'm here to help you with your health concerns. Could you please tell me what specific symptoms or health issues are troubling you today?";
+      return "Hello! I'm here to help you with your health concerns. What is your main symptom or health concern today?";
     }
     
     // Handle acknowledgments
     const acknowledgmentPatterns = ['thank you', 'thanks', 'okay', 'ok', 'yes', 'no', 'sure'];
     if (acknowledgmentPatterns.includes(messageLower)) {
-      return "Is there anything specific about your health that's concerning you? Please describe your main symptoms.";
+      return "Please tell me what specific symptom is concerning you today.";
     }
     
-    // Extract all medical information from the current message
-    const extractedInfo = extractComprehensiveInfo(userMessage);
+    // Process based on current conversation step
+    return handleConversationStep(userMessage);
+  };
+
+  const handleConversationStep = (userMessage) => {
+    const currentStep = conversationState.currentStep;
+    let response = '';
+    let nextStep = currentStep;
+    let updatedData = { ...conversationState.collectedData };
+    let urgencyLevel = 'low';
     
-    // Update conversation state with new information
-    const updatedState = updateConversationState(extractedInfo);
-    
-    // Check if we have enough information for assessment
-    if (hasEnoughInfoForAssessment(updatedState)) {
-      return generateClinicalAssessment(updatedState);
+    console.log('Current step:', currentStep, 'Message:', userMessage);
+
+    switch (currentStep) {
+      case 'initial_assessment':
+        const primarySymptom = extractPrimarySymptom(userMessage);
+        if (primarySymptom) {
+          updatedData.primarySymptom = primarySymptom;
+          urgencyLevel = assessUrgency(userMessage);
+          
+          if (urgencyLevel === 'emergency') {
+            nextStep = 'emergency_advice';
+            response = `⚠️ **EMERGENCY**: You mentioned ${primarySymptom}. This requires immediate medical attention. Please call 911 or go to the nearest emergency room right away. Do not delay seeking medical care.`;
+          } else {
+            nextStep = 'symptom_details';
+            response = `I understand you're experiencing ${primarySymptom}. Can you describe it in more detail? For example, is it sharp, dull, throbbing, or burning?`;
+          }
+        } else {
+          response = "I want to help you with your health concern. Please tell me your main symptom - for example, 'chest pain', 'headache', 'fever', or 'stomach pain'.";
+        }
+        break;
+
+      case 'symptom_details':
+        updatedData.description = userMessage;
+        nextStep = 'location_assessment';
+        response = `Thank you for that description. Where exactly do you feel this ${updatedData.primarySymptom}? Please be as specific as possible about the location.`;
+        break;
+
+      case 'location_assessment':
+        updatedData.location = userMessage;
+        nextStep = 'duration_timing';
+        response = `I see, ${updatedData.location}. When did this ${updatedData.primarySymptom} start? For example, was it today, yesterday, or several days ago?`;
+        break;
+
+      case 'duration_timing':
+        updatedData.duration = userMessage;
+        nextStep = 'severity_assessment';
+        response = `Thank you. On a scale of 1-10 (where 10 is the worst pain you can imagine), how would you rate your ${updatedData.primarySymptom}?`;
+        break;
+
+      case 'severity_assessment':
+        updatedData.severity = userMessage;
+        nextStep = 'associated_symptoms';
+        response = `I understand the severity is ${userMessage}. Are you experiencing any other symptoms along with the ${updatedData.primarySymptom}? For example, nausea, fever, dizziness, or shortness of breath?`;
+        break;
+
+      case 'associated_symptoms':
+        updatedData.associatedSymptoms = userMessage;
+        nextStep = 'medical_assessment';
+        response = generateStructuredAssessment(updatedData);
+        break;
+
+      default:
+        response = "Let me help you with your health concern. What is your main symptom today?";
+        nextStep = 'initial_assessment';
     }
-    
-    // If not enough info, ask intelligent follow-up questions
-    return generateIntelligentFollowUp(updatedState, extractedInfo);
+
+    // Update conversation state
+    const newState = {
+      currentStep: nextStep,
+      collectedData: updatedData,
+      urgencyLevel: urgencyLevel,
+      requiresFollowup: nextStep !== 'medical_assessment',
+      conversationHistory: [...conversationState.conversationHistory, {
+        step: currentStep,
+        userMessage,
+        response,
+        timestamp: new Date()
+      }]
+    };
+
+    setConversationState(newState);
+    console.log('Updated state:', newState);
+
+    return response;
   };
 
   const extractComprehensiveInfo = (userMessage) => {
