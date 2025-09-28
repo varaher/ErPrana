@@ -174,6 +174,96 @@ const HealthRecords = ({ onClose, userId }) => {
     ];
     setMedicalDocuments(documents);
   };
+
+  const loadMedications = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/medications/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMedications(data.medications || []);
+      }
+    } catch (error) {
+      console.error('Error loading medications:', error);
+    }
+  };
+
+  const loadTodayReminders = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch(`${BACKEND_URL}/api/medications/${userId}/reminders?date=${today}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTodayReminders(data.reminders || []);
+      }
+    } catch (error) {
+      console.error('Error loading reminders:', error);
+    }
+  };
+
+  const addMedication = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/medications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...medicationForm,
+          user_id: userId
+        })
+      });
+
+      if (response.ok) {
+        setShowMedicationModal(false);
+        setMedicationForm({
+          name: '',
+          dosage: '',
+          frequency: 'daily',
+          times: ['08:00'],
+          instructions: '',
+          prescribing_doctor: ''
+        });
+        loadMedications();
+        loadTodayReminders();
+        alert('Medication added successfully!');
+      } else {
+        alert('Failed to add medication');
+      }
+    } catch (error) {
+      console.error('Error adding medication:', error);
+      alert('Error adding medication');
+    }
+  };
+
+  const markMedicationTaken = async (reminderId) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/medications/reminders/${reminderId}/taken`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        loadTodayReminders();
+        alert('Medication marked as taken!');
+      }
+    } catch (error) {
+      console.error('Error marking medication taken:', error);
+    }
+  };
+
+  const skipMedication = async (reminderId) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/medications/reminders/${reminderId}/skip`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        loadTodayReminders();
+        alert('Medication skipped');
+      }
+    } catch (error) {
+      console.error('Error skipping medication:', error);
+    }
+  };
   
   const getRecordIcon = (type) => {
     switch (type) {
