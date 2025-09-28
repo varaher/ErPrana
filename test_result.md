@@ -122,15 +122,18 @@ backend:
 
   - task: "Wearables data sync backend API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes/wearables_sync.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "✅ COMPLETED: Implemented comprehensive wearables backend API with device management, permission system, data sync endpoints, and MongoDB integration. All CRUD operations ready."
+      - working: true
+        agent: "testing"
+        comment: "✅ WEARABLES API TESTING COMPLETED: All 8 endpoints working perfectly - device management (get/connect/disconnect), permission system (request/grant/get), data sync, and data retrieval. MongoDB integration working correctly with proper ObjectId serialization. Fixed route prefix issues. All CRUD operations tested successfully."
 
   - task: "OpenAI speech integration backend"
     implemented: true
