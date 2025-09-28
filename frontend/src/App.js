@@ -5,6 +5,9 @@ import CleanSymptomChecker from './components/CleanSymptomChecker';
 import VitalsTracker from './components/VitalsTracker';
 import HealthRecords from './components/HealthRecords';
 import UserProfile from './components/UserProfile';
+import WearablesSync from './components/WearablesSync';
+import VoiceAssistant from './components/VoiceAssistant';
+import ProfessionalDashboard from './components/ProfessionalDashboard';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
