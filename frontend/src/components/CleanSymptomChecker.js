@@ -74,19 +74,25 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const processSymptomLocally = (userMessage) => {
     const messageLower = userMessage.toLowerCase();
     
-    // Update conversation state with new information
-    const newState = { ...conversationState };
-    
-    // Extract information from user message
-    extractAndUpdateState(messageLower, newState);
-    
-    // Generate response based on current state and priorities
-    const response = generateStatefulResponse(messageLower, newState);
-    
-    // Update the conversation state
-    setConversationState(newState);
-    
-    return response;
+    if (messageLower.includes('fever')) {
+      return `I understand you're experiencing a fever. This can be concerning. How long have you had the fever, and what's your current temperature? Any other symptoms like chills, body aches, or headache?`;
+    } else if (messageLower.includes('pain') || messageLower.includes('hurt')) {
+      return `I hear you're experiencing pain. Can you tell me where exactly you feel the pain and rate it from 1-10? Is it constant or does it come and go?`;
+    } else if (messageLower.includes('cough')) {
+      return `I understand you have a cough. Is it a dry cough or are you bringing up any phlegm? How long have you had it? Any associated symptoms like fever or shortness of breath?`;
+    } else if (messageLower.includes('headache')) {
+      return `I'm sorry you're experiencing a headache. Can you describe the type of pain - is it throbbing, sharp, or dull? Where exactly is it located? Any triggers you can think of?`;
+    } else if (messageLower.includes('nausea') || messageLower.includes('vomit')) {
+      return `I understand you're feeling nauseous. Have you actually vomited or just feeling sick? When did this start? Any associated symptoms like fever or abdominal pain?`;
+    } else if (messageLower.includes('dizzy') || messageLower.includes('lightheaded')) {
+      return `I hear you're feeling dizzy. Is the room spinning or do you feel lightheaded? When does it happen - when standing up, lying down, or all the time?`;
+    } else if (messageLower.includes('chest pain') || messageLower.includes('chest hurt')) {
+      return `⚠️ Chest pain can be serious. Can you describe the pain - is it sharp, crushing, or burning? Does it radiate to your arm, jaw, or back? Rate it 1-10. If severe, please consider seeking immediate medical attention.`;
+    } else if (messageLower.includes('shortness of breath') || messageLower.includes('breathing')) {
+      return `I understand you're having trouble breathing. Is this sudden or gradual? Are you at rest or does it happen with activity? Any chest pain or wheezing?`;
+    } else {
+      return `I understand your concern about: "${userMessage}". Can you tell me more details about when this started, how severe it is, and how it's affecting your daily activities?`;
+    }
   };
 
   const extractAndUpdateState = (messageLower, state) => {
