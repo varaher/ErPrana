@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import './HealthRecords.css';
 
-const HealthRecords = ({ onClose }) => {
+const HealthRecords = ({ onClose, userId }) => {
   const [activeTab, setActiveTab] = useState('timeline');
   const [healthRecords, setHealthRecords] = useState([]);
   const [vitalsHistory, setVitalsHistory] = useState([]);
   const [medicalDocuments, setMedicalDocuments] = useState([]);
+  const [medications, setMedications] = useState([]);
+  const [todayReminders, setTodayReminders] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [timeFilter, setTimeFilter] = useState('all'); // all, 1m, 3m, 6m, 1y
+  const [showMedicationModal, setShowMedicationModal] = useState(false);
+  const [medicationForm, setMedicationForm] = useState({
+    name: '',
+    dosage: '',
+    frequency: 'daily',
+    times: ['08:00'],
+    instructions: '',
+    prescribing_doctor: ''
+  });
+
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   
   useEffect(() => {
     loadHealthData();
