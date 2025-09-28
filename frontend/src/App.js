@@ -199,7 +199,10 @@ function App() {
         )}
         
         {currentView === 'records' && (
-          <HealthRecords onClose={() => setCurrentView('dashboard')} />
+          <HealthRecords 
+            userId={user.id || user.email}
+            onClose={() => setCurrentView('dashboard')} 
+          />
         )}
         
         {currentView === 'wearables' && (
