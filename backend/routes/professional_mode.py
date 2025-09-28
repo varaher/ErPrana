@@ -313,6 +313,15 @@ async def get_professional_dashboard(professional_id: str):
             {"professional_id": professional_id}
         ).sort("created_at", -1).limit(5).to_list(length=None)
         
+        # Convert ObjectId to string for JSON serialization
+        for patient in recent_patients:
+            if "_id" in patient:
+                patient["_id"] = str(patient["_id"])
+        
+        for assessment in recent_assessments:
+            if "_id" in assessment:
+                assessment["_id"] = str(assessment["_id"])
+        
         return {
             "professional_id": professional_id,
             "statistics": {
