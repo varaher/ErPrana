@@ -13,6 +13,7 @@ from medical_knowledge.chest_pain import analyze_chest_pain_symptoms, CHEST_PAIN
 from medical_knowledge.altered_mental_status import analyze_altered_mental_status, ALTERED_MENTAL_STATUS_KNOWLEDGE
 from medical_knowledge.poisoning_toxidromes import analyze_poisoning_symptoms, POISONING_TOXIDROMES_KNOWLEDGE
 from medical_knowledge.trauma_emergency import analyze_trauma_presentation, analyze_cardiac_arrest, TRAUMA_EMERGENCY_KNOWLEDGE
+from medical_knowledge.clinical_history_framework import generate_natural_followup, get_system_specific_questions, CLINICAL_HISTORY_FRAMEWORK
 
 # Load environment variables
 load_dotenv()
