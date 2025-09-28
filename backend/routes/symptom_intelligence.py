@@ -694,7 +694,7 @@ def get_triage_recommendation(urgency_level: str) -> str:
     }
     return recommendations.get(urgency_level, recommendations["LESS_URGENT"])
 
-    def _format_medical_assessment(self, assessment: Dict[str, Any]) -> str:
+def _format_medical_assessment(assessment: Dict[str, Any]) -> str:
         """Format medical assessment for user - NEVER END THE CONVERSATION"""
         
         response = "**📋 Medical Assessment**\n\n"
