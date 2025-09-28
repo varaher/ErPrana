@@ -30,6 +30,7 @@ class SymptomRequest(BaseModel):
     user_message: str
     session_id: str
     conversation_state: Optional[Dict[str, Any]] = None
+    user_id: Optional[str] = None  # Added for personalized data access
 
 class SymptomResponse(BaseModel):
     assistant_message: str
