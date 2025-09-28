@@ -188,8 +188,24 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         userMessage: userMessage,
         sessionId: sessionId
       });
+      // Simple local fallback for common symptoms while we debug the API
+      let fallbackResponse = '';
+      const messageLower = userMessage.toLowerCase();
+      
+      if (messageLower.includes('fever')) {
+        fallbackResponse = `I understand you're experiencing a fever. This can be concerning. How long have you had the fever, and what's your current temperature?`;
+      } else if (messageLower.includes('pain')) {
+        fallbackResponse = `I hear you're experiencing pain. Can you tell me where exactly you feel the pain and rate it from 1-10?`;
+      } else if (messageLower.includes('cough')) {
+        fallbackResponse = `I understand you have a cough. Is it a dry cough or are you bringing up any phlegm? How long have you had it?`;
+      } else if (messageLower.includes('headache')) {
+        fallbackResponse = `I'm sorry you're experiencing a headache. Can you describe the type of pain - is it throbbing, sharp, or dull? Where exactly is it located?`;
+      } else {
+        fallbackResponse = `I understand your concern about: "${userMessage}". Can you tell me more details about when this started and how it's affecting you?`;
+      }
+      
       setTimeout(() => {
-        addMessage('assistant', 'I understand your concern. Let me help you with that. Can you tell me more details about what you\'re experiencing?');
+        addMessage('assistant', fallbackResponse);
         // Re-focus input after error
         setTimeout(() => {
           if (inputRef.current) {
