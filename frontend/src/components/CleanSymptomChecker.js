@@ -136,6 +136,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     const messageLower = userMessage.toLowerCase();
     const extractedInfo = {
       symptoms: [],
+      location: null,
       temperature: null,
       duration: null,
       severity: null,
@@ -145,6 +146,48 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       relievingFactors: [],
       medications: []
     };
+    
+    // Extract location information for pain
+    if (messageLower.includes('lower abdomen') || messageLower.includes('lower belly')) {
+      extractedInfo.location = 'lower abdomen';
+    } else if (messageLower.includes('upper abdomen') || messageLower.includes('upper belly')) {
+      extractedInfo.location = 'upper abdomen';
+    } else if (messageLower.includes('right side') || messageLower.includes('right abdomen')) {
+      extractedInfo.location = 'right abdomen';
+    } else if (messageLower.includes('left side') || messageLower.includes('left abdomen')) {
+      extractedInfo.location = 'left abdomen';
+    } else if (messageLower.includes('abdomen') || messageLower.includes('belly') || messageLower.includes('stomach')) {
+      extractedInfo.location = 'abdomen';
+    }
+    
+    // Extract duration - more comprehensive patterns
+    const durationPatterns = [
+      /yesterday/gi,
+      /today/gi,
+      /(\d+)\s*days?\s*ago/gi,
+      /(\d+)\s*hours?\s*ago/gi,
+      /(\d+)\s*weeks?\s*ago/gi,
+      /since\s*yesterday/gi,
+      /since\s*today/gi,
+      /since\s*(\d+)\s*days?/gi,
+      /for\s*(\d+)\s*days?/gi,
+      /started\s*yesterday/gi,
+      /started\s*today/gi
+    ];
+    
+    for (const pattern of durationPatterns) {
+      const match = messageLower.match(pattern);
+      if (match) {
+        if (match[0].includes('yesterday')) {
+          extractedInfo.duration = '1 day';
+        } else if (match[0].includes('today')) {
+          extractedInfo.duration = 'today';
+        } else {
+          extractedInfo.duration = match[0];
+        }
+        break;
+      }
+    }
     
     // Extract temperature
     const tempMatches = [
@@ -161,28 +204,12 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
     }
     
-    // Extract duration
-    const durationPatterns = [
-      /(\d+)\s*days?/gi,
-      /(\d+)\s*hours?/gi,
-      /(\d+)\s*weeks?/gi,
-      /since\s*(\d+)\s*days?/gi,
-      /for\s*(\d+)\s*days?/gi
-    ];
-    
-    for (const pattern of durationPatterns) {
-      const match = messageLower.match(pattern);
-      if (match) {
-        extractedInfo.duration = match[0];
-        break;
-      }
-    }
-    
     // Extract symptoms
     const symptomKeywords = [
       'fever', 'headache', 'nausea', 'vomiting', 'cough', 'body aches', 
       'chills', 'fatigue', 'weakness', 'dizziness', 'chest pain', 
-      'shortness of breath', 'abdominal pain', 'diarrhea', 'sore throat'
+      'shortness of breath', 'abdominal pain', 'stomach pain', 'belly pain',
+      'diarrhea', 'sore throat', 'pain'
     ];
     
     for (const symptom of symptomKeywords) {
