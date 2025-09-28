@@ -240,6 +240,16 @@ const CleanSymptomChecker = ({ user, onBack }) => {
            (state.fever?.temperature || state.cough?.type || state.dyspnea?.severity);
   };
 
+  const isHealthRelated = (messageLower) => {
+    const healthKeywords = [
+      'pain', 'ache', 'hurt', 'fever', 'cough', 'headache', 'dizzy', 'nausea', 'vomit',
+      'shortness', 'breath', 'chest', 'stomach', 'belly', 'sick', 'ill', 'symptom',
+      'temperature', 'chills', 'sweating', 'tired', 'fatigue', 'weak', 'sore',
+      'swelling', 'rash', 'bleeding', 'injury', 'fall', 'cut', 'burn', 'medication'
+    ];
+    return healthKeywords.some(keyword => messageLower.includes(keyword));
+  };
+
   const generateAssessment = (state) => {
     let assessment = "Based on what you've told me:\n\n";
     
