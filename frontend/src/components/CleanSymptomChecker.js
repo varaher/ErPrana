@@ -166,7 +166,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     } catch (error) {
       console.error('Error getting intelligent response:', error);
       setTimeout(() => {
-        addMessage('assistant', 'I apologize, but I\'m having trouble understanding right now. Could you please rephrase that or provide more details about your symptoms?');
+        addMessage('assistant', 'I understand your concern. Let me help you with that. Can you tell me more details about what you\'re experiencing?');
         // Re-focus input after error
         setTimeout(() => {
           if (inputRef.current) {
