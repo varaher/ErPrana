@@ -141,17 +141,15 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     for (let match of durationMatches) {
       if (match) {
         state.duration = match[1] + (messageLower.includes('hour') ? ' hours' : ' days');
-        console.log('✅ Duration extracted:', state.duration);
+        state.duration = match[1] + (messageLower.includes('hour') ? ' hours' : ' days');
         break;
       }
     }
     
     if (messageLower.includes('sudden') || messageLower.includes('suddenly')) {
       state.onset = 'sudden';
-      console.log('✅ Onset extracted: sudden');
     } else if (messageLower.includes('gradual') || messageLower.includes('gradually') || messageLower.includes('slowly')) {  
       state.onset = 'gradual';
-      console.log('✅ Onset extracted: gradual');
     }
     
     // 4. Extract severity - MULTIPLE FORMATS
