@@ -211,39 +211,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
 
   // Old extractComprehensiveInfo function removed
 
-  const updateConversationState = (extractedInfo) => {
-    const newState = { ...conversationState };
-    
-    // Set chief complaint if first symptom mention
-    if (extractedInfo.symptoms.length > 0 && !newState.chiefComplaint) {
-      newState.chiefComplaint = extractedInfo.symptoms[0];
-    }
-    
-    // Update symptoms
-    extractedInfo.symptoms.forEach(symptom => {
-      newState.symptoms[symptom] = {
-        present: true,
-        severity: extractedInfo.severity,
-        duration: extractedInfo.duration,
-        location: extractedInfo.location
-      };
-    });
-    
-    // Update other info
-    if (extractedInfo.location) newState.location = extractedInfo.location;
-    if (extractedInfo.temperature) newState.temperature = extractedInfo.temperature;
-    if (extractedInfo.duration) newState.duration = extractedInfo.duration;
-    if (extractedInfo.timeline) newState.timeline = extractedInfo.timeline;
-    if (extractedInfo.medications && extractedInfo.medications.length > 0) newState.medications = extractedInfo.medications;
-    
-    newState.questionCount += 1;
-    
-    console.log('Updated conversation state:', newState); // Debug log
-    
-    // Update state
-    setConversationState(newState);
-    return newState;
-  };
+  // Old updateConversationState function removed
 
   const hasEnoughInfoForAssessment = (state) => {
     // Check if we have sufficient information for clinical assessment
