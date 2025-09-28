@@ -201,6 +201,17 @@ function App() {
         {currentView === 'records' && (
           <HealthRecords onClose={() => setCurrentView('dashboard')} />
         )}
+        
+        {currentView === 'wearables' && (
+          <div className="page-container">
+            <div className="page-header">
+              <button className="back-btn" onClick={() => setCurrentView('dashboard')}>
+                ← Back to Dashboard
+              </button>
+            </div>
+            <WearablesSync userId={user.id} />
+          </div>
+        )}
       </main>
     </div>
   );
