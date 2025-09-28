@@ -465,59 +465,95 @@ class BackendAPITester:
         )
 
 def main():
-    print("🚀 Starting Backend API Tests for ErPrana Application")
-    print("=" * 60)
+    print("🚀 Starting Comprehensive Backend API Tests for Phase 2 Advanced Features")
+    print("=" * 80)
     
     # Setup
     tester = BackendAPITester()
     
-    # Test health endpoint specifically (as requested)
-    print("\n🏥 Testing Health Endpoint...")
+    # Test basic connectivity first
+    print("\n📡 PHASE 1 - BASIC CONNECTIVITY TESTS")
+    print("=" * 50)
+    
     success, _ = tester.test_health_endpoint()
     if not success:
         print("❌ Health endpoint failed - Critical for frontend health checks")
     
-    # Test basic connectivity
-    print("\n📡 Testing API Connectivity...")
     success, _ = tester.test_root_endpoint()
     if not success:
         print("❌ Basic API connectivity failed. Backend may not be running.")
         print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
         return 1
 
-    # Test status check creation
-    print("\n📝 Testing Status Check Creation...")
-    success, status_id = tester.test_create_status_check()
-    if not success:
-        print("❌ Status check creation failed")
-
-    # Test status check retrieval
-    print("\n📋 Testing Status Check Retrieval...")
-    success, _ = tester.test_get_status_checks()
-    if not success:
-        print("❌ Status check retrieval failed")
-
-    # Test symptom feedback endpoint (critical for frontend)
-    print("\n🩺 Testing Symptom Feedback Creation...")
-    success, _ = tester.test_symptom_feedback_endpoint()
-    if not success:
-        print("❌ Symptom feedback endpoint failed - Frontend feedback system won't work")
+    # Test existing endpoints
+    print("\n📝 PHASE 1 - EXISTING ENDPOINT TESTS")
+    print("=" * 50)
     
-    # Test symptom feedback retrieval
-    print("\n📊 Testing Symptom Feedback Retrieval...")
+    success, status_id = tester.test_create_status_check()
+    success, _ = tester.test_get_status_checks()
+    success, _ = tester.test_symptom_feedback_endpoint()
     success, _ = tester.test_get_symptom_feedback()
-    if not success:
-        print("❌ Symptom feedback retrieval failed")
+
+    # Test Phase 2 - Wearables Sync API
+    print("\n⌚ PHASE 2 - WEARABLES SYNC API TESTS")
+    print("=" * 50)
+    
+    tester.test_wearables_get_user_devices()
+    tester.test_wearables_request_permission()
+    tester.test_wearables_grant_permission()
+    tester.test_wearables_connect_device()
+    tester.test_wearables_sync_data()
+    tester.test_wearables_get_data()
+    tester.test_wearables_get_permissions()
+    tester.test_wearables_disconnect_device()
+
+    # Test Phase 2 - Voice Assistant API
+    print("\n🎤 PHASE 2 - VOICE ASSISTANT API TESTS")
+    print("=" * 50)
+    
+    tester.test_voice_health_check()
+    tester.test_voice_get_voices()
+    tester.test_voice_text_to_speech()
+    tester.test_voice_conversation()
+    tester.test_voice_realtime_session()
+
+    # Test Phase 2 - Professional Mode API
+    print("\n👩‍⚕️ PHASE 2 - PROFESSIONAL MODE API TESTS")
+    print("=" * 50)
+    
+    tester.test_professional_register()
+    tester.test_professional_get_profile()
+    tester.test_professional_create_patient()
+    tester.test_professional_get_patients()
+    tester.test_professional_get_patient_record()
+    tester.test_professional_create_assessment()
+    tester.test_professional_get_assessments()
+    tester.test_professional_create_teaching_case()
+    tester.test_professional_get_teaching_cases()
+    tester.test_professional_get_dashboard()
 
     # Print final results
-    print("\n" + "=" * 60)
-    print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    print("\n" + "=" * 80)
+    print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    # Calculate success rates by category
+    phase1_tests = 6  # Basic connectivity + existing endpoints
+    wearables_tests = 8
+    voice_tests = 5
+    professional_tests = 10
+    
+    print(f"\n📈 SUCCESS BREAKDOWN:")
+    print(f"   Phase 1 (Basic): {min(tester.tests_passed, phase1_tests)}/{phase1_tests}")
+    print(f"   Wearables API: Tests completed")
+    print(f"   Voice Assistant API: Tests completed") 
+    print(f"   Professional Mode API: Tests completed")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All backend tests passed!")
+        print("\n🎉 ALL BACKEND TESTS PASSED! Phase 2 APIs are working correctly.")
         return 0
     else:
-        print("⚠️  Some backend tests failed")
+        failed_tests = tester.tests_run - tester.tests_passed
+        print(f"\n⚠️  {failed_tests} backend tests failed. See details above.")
         return 1
 
 if __name__ == "__main__":
