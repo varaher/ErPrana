@@ -159,7 +159,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
   
   const generateAssessment = async () => {
-    addMessage('assistant', '📊 **GENERATING MEDICAL ASSESSMENT**\n\nLet me analyze your symptoms...');
+    addMessage('assistant', '📊 **CLINICAL ASSESSMENT**\n\nLet me analyze your symptoms using medical protocols...');
     
     try {
       const response = await fetch(`${BACKEND_URL}/api/generate-assessment`, {
@@ -181,21 +181,29 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       
       // Display symptom summary
       setTimeout(() => {
-        addMessage('assistant', `**SYMPTOM SUMMARY:**\n${assessment.summary}`);
+        addMessage('assistant', `**CLINICAL SUMMARY:**\n${assessment.summary}`);
       }, 2000);
       
       // Display differential diagnoses
       setTimeout(() => {
         const diagnosesText = assessment.diagnoses.map((dx, i) => 
-          `**${i+1}. ${dx.condition}** - ${dx.likelihood}% likelihood\n${dx.description}\n*Rationale: ${dx.rationale}*`
+          `**${i+1}. ${dx.condition}** - ${dx.likelihood}% likelihood\n${dx.description}\n*Clinical reasoning: ${dx.rationale}*`
         ).join('\n\n');
         
         addMessage('assistant', `**DIFFERENTIAL DIAGNOSIS:**\n\n${diagnosesText}`);
+        setFinalDiagnoses(assessment.diagnoses);
       }, 4000);
       
       // Display triage recommendation
       setTimeout(() => {
-        addMessage('assistant', `🚦 **TRIAGE RECOMMENDATION: ${assessment.triage.level}**\n${assessment.triage.recommendation}\n\n⚠️ ${assessment.disclaimer}`);
+        addMessage('assistant', `🚦 **MEDICAL RECOMMENDATION: ${assessment.triage.level}**\n${assessment.triage.recommendation}\n\n⚠️ ${assessment.disclaimer}`);
+        
+        // Show feedback options after complete assessment
+        setTimeout(() => {
+          setAssessmentComplete(true);
+          addMessage('assistant', `I've completed my assessment. How did I do? Your feedback helps me become a better physician assistant.`);
+          setShowFeedback(true);
+        }, 3000);
       }, 6000);
       
     } catch (error) {
