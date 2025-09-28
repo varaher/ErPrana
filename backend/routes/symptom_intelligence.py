@@ -102,6 +102,34 @@ Be intelligent - extract multiple pieces of information from each response."""
     
     return chat
 
+def needs_user_confirmation(message: str, conversation_state: dict) -> bool:
+    """
+    Detect if we need to ask user confirmation about who the symptoms are for
+    before using personal wearables data and health history
+    """
+    # Skip confirmation if already confirmed
+    if conversation_state.get('user_confirmed') is not None:
+        return False
+    
+    # Skip if this is clearly introductory or greeting
+    greeting_phrases = ['hi', 'hello', 'help', 'start', 'begin']
+    message_lower = message.lower().strip()
+    if len(message_lower.split()) <= 3 and any(phrase in message_lower for phrase in greeting_phrases):
+        return False
+    
+    # Detect if user is describing symptoms (potential need for confirmation)
+    symptom_indicators = [
+        'i have', 'i feel', 'i am having', 'experiencing', 'feeling',
+        'my', 'pain', 'hurt', 'ache', 'symptoms', 'problem',
+        'chest pain', 'headache', 'fever', 'nausea', 'dizzy',
+        'shortness of breath', 'breathing', 'cough', 'tired',
+        'he has', 'she has', 'they have', 'person has', 'patient has',
+        'someone', 'friend', 'family member', 'my child', 'my parent'
+    ]
+    
+    # If message contains symptom descriptions, we likely need confirmation
+    return any(indicator in message_lower for indicator in symptom_indicators)
+
 def detect_emergency_keywords(message: str, conversation_state: dict) -> tuple[bool, str]:
     """Detect emergency situations before LLM processing"""
     message_lower = message.lower()
