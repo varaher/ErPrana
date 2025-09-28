@@ -90,36 +90,98 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const extractAndUpdateState = (messageLower, state) => {
-    // Extract chief complaint
+    console.log('🔍 Extracting from:', messageLower);
+    console.log('📊 Current state:', state);
+    
+    // SYMPTOM INTERVIEW ENGINE - Extract all possible information from ANY input
+    
+    // 1. Extract chief complaint (if not already set)
     if (!state.chiefComplaint) {
       if (messageLower.includes('chest pain') || (messageLower.includes('chest') && messageLower.includes('pain'))) {
         state.chiefComplaint = 'chest pain';
         state.chestPain = { present: true };
       } else if (messageLower.includes('fever')) {
         state.chiefComplaint = 'fever';
+        state.fever = { present: true };
       } else if (messageLower.includes('cough')) {
         state.chiefComplaint = 'cough';
+        state.cough = { present: true };
       } else if (messageLower.includes('headache')) {
         state.chiefComplaint = 'headache';
       } else if (messageLower.includes('breathing') || messageLower.includes('shortness')) {
         state.chiefComplaint = 'breathing difficulty';
-      } else if (messageLower.includes('pain')) {
-        state.chiefComplaint = 'pain';
+        state.dyspnea = { present: true };
       }
     }
     
-    // Extract timing information
-    if (messageLower.includes('sudden') || messageLower.includes('suddenly')) {
-      state.onset = 'sudden';
-    } else if (messageLower.includes('gradual') || messageLower.includes('slowly')) {  
-      state.onset = 'gradual';
+    // 2. Extract ALL symptoms mentioned (not just chief complaint)
+    state.symptoms = state.symptoms || {};
+    
+    if (messageLower.includes('fever')) {
+      state.symptoms.fever = { present: true };
+    }
+    if (messageLower.includes('cough')) {
+      state.symptoms.cough = { present: true };
+    }
+    if (messageLower.includes('loose stools') || messageLower.includes('diarrhea') || messageLower.includes('loose motion')) {
+      state.symptoms.diarrhea = { present: true };
+    }
+    if (messageLower.includes('body pain') || messageLower.includes('body ache') || messageLower.includes('bodyache')) {
+      state.symptoms.bodyAche = { present: true };
+    }
+    if (messageLower.includes('headache')) {
+      state.symptoms.headache = { present: true };
     }
     
-    // Extract severity (1-10 scale or descriptive)
-    const severityMatch = messageLower.match(/(\d+)\/10|(\d+)\s*out\s*of\s*10|rate.*?(\d+)|(\d+)\s*pain/);
-    if (severityMatch) {
-      state.severity = severityMatch[1] || severityMatch[2] || severityMatch[3] || severityMatch[4];
-    } else if (messageLower.includes('severe') || messageLower.includes('worst')) {
+    // 3. Extract timing/duration information  
+    const durationMatches = [
+      messageLower.match(/(\d+)\s*days?/),
+      messageLower.match(/(\d+)\s*hours?/),
+      messageLower.match(/since\s*(\d+)\s*days?/),
+      messageLower.match(/for\s*(\d+)\s*days?/)
+    ];
+    
+    for (let match of durationMatches) {
+      if (match) {
+        state.duration = match[1] + (messageLower.includes('hour') ? ' hours' : ' days');
+        console.log('✅ Duration extracted:', state.duration);
+        break;
+      }
+    }
+    
+    if (messageLower.includes('sudden') || messageLower.includes('suddenly')) {
+      state.onset = 'sudden';
+      console.log('✅ Onset extracted: sudden');
+    } else if (messageLower.includes('gradual') || messageLower.includes('gradually') || messageLower.includes('slowly')) {  
+      state.onset = 'gradual';
+      console.log('✅ Onset extracted: gradual');
+    }
+    
+    // 4. Extract severity - MULTIPLE FORMATS
+    const severityPatterns = [
+      /(\d+)\/10/,
+      /(\d+)\s*out\s*of\s*10/,
+      /rate.*?(\d+)/,
+      /severity.*?(\d+)/,
+      /^(\d+)\.?$/,  // Just a number by itself
+      /is\s*(\d+)/,
+      /about\s*(\d+)/
+    ];
+    
+    for (let pattern of severityPatterns) {
+      const match = messageLower.match(pattern);
+      if (match) {
+        const num = parseInt(match[1]);
+        if (num >= 1 && num <= 10) {
+          state.severity = num;
+          console.log('✅ Severity extracted:', state.severity);
+          break;
+        }
+      }
+    }
+    
+    // Descriptive severity
+    if (messageLower.includes('severe') || messageLower.includes('worst')) {
       state.severity = 'severe';
     } else if (messageLower.includes('mild')) {
       state.severity = 'mild';
@@ -127,18 +189,37 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       state.severity = 'moderate';
     }
     
-    // Extract quality/character
-    if (messageLower.includes('crushing') || messageLower.includes('pressure')) {
-      state.quality = 'crushing/pressure';
-    } else if (messageLower.includes('sharp') || messageLower.includes('stabbing')) {
-      state.quality = 'sharp/stabbing';
-    } else if (messageLower.includes('burning')) {
-      state.quality = 'burning';
-    } else if (messageLower.includes('throbbing') || messageLower.includes('pounding')) {
-      state.quality = 'throbbing';
-    } else if (messageLower.includes('dull') || messageLower.includes('aching')) {
-      state.quality = 'dull/aching';
+    // 5. Extract temperature - MULTIPLE FORMATS
+    const tempPatterns = [
+      /(\d+\.?\d*)\s*f/,
+      /(\d+\.?\d*)\s*fahrenheit/,
+      /(\d+\.?\d*)\s*degrees?/,
+      /temp.*?(\d+\.?\d*)/,
+      /temperature.*?(\d+\.?\d*)/,
+      /recorded.*?(\d+\.?\d*)/
+    ];
+    
+    for (let pattern of tempPatterns) {
+      const match = messageLower.match(pattern);
+      if (match) {
+        const temp = parseFloat(match[1]);
+        if (temp >= 95 && temp <= 110) {
+          state.temperature = temp;
+          state.temperatureUnit = 'F';
+          console.log('✅ Temperature extracted:', temp + 'F');
+          break;
+        }
+      }
     }
+    
+    // 6. Extract user's own diagnosis/thoughts
+    if (messageLower.includes('viral fever') || messageLower.includes('viral infection')) {
+      state.userDiagnosis = 'viral fever';
+      console.log('✅ User diagnosis:', state.userDiagnosis);
+    }
+    
+    console.log('📊 Updated state:', state);
+  };
     
     // Extract fever information
     if (messageLower.includes('fever')) {
