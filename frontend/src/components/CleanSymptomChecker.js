@@ -121,6 +121,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       
       // Handle user confirmation request
       if (data.needs_user_confirmation) {
+        console.log('Showing confirmation message:', data.assistant_message);
         setTimeout(() => {
           addMessage('assistant', data.assistant_message);
         }, 500);
