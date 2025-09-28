@@ -90,9 +90,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
 
   const extractAndUpdateState = (messageLower, state) => {
-    console.log('🔍 Extracting from:', messageLower);
-    console.log('📊 Current state:', state);
-    
     // SYMPTOM INTERVIEW ENGINE - Extract all possible information from ANY input
     
     // 1. Extract chief complaint (if not already set)
