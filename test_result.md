@@ -137,15 +137,18 @@ backend:
 
   - task: "OpenAI GPT-4o LLM integration upgrade"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/routes/symptom_intelligence.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "✅ COMPLETED: Upgraded LLM integration from gpt-4o-mini to gpt-4o for enhanced medical reasoning. Updated symptom_intelligence.py to use GPT-4o model specifically. Ready for testing with improved medical knowledge capabilities."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: GPT-4o integration partially working but blocked by frontend-backend communication error. Backend API works correctly when tested directly (returns GPT-4o quality responses with emergency detection). However, frontend sends user_id as null, causing 422 validation errors. Frontend falls back to local processing instead of using GPT-4o. REQUIRES: Fix user object structure in frontend to provide valid user_id string for API calls."
 
   - task: "Feedback system for ARYA responses"
     implemented: true
