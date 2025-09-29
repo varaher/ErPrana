@@ -587,6 +587,31 @@ const CleanSymptomChecker = ({ user, onBack }) => {
               )}
               <div className="message-bubble">
                 <p>{msg.message}</p>
+                {msg.type === 'assistant' && (
+                  <div className="feedback-buttons">
+                    <button
+                      className={`feedback-btn ${msg.feedback === 'thumbs_up' ? 'active' : ''}`}
+                      onClick={() => submitFeedback(msg.id, 'thumbs_up', msg.message, msg.userMessageContext || '')}
+                      disabled={msg.feedback}
+                      title="This response was helpful"
+                    >
+                      👍
+                    </button>
+                    <button
+                      className={`feedback-btn ${msg.feedback === 'thumbs_down' ? 'active' : ''}`}
+                      onClick={() => submitFeedback(msg.id, 'thumbs_down', msg.message, msg.userMessageContext || '')}
+                      disabled={msg.feedback}
+                      title="This response was not helpful"
+                    >
+                      👎
+                    </button>
+                    {msg.feedback && (
+                      <span className="feedback-status">
+                        Thank you for your feedback!
+                      </span>
+                    )}
+                  </div>
+                )}
                 <span className="timestamp">
                   {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </span>
