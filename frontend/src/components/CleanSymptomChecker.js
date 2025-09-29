@@ -145,7 +145,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: user.id || user.email,
+          user_id: String(user.id || user.email || 'anonymous'),
           message: userMessage,
           session_id: conversationState.sessionId || null
         }),
