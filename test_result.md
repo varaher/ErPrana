@@ -361,11 +361,12 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Fix user object structure for API communication"
     - "OpenAI GPT-4o LLM integration upgrade"
     - "Feedback system for ARYA responses"
-    - "Enhanced symptom checker with GPT-4o medical reasoning"
   stuck_tasks:
     - "OpenAI speech integration backend (API key authentication failing)"
+    - "Frontend-backend user authentication integration"
   test_all: false
   test_priority: "high_first"
 
