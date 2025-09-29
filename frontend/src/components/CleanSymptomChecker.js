@@ -166,8 +166,12 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         sessionId: data.session_id
       }));
 
-      // Add assistant response
-      addMessage('assistant', data.response, data.urgency_level);
+      // Add assistant response with message ID for feedback
+      const assistantMessageId = Date.now() + 1;
+      const assistantMessage = addMessage('assistant', data.response, data.urgency_level, assistantMessageId);
+      
+      // Store the user message context for feedback
+      assistantMessage.userMessageContext = userMessage;
       
     } catch (error) {
       console.error('API Error:', error);
