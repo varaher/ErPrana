@@ -155,7 +155,7 @@ backend:
 
   - task: "Feedback system for ARYA responses"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/routes/feedback.py, /app/frontend/src/components/CleanSymptomChecker.js"
     stuck_count: 1
     priority: "high"
@@ -167,6 +167,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE: Feedback system UI implemented correctly but blocked by same frontend-backend communication error. Backend API works perfectly when tested directly (successfully stores feedback in MongoDB). Frontend shows thumbs up/down buttons on all ARYA responses, but clicking them results in 422 validation errors due to null user_id. Users see buttons but get no feedback confirmation. REQUIRES: Fix user object structure to enable feedback submission."
+      - working: true
+        agent: "testing"
+        comment: "✅ FEEDBACK SYSTEM FULLY WORKING: User_id fix resolved all issues! RESULTS: 1) Thumbs up/down buttons visible on all ARYA responses 2) Feedback API calls to /api/feedback-new/submit return 200 status (no more 422 errors) 3) Successful feedback submission confirmed with 'Thank you for your feedback!' message 4) Buttons properly disable after feedback given 5) Backend successfully stores feedback in MongoDB. Complete feedback workflow operational with proper user identification."
     implemented: true
     working: false
     file: "/app/backend/routes/voice_assistant.py"
