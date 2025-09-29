@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Phase 2: Advanced Features Implementation - 1) Wearables data sync feature with permission system, 2) Voice assistant functionality using OpenAI latest speech models for ARYA, 3) Complete health care professional mode with separate UI and backend access for doctor data input"
+user_problem_statement: "Phase 1: OpenAI GPT-4o Integration and Feedback System - 1) Upgrade LLM integration from gpt-4o-mini to gpt-4o for enhanced medical reasoning, 2) Implement simple thumbs up/down feedback system for ARYA responses, 3) Test infinite conversation flow with improved medical knowledge"
 
 backend:
   - task: "Backend health check endpoint"
