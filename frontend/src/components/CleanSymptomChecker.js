@@ -70,12 +70,14 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
-  const addMessage = (type, message) => {
+  const addMessage = (type, message, urgencyLevel = null, messageId = null) => {
     const newMessage = {
-      id: Date.now(),
+      id: messageId || Date.now(),
       type,
       message,
-      timestamp: new Date()
+      timestamp: new Date(),
+      urgencyLevel,
+      feedback: null // Track feedback for assistant messages
     };
     setMessages(prev => [...prev, newMessage]);
     return newMessage;
