@@ -83,6 +83,43 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     return newMessage;
   };
   
+  const submitFeedback = async (messageId, feedbackType, assistantMessage, userMessage) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/feedback-new/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id || user.email,
+          session_id: conversationState.sessionId || 'default',
+          message_id: messageId.toString(),
+          feedback_type: feedbackType,
+          assistant_message: assistantMessage,
+          user_message: userMessage,
+          conversation_context: conversationState
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update the message with feedback status
+        setMessages(prev => prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, feedback: feedbackType }
+            : msg
+        ));
+        
+        console.log('Feedback submitted successfully:', data.message);
+      } else {
+        console.error('Failed to submit feedback');
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+    }
+  };
+  
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isTyping) return;
     
