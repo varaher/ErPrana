@@ -108,7 +108,7 @@ Be intelligent - extract multiple pieces of information from each response."""
         api_key=api_key,
         session_id=session_id,
         system_message=system_message
-    ).with_model("openai", "gpt-4o-mini")
+    ).with_model("openai", "gpt-4o")
     
     return chat
 
