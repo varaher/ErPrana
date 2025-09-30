@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './CleanSymptomChecker.css';
 
 const CleanSymptomChecker = ({ user, onBack }) => {
-  const [feedbackModal, setFeedbackModal] = useState({ show: false, messageId: null, messageContent: null });
-  
-  const messages = useState([
+  const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'assistant',
@@ -12,6 +10,13 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       timestamp: new Date()
     }
   ]);
+  
+  const [feedbackModal, setFeedbackModal] = useState({ 
+    show: false, 
+    messageId: null, 
+    messageContent: null, 
+    userMessage: null 
+  });
   
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
