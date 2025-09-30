@@ -9,12 +9,17 @@ const WearablesSync = ({ userId }) => {
     const [syncData, setSyncData] = useState({});
     const [showPermissionModal, setShowPermissionModal] = useState(false);
     const [selectedDevice, setSelectedDevice] = useState(null);
+    const [realTimeAnalysis, setRealTimeAnalysis] = useState({});
+    const [healthAlerts, setHealthAlerts] = useState([]);
 
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
     useEffect(() => {
         loadUserDevices();
         loadUserPermissions();
+        // Poll for real-time health analysis
+        const analysisInterval = setInterval(fetchRealTimeAnalysis, 30000); // Every 30 seconds
+        return () => clearInterval(analysisInterval);
     }, [userId]);
 
     const loadUserDevices = async () => {
@@ -35,6 +40,138 @@ const WearablesSync = ({ userId }) => {
         } catch (error) {
             console.error('Error loading permissions:', error);
         }
+    };
+
+    const fetchRealTimeAnalysis = async () => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/wearable-intelligence/health-insights/${userId}?days=1`);
+            if (response.ok) {
+                const data = await response.json();
+                setRealTimeAnalysis(data);
+                
+                // Filter urgent alerts
+                const urgentAlerts = data.triage_alerts?.filter(alert => 
+                    alert.level === 'RED' || alert.level === 'ORANGE'
+                ) || [];
+                setHealthAlerts(urgentAlerts);
+            }
+        } catch (error) {
+            console.error('Error fetching real-time analysis:', error);
+        }
+    };
+
+    const submitWearableData = async (dataType, data) => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/wearable-intelligence/wearable-data/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    data_type: dataType,
+                    data: data,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                
+                // Handle real-time analysis results
+                if (result.real_time_analysis) {
+                    setRealTimeAnalysis(prev => ({
+                        ...prev,
+                        [dataType]: result.real_time_analysis
+                    }));
+                    
+                    // Show immediate recommendations if available
+                    if (result.immediate_recommendations?.length > 0) {
+                        showHealthRecommendations(dataType, result.immediate_recommendations);
+                    }
+                    
+                    // Handle triage alerts
+                    if (result.triage_level === 'RED' || result.triage_level === 'ORANGE') {
+                        showTriageAlert(dataType, result.triage_level, result.real_time_analysis);
+                    }
+                }
+                
+                return result;
+            }
+        } catch (error) {
+            console.error('Error submitting wearable data:', error);
+        }
+        return null;
+    };
+
+    const showHealthRecommendations = (dataType, recommendations) => {
+        const message = `📊 Health Analysis for ${dataType.replace('_', ' ')}:\n\n${recommendations.slice(0, 3).join('\n')}`;
+        
+        // Create a toast notification
+        const toast = document.createElement('div');
+        toast.className = 'health-recommendation-toast';
+        toast.innerHTML = `
+            <div class="toast-header">
+                <strong>💡 Health Insight</strong>
+                <button onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+            <div class="toast-body">${message}</div>
+        `;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if (toast.parentElement) toast.remove();
+        }, 10000);
+    };
+
+    const showTriageAlert = (dataType, level, analysis) => {
+        const urgencyText = level === 'RED' ? 'IMMEDIATE ATTENTION NEEDED' : 'URGENT ATTENTION NEEDED';
+        const findings = analysis.findings || ['Health pattern detected that needs attention'];
+        
+        const alert = {
+            id: Date.now(),
+            level,
+            dataType,
+            message: findings[0],
+            timestamp: new Date().toISOString(),
+            recommendations: analysis.recommendations || []
+        };
+        
+        setHealthAlerts(prev => [alert, ...prev.slice(0, 4)]); // Keep last 5 alerts
+        
+        // Show modal for critical alerts
+        if (level === 'RED') {
+            showCriticalAlertModal(alert);
+        }
+    };
+
+    const showCriticalAlertModal = (alert) => {
+        const modal = document.createElement('div');
+        modal.className = 'critical-alert-modal';
+        modal.innerHTML = `
+            <div class="modal-content critical">
+                <div class="alert-header">
+                    <h3>🚨 CRITICAL HEALTH ALERT</h3>
+                </div>
+                <div class="alert-body">
+                    <p><strong>Finding:</strong> ${alert.message}</p>
+                    <div class="recommendations">
+                        <strong>Immediate Actions:</strong>
+                        <ul>
+                            ${alert.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            <li><strong>Consider seeking immediate medical attention</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert-actions">
+                    <button onclick="this.closest('.critical-alert-modal').remove()" class="dismiss-btn">
+                        I Understand
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
     };
 
     const requestPermission = async (deviceType, requestedPermissions) => {
