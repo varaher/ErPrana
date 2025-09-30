@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import './CleanSymptomChecker.css';
 
 const CleanSymptomChecker = ({ user, onBack }) => {
-  const [messages, setMessages] = useState([
+  const [feedbackModal, setFeedbackModal] = useState({ show: false, messageId: null, messageContent: null });
+  
+  const messages = useState([
     {
       id: 1,
       type: 'assistant',
