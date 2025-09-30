@@ -742,6 +742,96 @@ Format as JSON:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating assessment: {str(e)}")
 
+def _create_enhanced_medical_prompt(user_message: str, ed_analysis: Dict[str, Any], user_id: str) -> str:
+    """Create enhanced GPT-4o prompt with ED handbook knowledge"""
+    
+    prompt = f"""You are ARYA, an advanced AI medical assistant with access to comprehensive Emergency Department knowledge.
+
+PATIENT INPUT: "{user_message}"
+
+MEDICAL KNOWLEDGE ANALYSIS:
+Primary Symptom Category: {ed_analysis.get('primary_symptom', 'general')}
+Triage Level: {ed_analysis.get('triage_level')} - {ed_analysis.get('triage_description')}
+Emergency Status: {'YES' if ed_analysis.get('emergency_detected') else 'NO'}
+
+FOLLOW-UP QUESTIONS TO CONSIDER:
+{chr(10).join(f"• {q}" for q in ed_analysis.get('follow_up_questions', [])[:3])}
+
+PROVISIONAL DIAGNOSES TO CONSIDER:
+{chr(10).join(f"• {d.get('diagnosis', 'Unknown')}: {d.get('likelihood', 'Consider')}" for d in ed_analysis.get('provisional_diagnoses', [])[:3])}
+
+RECOMMENDED INVESTIGATIONS:
+{chr(10).join(f"• {inv}" for inv in ed_analysis.get('recommended_investigations', {}).get('bedside', [])[:2])}
+
+YOUR RESPONSE MUST:
+1. Show empathy and understanding
+2. Provide clear, medically sound guidance
+3. Include ONE specific follow-up question from the ED knowledge
+4. Maintain conversational flow (never end the conversation)
+5. Use appropriate urgency level: {ed_analysis.get('triage_level')}
+
+RESPONSE FORMAT:
+- Start with empathetic acknowledgment
+- Provide medical insight based on ED knowledge
+- Include specific follow-up question
+- End with supportive continuation
+
+Remember: You have access to comprehensive Emergency Department protocols. Use this knowledge to provide sophisticated, evidence-based medical guidance while maintaining a caring, conversational tone."""
+    
+    return prompt
+
+def _combine_ed_knowledge_with_gpt(gpt_response: str, ed_analysis: Dict[str, Any]) -> str:
+    """Combine GPT-4o response with ED handbook knowledge"""
+    
+    # Start with GPT-4o response
+    combined_response = gpt_response
+    
+    # Add ED-specific enhancements if high urgency
+    if ed_analysis.get('triage_level') in ['ORANGE', 'RED']:
+        combined_response += f"\n\n**🏥 ED Handbook Notes:**\n"
+        combined_response += f"**Triage Priority:** {ed_analysis.get('triage_level')} - {ed_analysis.get('time_target', 'Standard')}\n"
+        
+        if ed_analysis.get('universal_actions'):
+            combined_response += f"\n**Recommended Actions:**\n"
+            for action in ed_analysis['universal_actions'][:3]:
+                combined_response += f"• {action}\n"
+    
+    # Add investigation recommendations for educational purposes
+    if ed_analysis.get('recommended_investigations'):
+        bedside_tests = ed_analysis['recommended_investigations'].get('bedside', [])
+        if bedside_tests and ed_analysis.get('triage_level') in ['ORANGE', 'RED']:
+            combined_response += f"\n**Healthcare Provider May Consider:**\n"
+            for test in bedside_tests[:2]:
+                combined_response += f"• {test}\n"
+    
+    combined_response += "\n\n**💬 What other questions do you have about your symptoms?**"
+    
+    return combined_response
+
+async def _fallback_symptom_analysis(request: FrontendSymptomRequest, session_id: str):
+    """Fallback to original symptom analysis if enhanced version fails"""
+    message = request.message.lower().strip()
+    
+    # Simple symptom detection
+    common_symptoms = ["headache", "fever", "cough", "pain", "nausea", "dizzy", "tired", "shortness of breath"]
+    detected_symptoms = [s for s in common_symptoms if s in message]
+    
+    if detected_symptoms:
+        response = f"I understand you're experiencing: {', '.join(detected_symptoms)}\n\n"
+        response += "Let me help you assess this. Can you tell me more about when this started?"
+        urgency = "medium"
+    else:
+        response = "I'd like to help with your health concern. Can you describe your main symptoms?"
+        urgency = "low"
+    
+    return {
+        "response": response,
+        "next_step": "conversation_continue",
+        "requires_followup": True,
+        "urgency_level": urgency,
+        "session_id": session_id
+    }
+
 def get_triage_recommendation(urgency_level: str) -> str:
     """Get triage recommendation based on urgency level"""
     recommendations = {
