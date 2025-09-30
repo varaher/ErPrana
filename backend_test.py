@@ -991,6 +991,33 @@ def main():
     tester.test_conversation_never_ends()
     tester.test_llm_integration_with_emergent_key()
 
+    # Test PHASE 3 - WEARABLE INTELLIGENCE SYSTEM - PRIORITY TESTING
+    print("\n🧠 PHASE 3 - WEARABLE INTELLIGENCE SYSTEM TESTS - PRIORITY")
+    print("=" * 50)
+    
+    # Test health dashboard
+    tester.test_wearable_intelligence_health_dashboard()
+    
+    # Test health report generation
+    tester.test_wearable_intelligence_health_report_generation()
+    
+    # Test wearable data submission with real-time analysis
+    tester.test_wearable_intelligence_data_submission_sleep()
+    tester.test_wearable_intelligence_data_submission_heart_rate()
+    tester.test_wearable_intelligence_data_submission_respiratory()
+    
+    # Test real-time analysis endpoints
+    tester.test_wearable_intelligence_real_time_analysis_heart_rate()
+    tester.test_wearable_intelligence_real_time_analysis_sleep()
+    tester.test_wearable_intelligence_real_time_analysis_respiratory()
+    
+    # Test health memory management
+    tester.test_wearable_intelligence_health_memory_add()
+    tester.test_wearable_intelligence_health_memory_get()
+    
+    # Test health insights aggregation
+    tester.test_wearable_intelligence_health_insights()
+
     # Print final results
     print("\n" + "=" * 80)
     print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
