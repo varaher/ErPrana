@@ -382,9 +382,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Wearables data sync with permission system"
-    - "Voice assistant with OpenAI speech models"
-    - "Health care professional mode complete UI"
+    - "Enhanced Medical Intelligence System (Phase 2)"
   stuck_tasks:
     - "OpenAI speech integration backend (API key authentication failing)"
   test_all: false
