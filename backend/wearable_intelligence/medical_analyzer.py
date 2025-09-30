@@ -217,7 +217,7 @@ class WearableMedicalAnalyzer:
         
         # REM Sleep Analysis
         rem_percent = sleep_data.get('rem_percentage', 0)
-        if rem_percent < sleep_thresholds["sleep"]["rem_percentage"]["normal_min"]:
+        if rem_percent < sleep_thresholds["rem_percentage"]["normal_min"]:
             analysis["findings"].append(f"Low REM sleep: {rem_percent}% (normal 15-30%)")
             analysis["recommendations"].append("Check for sleep fragmentation, alcohol use, medications")
         
@@ -227,7 +227,7 @@ class WearableMedicalAnalyzer:
             if efficiency < baseline_efficiency - 15:  # 15% drop from baseline
                 analysis["findings"].append(f"Sleep efficiency decline from personal baseline")
                 analysis["trend_analysis"]["efficiency_trend"] = "declining"
-                analysis["triage_level"] = max(analysis["triage_level"], TriageLevel.YELLOW)
+                analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
         
         return analysis
     
