@@ -62,15 +62,6 @@ function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
   
-  // Show symptom checker as separate page
-  if (currentView === 'symptom-checker') {
-    return (
-      <div className="full-page">
-        <CleanSymptomChecker user={user} onBack={() => setCurrentView('dashboard')} />
-      </div>
-    );
-  }
-  
   // Show professional dashboard as separate page
   if (currentView === 'professional') {
     return <ProfessionalDashboard userId={user.id} onBack={() => setCurrentView('dashboard')} />;
