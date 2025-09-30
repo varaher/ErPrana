@@ -367,8 +367,8 @@ class ComprehensiveHealthReporter:
             triage_level = analysis.get('triage_level', TriageLevel.GREEN)
             
             if findings:
-                severity = 'critical' if triage_level == TriageLevel.RED else \
-                          'warning' if triage_level in [TriageLevel.ORANGE, TriageLevel.YELLOW] else 'info'
+                severity = 'critical' if triage_level == 'RED' else \
+                          'warning' if triage_level in ['ORANGE', 'YELLOW'] else 'info'
                 
                 insight = HealthInsight(
                     insight_id=f"{user_id}_{domain}_{int(datetime.now().timestamp())}",
