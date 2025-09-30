@@ -271,149 +271,75 @@ class FrontendSymptomRequest(BaseModel):
 @router.post("/symptom-intelligence/analyze")
 async def symptom_intelligence_analyze(request: FrontendSymptomRequest):
     """
-    INFINITE CONVERSATION ENDPOINT - Like ChatGPT, never ends the conversation
+    ENHANCED MEDICAL INTELLIGENCE - GPT-4o + ED Handbook + Adaptive Learning
     """
     session_id = request.session_id or str(uuid.uuid4())
-    message = request.message.lower().strip()
+    message = request.message.strip()
+    user_id = request.user_id
     
-    # Check for emergency keywords first
-    emergency_keywords = ["chest pain", "can't breathe", "heart attack", "stroke", "severe bleeding", "unconscious"]
-    is_emergency = any(keyword in message for keyword in emergency_keywords)
-    
-    if is_emergency:
-        emergency_response = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\n"
-        emergency_response += "Based on your symptoms, you may need immediate medical attention:\n\n"
-        emergency_response += "**IMMEDIATE ACTIONS:**\n"
-        emergency_response += "1. Call 911 or go to the nearest emergency room\n"
-        emergency_response += "2. Do not drive yourself - get help from others\n"
-        emergency_response += "3. Stay calm and follow emergency instructions\n\n"
-        emergency_response += "**I'm still here to help answer questions while you seek care.**\n"
-        emergency_response += "What specific symptoms are you experiencing right now?"
+    try:
+        # First, use ED Medical Knowledge for comprehensive analysis
+        ed_analysis = ed_knowledge.analyze_symptoms(message, {"user_id": user_id})
+        
+        # Check if this is an emergency requiring immediate attention
+        if ed_analysis.get("requires_immediate_care", False):
+            emergency_response = f"🚨 **{ed_analysis['triage_level']} - {ed_analysis['triage_description']}** 🚨\n\n"
+            
+            if ed_analysis['triage_level'] == "RED":
+                emergency_response += "**IMMEDIATE ACTION REQUIRED:**\n"
+                emergency_response += "• Call 911 or go to the nearest emergency room NOW\n"
+                emergency_response += "• Do not drive yourself - get help from others\n"
+                emergency_response += "• Time is critical - do not delay\n\n"
+            
+            # Add universal actions for high-acuity cases
+            if ed_analysis.get("universal_actions"):
+                emergency_response += "**Emergency Care Actions:**\n"
+                for action in ed_analysis["universal_actions"][:3]:
+                    emergency_response += f"• {action}\n"
+                emergency_response += "\n"
+            
+            # Add provisional diagnoses for context
+            if ed_analysis.get("provisional_diagnoses"):
+                emergency_response += "**Possible Conditions to Discuss with Emergency Team:**\n"
+                for diagnosis in ed_analysis["provisional_diagnoses"][:2]:
+                    emergency_response += f"• {diagnosis.get('diagnosis', 'Unknown condition')}\n"
+            
+            emergency_response += "\n**I'm still here to help answer questions while you seek care.**"
+            
+            return {
+                "response": emergency_response,
+                "next_step": "emergency_care",
+                "requires_followup": True,
+                "urgency_level": ed_analysis['triage_level'].lower(),
+                "session_id": session_id,
+                "ed_analysis": ed_analysis
+            }
+        
+        # For non-emergency cases, create enhanced GPT-4o prompt with ED knowledge
+        enhanced_prompt = _create_enhanced_medical_prompt(message, ed_analysis, user_id)
+        
+        # Use GPT-4o for sophisticated medical reasoning
+        chat = create_symptom_chat(session_id)
+        user_message = UserMessage(text=enhanced_prompt)
+        gpt_response = await chat.send_message(user_message)
+        
+        # Combine ED knowledge with GPT-4o response
+        enhanced_response = _combine_ed_knowledge_with_gpt(gpt_response, ed_analysis)
         
         return {
-            "response": emergency_response,
-            "next_step": "conversation_continue",  # Still continue even in emergency
-            "requires_followup": True,
-            "urgency_level": "emergency",
-            "session_id": session_id
-        }
-    
-    # Check if this is a follow-up question
-    followup_keywords = ["what does", "explain", "what should i do", "how to", "is this", "can you", "tell me"]
-    is_followup = any(keyword in message for keyword in followup_keywords)
-    
-    if is_followup:
-        # This is a follow-up question - provide helpful response
-        if "what does" in message or "explain" in message:
-            response = "I'd be happy to explain that condition or symptom in more detail.\n\n"
-            response += "**Medical explanations I can provide:**\n"
-            response += "• What specific conditions mean\n"
-            response += "• How symptoms relate to possible causes\n"
-            response += "• What different urgency levels indicate\n"
-            response += "• Treatment options and next steps\n\n"
-            response += "What specific part would you like me to explain?"
-            
-        elif "what should i do" in message or "treatment" in message:
-            response = "Here's guidance on what you can do:\n\n"
-            response += "**General Care Steps:**\n"
-            response += "1. Monitor your symptoms closely\n"
-            response += "2. Stay hydrated and get adequate rest\n"
-            response += "3. Seek medical attention if symptoms worsen\n"
-            response += "4. Follow up with your healthcare provider\n\n"
-            response += "Would you like specific advice based on your symptoms?"
-            
-        else:
-            response = "I'm here to help with any health questions you have!\n\n"
-            response += "**I can help you with:**\n"
-            response += "• Symptom assessment and analysis\n"
-            response += "• Treatment options and recommendations\n"
-            response += "• When to seek medical care\n"
-            response += "• Prevention and lifestyle advice\n\n"
-            response += "What would you like to know more about?"
-        
-        return {
-            "response": response,
+            "response": enhanced_response,
             "next_step": "conversation_continue",
             "requires_followup": True,
-            "urgency_level": "low",
-            "session_id": session_id
+            "urgency_level": ed_analysis['triage_level'].lower(),
+            "session_id": session_id,
+            "ed_analysis": ed_analysis,
+            "medical_reasoning": "Enhanced with ED handbook knowledge + GPT-4o"
         }
-    
-    # This is a new symptom or initial assessment
-    # Provide basic assessment and ALWAYS continue conversation
-    symptom_detected = False
-    detected_symptoms = []
-    
-    common_symptoms = [
-        "headache", "fever", "cough", "pain", "nausea", "dizzy", "tired", 
-        "shortness of breath", "chest pain", "stomach ache", "back pain"
-    ]
-    
-    for symptom in common_symptoms:
-        if symptom in message:
-            detected_symptoms.append(symptom)
-            symptom_detected = True
-    
-    if symptom_detected:
-        # Generate assessment response
-        response = "**🩺 Initial Assessment**\n\n"
-        response += f"I understand you're experiencing: {', '.join(detected_symptoms)}\n\n"
         
-        # Basic triage
-        severity_keywords = ["severe", "intense", "unbearable", "worst", "can't"]
-        is_severe = any(keyword in message for keyword in severity_keywords)
-        
-        if is_severe:
-            response += "**⚡ Urgency:** 🟠 HIGH\n"
-            response += "Given the severity you described, consider seeking medical attention promptly.\n\n"
-            urgency = "high"
-        else:
-            response += "**⚡ Urgency:** 🟡 MODERATE\n"
-            response += "This appears to be a manageable condition that should be monitored.\n\n"
-            urgency = "medium"
-        
-        # Recommendations
-        response += "**💡 Recommendations:**\n"
-        response += "1. Monitor your symptoms closely\n"
-        response += "2. Stay hydrated and get adequate rest\n"
-        response += "3. Seek medical attention if symptoms worsen\n"
-        response += "4. Keep track of when symptoms started and any triggers\n\n"
-        
-        # CRITICAL: Always continue conversation
-        response += "---\n\n"
-        response += "**💬 I'm here to answer any questions about your health!**\n\n"
-        response += "Ask me:\n"
-        response += "• \"What should I do for treatment?\"\n"
-        response += "• \"When should I see a doctor?\"\n"
-        response += "• \"What could be causing this?\"\n"
-        response += "• \"I also have [other symptom]\"\n"
-        response += "• \"Is this serious?\"\n\n"
-        response += "Just ask your question! 🩺💙"
-        
-        return {
-            "response": response,
-            "next_step": "conversation_continue",  # NEVER END THE CONVERSATION
-            "requires_followup": True,  # ALWAYS ALLOW FOLLOW-UP
-            "urgency_level": urgency,
-            "session_id": session_id
-        }
-    
-    else:
-        # No specific symptoms detected - ask for clarification
-        response = "I'd like to help you with your health concern.\n\n"
-        response += "Please tell me:\n"
-        response += "• What specific symptoms are you experiencing?\n"
-        response += "• When did they start?\n"
-        response += "• How severe are they on a scale of 1-10?\n\n"
-        response += "The more details you provide, the better I can assist you!"
-        
-        return {
-            "response": response,
-            "next_step": "conversation_continue",
-            "requires_followup": True,
-            "urgency_level": "low",
-            "session_id": session_id
-        }
+    except Exception as e:
+        print(f"Error in enhanced symptom analysis: {e}")
+        # Fallback to original simple analysis
+        return await _fallback_symptom_analysis(request, session_id)
 
 async def analyze_symptom_core(request: SymptomRequest):
     try:
