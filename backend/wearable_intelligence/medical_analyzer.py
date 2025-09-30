@@ -321,7 +321,7 @@ class WearableMedicalAnalyzer:
         analysis = {
             "metric": "activity_patterns", 
             "findings": [],
-            "triage_level": TriageLevel.GREEN,
+            "triage_level": "GREEN",
             "recommendations": [],
             "medical_significance": ""
         }
