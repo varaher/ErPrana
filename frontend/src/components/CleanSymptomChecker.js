@@ -671,9 +671,19 @@ const CleanSymptomChecker = ({ user, onBack }) => {
                     >
                       👎
                     </button>
+                    <button
+                      className={`feedback-btn detailed ${msg.feedback === 'detailed' ? 'active' : ''}`}
+                      onClick={() => submitFeedback(msg.id, 'detailed', msg.message, msg.userMessageContext || '')}
+                      disabled={msg.feedback}
+                      title="Provide detailed feedback"
+                    >
+                      📝
+                    </button>
                     {msg.feedback && (
                       <span className="feedback-status">
-                        Thank you for your feedback!
+                        {msg.feedback === 'detailed' 
+                          ? "Thank you for your detailed feedback!" 
+                          : "Thank you for your feedback!"}
                       </span>
                     )}
                   </div>
