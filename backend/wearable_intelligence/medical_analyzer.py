@@ -189,7 +189,7 @@ class WearableMedicalAnalyzer:
         
         if tst < sleep_thresholds["total_sleep_time"]["normal_min"] / 60:  # <6 hours
             analysis["findings"].append(f"Short sleep duration: {tst:.1f}h (recommend ≥7h)")
-            analysis["triage_level"] = max(analysis["triage_level"], TriageLevel.YELLOW)
+            analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
             analysis["recommendations"].append("Investigate causes of short sleep: pain, OSA, insomnia, depression")
             analysis["medical_significance"] = "Chronic short sleep increases cardiometabolic risk"
         
@@ -197,7 +197,7 @@ class WearableMedicalAnalyzer:
         efficiency = sleep_data.get('sleep_efficiency', 0)
         if efficiency < sleep_thresholds["sleep_efficiency"]["critical_threshold"]:
             analysis["findings"].append(f"Poor sleep efficiency: {efficiency}% (normal ≥80%)")
-            analysis["triage_level"] = TriageLevel.ORANGE
+            analysis["triage_level"] = "ORANGE"
             analysis["red_flags"].append("Sleep fragmentation/insomnia pattern")
             analysis["recommendations"].extend([
                 "Screen for OSA, pain, anxiety, nocturia",
@@ -205,14 +205,14 @@ class WearableMedicalAnalyzer:
             ])
         elif efficiency < sleep_thresholds["sleep_efficiency"]["normal_threshold"]:
             analysis["findings"].append(f"Reduced sleep efficiency: {efficiency}% (target ≥80%)")
-            analysis["triage_level"] = TriageLevel.YELLOW
+            analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
             analysis["recommendations"].append("Sleep hygiene counseling, investigate fragmenting factors")
         
         # Sleep Onset Latency
         sol = sleep_data.get('sleep_onset_latency', 0)
         if sol > sleep_thresholds["sleep_onset_latency"]["critical_max"]:
             analysis["findings"].append(f"Prolonged sleep onset: {sol}min (normal <30min)")
-            analysis["triage_level"] = max(analysis["triage_level"], TriageLevel.YELLOW)
+            analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
             analysis["recommendations"].append("Evaluate for insomnia disorder, anxiety, stimulants")
         
         # REM Sleep Analysis
