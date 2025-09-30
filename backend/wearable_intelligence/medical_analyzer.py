@@ -248,7 +248,7 @@ class WearableMedicalAnalyzer:
         rhr = hr_data.get('resting_heart_rate', 70)
         if rhr > hr_thresholds["resting_hr"]["tachycardia_threshold"]:
             analysis["findings"].append(f"Resting tachycardia: {rhr}bpm (normal 60-100)")
-            analysis["triage_level"] = TriageLevel.ORANGE
+            analysis["triage_level"] = "ORANGE"
             analysis["red_flags"].append("Sustained tachycardia")
             analysis["recommendations"].extend([
                 "Check for fever, dehydration, anemia, thyrotoxicosis",
@@ -264,7 +264,7 @@ class WearableMedicalAnalyzer:
             
             if has_symptoms or (rhr < 50 and not is_athlete):
                 analysis["findings"].append(f"Symptomatic bradycardia: {rhr}bpm")
-                analysis["triage_level"] = TriageLevel.YELLOW
+                analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
                 analysis["recommendations"].extend([
                     "Check medications (β-blockers, CCB)",
                     "Consider ECG, electrolytes, TSH",
