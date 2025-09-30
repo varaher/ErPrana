@@ -377,7 +377,7 @@ class WearableMedicalAnalyzer:
         analysis = {
             "metric": "respiratory_patterns",
             "findings": [],
-            "triage_level": TriageLevel.GREEN,
+            "triage_level": "GREEN",
             "recommendations": [],
             "red_flags": []
         }
@@ -388,7 +388,7 @@ class WearableMedicalAnalyzer:
         spo2_nadir = respiratory_data.get('nocturnal_spo2_nadir')
         if spo2_nadir and spo2_nadir <= resp_thresholds["oxygen_saturation"]["critical_threshold"]:
             analysis["findings"].append(f"Nocturnal hypoxemia: SpO2 nadir {spo2_nadir}% (normal ≥96%)")
-            analysis["triage_level"] = TriageLevel.ORANGE
+            analysis["triage_level"] = "ORANGE"
             analysis["red_flags"].append("Significant nocturnal desaturation")
             analysis["recommendations"].extend([
                 "Sleep apnea evaluation (HSAT/PSG)",
@@ -403,9 +403,9 @@ class WearableMedicalAnalyzer:
             analysis["findings"].append(f"Sleep-disordered breathing: ODI {odi:.1f}/hr ({severity})")
             
             if odi >= 15:
-                analysis["triage_level"] = TriageLevel.ORANGE
+                analysis["triage_level"] = "ORANGE"
             else:
-                analysis["triage_level"] = TriageLevel.YELLOW
+                analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
                 
             analysis["recommendations"].extend([
                 "Sleep study evaluation",
@@ -417,7 +417,7 @@ class WearableMedicalAnalyzer:
         rr_avg = respiratory_data.get('average_respiratory_rate')
         if rr_avg and rr_avg > resp_thresholds["respiratory_rate"]["tachypnea_threshold"]:
             analysis["findings"].append(f"Tachypnea pattern: {rr_avg:.1f}/min (normal 12-20)")
-            analysis["triage_level"] = max(analysis["triage_level"], TriageLevel.YELLOW)
+            analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
             analysis["recommendations"].extend([
                 "Evaluate for underlying cause",
                 "Consider pulmonary, cardiac, metabolic causes",
@@ -431,7 +431,7 @@ class WearableMedicalAnalyzer:
         analysis = {
             "metric": "stress_autonomic",
             "findings": [],
-            "triage_level": TriageLevel.GREEN,
+            "triage_level": "GREEN",
             "recommendations": [],
             "pattern_detected": None
         }
@@ -466,7 +466,7 @@ class WearableMedicalAnalyzer:
         # Interpret combined pattern
         if strain_indicators >= 2:
             analysis["pattern_detected"] = "autonomic_strain"
-            analysis["triage_level"] = TriageLevel.YELLOW
+            analysis["triage_level"] = "YELLOW"
             analysis["recommendations"].extend([
                 "Assess for illness, overtraining, life stressors",
                 "Consider rest/recovery period",
