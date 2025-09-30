@@ -236,7 +236,7 @@ class WearableMedicalAnalyzer:
         analysis = {
             "metric": "heart_rate_patterns",
             "findings": [],
-            "triage_level": TriageLevel.GREEN,
+            "triage_level": "GREEN",
             "recommendations": [],
             "medical_significance": "",
             "red_flags": []
