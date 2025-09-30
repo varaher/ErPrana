@@ -91,6 +91,17 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   };
   
   const submitFeedback = async (messageId, feedbackType, assistantMessage, userMessage) => {
+    if (feedbackType === 'detailed') {
+      // Open detailed feedback modal
+      setFeedbackModal({
+        show: true,
+        messageId,
+        messageContent: assistantMessage,
+        userMessage: userMessage
+      });
+      return;
+    }
+
     try {
       const response = await fetch(`${BACKEND_URL}/api/feedback-new/submit`, {
         method: 'POST',
@@ -124,6 +135,54 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
+    }
+  };
+
+  const submitDetailedFeedback = async (detailedFeedback) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/learning/enhanced-submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: String(user.id || user.email || 'anonymous'),
+          session_id: conversationState.sessionId || 'default',
+          message_id: feedbackModal.messageId.toString(),
+          feedback_type: 'detailed',
+          satisfaction_score: detailedFeedback.satisfaction,
+          medical_accuracy: detailedFeedback.accuracy,
+          helpfulness: detailedFeedback.helpfulness,
+          completeness: detailedFeedback.completeness,
+          additional_comments: detailedFeedback.comments,
+          assistant_message: feedbackModal.messageContent,
+          user_message: feedbackModal.userMessage,
+          conversation_context: conversationState
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update the message with detailed feedback status
+        setMessages(prev => prev.map(msg => 
+          msg.id === feedbackModal.messageId 
+            ? { ...msg, feedback: 'detailed', feedbackDetails: detailedFeedback }
+            : msg
+        ));
+        
+        // Close modal
+        setFeedbackModal({ show: false, messageId: null, messageContent: null, userMessage: null });
+        
+        console.log('Detailed feedback submitted successfully:', data.message);
+        if (data.learning_applied) {
+          console.log('Learning applied:', data.improvement_noted);
+        }
+      } else {
+        console.error('Failed to submit detailed feedback');
+      }
+    } catch (error) {
+      console.error('Error submitting detailed feedback:', error);
     }
   };
   
