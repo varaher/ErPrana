@@ -744,6 +744,15 @@ const CleanSymptomChecker = ({ user, onBack }) => {
           </button>
         </div>
       </div>
+      
+      {/* Enhanced Feedback Modal */}
+      {feedbackModal.show && (
+        <DetailedFeedbackModal
+          onSubmit={submitDetailedFeedback}
+          onClose={() => setFeedbackModal({ show: false, messageId: null, messageContent: null, userMessage: null })}
+          messageContent={feedbackModal.messageContent}
+        />
+      )}
     </div>
   );
 };
