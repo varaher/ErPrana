@@ -341,14 +341,14 @@ class ComprehensiveHealthReporter:
             
             # Collect priority recommendations
             recommendations = analysis.get('recommendations', [])
-            if recommendations and analysis.get('triage_level') in [TriageLevel.ORANGE, TriageLevel.RED]:
+            if recommendations and analysis.get('triage_level') in ['ORANGE', 'RED']:
                 priority_recommendations.extend(recommendations[:1])  # Top recommendation for urgent issues
             
             # Collect triage alerts
-            if analysis.get('triage_level') in [TriageLevel.ORANGE, TriageLevel.RED]:
+            if analysis.get('triage_level') in ['ORANGE', 'RED']:
                 triage_alerts.append({
                     'domain': analysis.get('metric', 'unknown'),
-                    'level': analysis.get('triage_level').value,
+                    'level': analysis.get('triage_level'),
                     'alert': findings[0] if findings else 'Urgent attention needed',
                     'recommendations': recommendations[:2]
                 })
