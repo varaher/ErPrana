@@ -507,12 +507,33 @@ def _serialize_report(report) -> Dict[str, Any]:
         "overall_health_score": report.overall_health_score,
         "key_findings": report.key_findings,
         "priority_recommendations": report.priority_recommendations,
-        "triage_alerts": report.triage_alerts,
-        "sleep_analysis": report.sleep_analysis,
-        "cardiac_analysis": report.cardiac_analysis,
-        "activity_analysis": report.activity_analysis,
-        "respiratory_analysis": report.respiratory_analysis,
-        "stress_analysis": report.stress_analysis,
+        "triage_alerts": [
+            {
+                **alert,
+                "level": alert.get("level").value if hasattr(alert.get("level"), "value") else str(alert.get("level"))
+            } if isinstance(alert, dict) else alert
+            for alert in report.triage_alerts
+        ],
+        "sleep_analysis": {
+            **report.sleep_analysis,
+            "triage_level": report.sleep_analysis.get("triage_level").value if hasattr(report.sleep_analysis.get("triage_level"), "value") else str(report.sleep_analysis.get("triage_level", "GREEN"))
+        } if report.sleep_analysis else {},
+        "cardiac_analysis": {
+            **report.cardiac_analysis,
+            "triage_level": report.cardiac_analysis.get("triage_level").value if hasattr(report.cardiac_analysis.get("triage_level"), "value") else str(report.cardiac_analysis.get("triage_level", "GREEN"))
+        } if report.cardiac_analysis else {},
+        "activity_analysis": {
+            **report.activity_analysis,
+            "triage_level": report.activity_analysis.get("triage_level").value if hasattr(report.activity_analysis.get("triage_level"), "value") else str(report.activity_analysis.get("triage_level", "GREEN"))
+        } if report.activity_analysis else {},
+        "respiratory_analysis": {
+            **report.respiratory_analysis,
+            "triage_level": report.respiratory_analysis.get("triage_level").value if hasattr(report.respiratory_analysis.get("triage_level"), "value") else str(report.respiratory_analysis.get("triage_level", "GREEN"))
+        } if report.respiratory_analysis else {},
+        "stress_analysis": {
+            **report.stress_analysis,
+            "triage_level": report.stress_analysis.get("triage_level").value if hasattr(report.stress_analysis.get("triage_level"), "value") else str(report.stress_analysis.get("triage_level", "GREEN"))
+        } if report.stress_analysis else {},
         "health_trends": [
             {
                 "metric": trend.metric,
