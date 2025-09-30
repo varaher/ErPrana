@@ -262,9 +262,12 @@ async def perform_wearable_analysis(request: WearableAnalysisRequest):
             "user_id": request.user_id,
             "analysis_type": request.analysis_type,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "analysis_results": enhanced_analysis,
-            "triage_level": enhanced_analysis.get("triage_level", "GREEN"),
-            "immediate_action_needed": enhanced_analysis.get("triage_level") in ["RED", "ORANGE"]
+            "analysis_results": {
+                **enhanced_analysis,
+                "triage_level": enhanced_analysis.get("triage_level").value if hasattr(enhanced_analysis.get("triage_level"), "value") else str(enhanced_analysis.get("triage_level", "GREEN"))
+            },
+            "triage_level": enhanced_analysis.get("triage_level").value if hasattr(enhanced_analysis.get("triage_level"), "value") else str(enhanced_analysis.get("triage_level", "GREEN")),
+            "immediate_action_needed": str(enhanced_analysis.get("triage_level", "GREEN")) in ["RED", "ORANGE"]
         }
         
     except Exception as e:
