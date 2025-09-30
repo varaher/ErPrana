@@ -28,6 +28,9 @@ except ImportError:
 
 router = APIRouter()
 
+# Initialize the ED Medical Knowledge System
+ed_knowledge = EDMedicalKnowledge()
+
 class SymptomRequest(BaseModel):
     user_message: str
     session_id: str
