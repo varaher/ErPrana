@@ -15,6 +15,7 @@ from medical_knowledge.altered_mental_status import analyze_altered_mental_statu
 from medical_knowledge.poisoning_toxidromes import analyze_poisoning_symptoms, POISONING_TOXIDROMES_KNOWLEDGE
 from medical_knowledge.trauma_emergency import analyze_trauma_presentation, analyze_cardiac_arrest, TRAUMA_EMERGENCY_KNOWLEDGE
 from medical_knowledge.clinical_history_framework import generate_natural_followup, get_system_specific_questions, CLINICAL_HISTORY_FRAMEWORK
+from medical_knowledge.emergency_department_handbook import EDMedicalKnowledge
 
 # Load environment variables
 load_dotenv()
