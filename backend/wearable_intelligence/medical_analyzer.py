@@ -176,7 +176,7 @@ class WearableMedicalAnalyzer:
         analysis = {
             "metric": "sleep_architecture",
             "findings": [],
-            "triage_level": TriageLevel.GREEN,
+            "triage_level": "GREEN",  # Use string instead of enum
             "recommendations": [],
             "medical_significance": "",
             "trend_analysis": {},
