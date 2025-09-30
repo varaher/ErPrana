@@ -309,16 +309,16 @@ class ComprehensiveHealthReporter:
         domain_scores = []
         
         for analysis in domain_analyses:
-            triage_level = analysis.get('triage_level', TriageLevel.GREEN)
+            triage_level = analysis.get('triage_level', 'GREEN')
             
             # Convert triage level to numeric score
-            if triage_level == TriageLevel.GREEN:
+            if triage_level == 'GREEN':
                 score = 85 + (len(analysis.get('findings', [])) * -5)  # Minor deductions for findings
-            elif triage_level == TriageLevel.YELLOW:
+            elif triage_level == 'YELLOW':
                 score = 65 + (10 if len(analysis.get('findings', [])) <= 2 else 0)
-            elif triage_level == TriageLevel.ORANGE:
+            elif triage_level == 'ORANGE':
                 score = 45
-            elif triage_level == TriageLevel.RED:
+            elif triage_level == 'RED':
                 score = 25
             else:
                 score = 75  # Default
