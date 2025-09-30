@@ -725,6 +725,187 @@ class BackendAPITester:
         
         return success, response
 
+    # ========== PHASE 3 - WEARABLE INTELLIGENCE API TESTS ==========
+    
+    def test_wearable_intelligence_health_dashboard(self):
+        """Test wearable intelligence health dashboard"""
+        return self.run_test(
+            "Wearable Intelligence - Health Dashboard",
+            "GET",
+            f"wearable-intelligence/health-dashboard/test_user_123",
+            200
+        )
+    
+    def test_wearable_intelligence_health_report_generation(self):
+        """Test health report generation"""
+        test_data = {
+            "user_id": "test_user_123",
+            "report_type": "weekly",
+            "include_recommendations": True,
+            "include_trends": True
+        }
+        return self.run_test(
+            "Wearable Intelligence - Health Report Generation",
+            "POST",
+            "wearable-intelligence/health-reports/generate",
+            200,
+            data=test_data
+        )
+    
+    def test_wearable_intelligence_data_submission_sleep(self):
+        """Test wearable data submission with sleep data"""
+        test_data = {
+            "user_id": "test_user_123",
+            "data_type": "sleep",
+            "data": {
+                "total_sleep_time": 6.5,
+                "sleep_efficiency": 75,
+                "sleep_onset_latency": 45,
+                "rem_percentage": 18
+            }
+        }
+        return self.run_test(
+            "Wearable Intelligence - Sleep Data Submission",
+            "POST",
+            "wearable-intelligence/wearable-data/submit",
+            200,
+            data=test_data
+        )
+    
+    def test_wearable_intelligence_real_time_analysis_heart_rate(self):
+        """Test real-time wearable analysis with heart rate data"""
+        test_data = {
+            "user_id": "test_user_123",
+            "analysis_type": "heart_rate",
+            "data": {
+                "resting_heart_rate": 105,
+                "heart_rate_variability": 25,
+                "nocturnal_heart_rate": 95
+            }
+        }
+        return self.run_test(
+            "Wearable Intelligence - Real-time Heart Rate Analysis",
+            "POST",
+            "wearable-intelligence/wearable-analysis/real-time",
+            200,
+            data=test_data
+        )
+    
+    def test_wearable_intelligence_health_memory_add(self):
+        """Test adding health memory entry"""
+        test_data = {
+            "user_id": "test_user_123",
+            "condition": "Sleep Apnea",
+            "diagnosed_date": "2023-01-15",
+            "status": "active",
+            "severity": "moderate"
+        }
+        return self.run_test(
+            "Wearable Intelligence - Add Health Memory",
+            "POST",
+            "wearable-intelligence/health-memory/add",
+            200,
+            data=test_data
+        )
+    
+    def test_wearable_intelligence_health_memory_get(self):
+        """Test getting health memory"""
+        return self.run_test(
+            "Wearable Intelligence - Get Health Memory",
+            "GET",
+            "wearable-intelligence/health-memory/test_user_123",
+            200
+        )
+    
+    def test_wearable_intelligence_health_insights(self):
+        """Test health insights aggregation"""
+        return self.run_test(
+            "Wearable Intelligence - Health Insights",
+            "GET",
+            "wearable-intelligence/health-insights/test_user_123?days=30",
+            200
+        )
+    
+    def test_wearable_intelligence_data_submission_heart_rate(self):
+        """Test wearable data submission with heart rate data for real-time analysis"""
+        test_data = {
+            "user_id": "test_user_123",
+            "data_type": "heart_rate",
+            "data": {
+                "resting_heart_rate": 110,
+                "max_heart_rate": 180,
+                "heart_rate_variability": 20,
+                "irregular_rhythm_detected": True
+            }
+        }
+        return self.run_test(
+            "Wearable Intelligence - Heart Rate Data Submission",
+            "POST",
+            "wearable-intelligence/wearable-data/submit",
+            200,
+            data=test_data
+        )
+    
+    def test_wearable_intelligence_data_submission_respiratory(self):
+        """Test wearable data submission with respiratory data"""
+        test_data = {
+            "user_id": "test_user_123",
+            "data_type": "respiratory",
+            "data": {
+                "respiratory_rate": 22,
+                "breathing_pattern": "irregular",
+                "oxygen_saturation": 94
+            }
+        }
+        return self.run_test(
+            "Wearable Intelligence - Respiratory Data Submission",
+            "POST",
+            "wearable-intelligence/wearable-data/submit",
+            200,
+            data=test_data
+        )
+    
+    def test_wearable_intelligence_real_time_analysis_sleep(self):
+        """Test real-time sleep analysis"""
+        test_data = {
+            "user_id": "test_user_123",
+            "analysis_type": "sleep",
+            "data": {
+                "total_sleep_time": 4.5,
+                "sleep_efficiency": 60,
+                "sleep_onset_latency": 90,
+                "rem_percentage": 10,
+                "deep_sleep_percentage": 8
+            }
+        }
+        return self.run_test(
+            "Wearable Intelligence - Real-time Sleep Analysis",
+            "POST",
+            "wearable-intelligence/wearable-analysis/real-time",
+            200,
+            data=test_data
+        )
+    
+    def test_wearable_intelligence_real_time_analysis_respiratory(self):
+        """Test real-time respiratory analysis"""
+        test_data = {
+            "user_id": "test_user_123",
+            "analysis_type": "respiratory",
+            "data": {
+                "respiratory_rate": 28,
+                "breathing_pattern": "labored",
+                "oxygen_saturation": 88,
+                "apnea_events": 15
+            }
+        }
+        return self.run_test(
+            "Wearable Intelligence - Real-time Respiratory Analysis",
+            "POST",
+            "wearable-intelligence/wearable-analysis/real-time",
+            200,
+            data=test_data
+        )
+
 def main():
     print("🚀 Starting Comprehensive Backend API Tests for Phase 2 Advanced Features")
     print("=" * 80)
