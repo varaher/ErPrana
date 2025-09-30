@@ -332,7 +332,7 @@ class WearableMedicalAnalyzer:
         daily_steps = activity_data.get('average_daily_steps', 0)
         if daily_steps < activity_thresholds["daily_steps"]["sedentary_threshold"]:
             analysis["findings"].append(f"Sedentary activity: {daily_steps} steps/day (recommend ≥7,000)")
-            analysis["triage_level"] = TriageLevel.YELLOW
+            analysis["triage_level"] = "YELLOW"
             analysis["recommendations"].extend([
                 "Screen for barriers: pain, dyspnea, depression, anemia",
                 "Gradual increase to 7,000-10,000 steps/day",
@@ -344,7 +344,7 @@ class WearableMedicalAnalyzer:
         max_cadence = activity_data.get('peak_step_cadence', 0)
         if max_cadence < activity_thresholds["step_intensity"]["moderate_intensity"]:
             analysis["findings"].append(f"Limited step intensity: {max_cadence} steps/min (target ≥100)")
-            analysis["triage_level"] = max(analysis["triage_level"], TriageLevel.YELLOW)
+            analysis["triage_level"] = "YELLOW" if analysis["triage_level"] == "GREEN" else analysis["triage_level"]
             analysis["recommendations"].extend([
                 "Evaluate cardiopulmonary fitness",
                 "Consider exercise ECG if symptoms",
