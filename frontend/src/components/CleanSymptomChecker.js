@@ -531,7 +531,111 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     return diagnoses.slice(0, 5);
   };
 
- 
+  // Helper component for detailed feedback
+  const DetailedFeedbackModal = ({ onSubmit, onClose, messageContent }) => {
+    const [feedback, setFeedback] = useState({
+      satisfaction: 5,
+      accuracy: 5,
+      helpfulness: 5,
+      completeness: 5,
+      comments: ''
+    });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSubmit(feedback);
+    };
+
+    const handleRatingChange = (category, value) => {
+      setFeedback(prev => ({
+        ...prev,
+        [category]: value
+      }));
+    };
+
+    const RatingStars = ({ value, onChange, label }) => (
+      <div className="rating-row">
+        <label>{label}:</label>
+        <div className="stars">
+          {[1, 2, 3, 4, 5].map(star => (
+            <span
+              key={star}
+              className={`star ${star <= value ? 'filled' : ''}`}
+              onClick={() => onChange(star)}
+            >
+              ⭐
+            </span>
+          ))}
+        </div>
+        <span className="rating-text">({value}/5)</span>
+      </div>
+    );
+
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>📝 Detailed Feedback</h3>
+            <button className="close-btn" onClick={onClose}>×</button>
+          </div>
+          
+          <div className="modal-body">
+            <div className="response-preview">
+              <p><strong>ARYA's Response:</strong></p>
+              <div className="response-text">
+                {messageContent?.substring(0, 200)}...
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="feedback-ratings">
+                <RatingStars
+                  value={feedback.satisfaction}
+                  onChange={(value) => handleRatingChange('satisfaction', value)}
+                  label="Overall Satisfaction"
+                />
+                <RatingStars
+                  value={feedback.accuracy}
+                  onChange={(value) => handleRatingChange('accuracy', value)}
+                  label="Medical Accuracy"
+                />
+                <RatingStars
+                  value={feedback.helpfulness}
+                  onChange={(value) => handleRatingChange('helpfulness', value)}
+                  label="Helpfulness"
+                />
+                <RatingStars
+                  value={feedback.completeness}
+                  onChange={(value) => handleRatingChange('completeness', value)}
+                  label="Completeness"
+                />
+              </div>
+
+              <div className="comments-section">
+                <label htmlFor="comments">Additional Comments:</label>
+                <textarea
+                  id="comments"
+                  value={feedback.comments}
+                  onChange={(e) => setFeedback(prev => ({ ...prev, comments: e.target.value }))}
+                  placeholder="What could be improved? What did you find most helpful?"
+                  rows="4"
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" onClick={onClose} className="cancel-btn">
+                  Cancel
+                </button>
+                <button type="submit" className="submit-btn">
+                  Submit Feedback
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const extractPrimarySymptom = (message) => {
     const messageLower = message.toLowerCase();
