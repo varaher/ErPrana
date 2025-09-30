@@ -190,6 +190,24 @@ function App() {
           </div>
         )}
         
+        {currentView === 'health-dashboard' && (
+          <HealthDashboard user={user} />
+        )}
+        
+        {currentView === 'symptom-checker' && (
+          <CleanSymptomChecker 
+            user={user} 
+            onBack={() => setCurrentView('dashboard')} 
+          />
+        )}
+        
+        {currentView === 'professional' && (
+          <ProfessionalDashboard 
+            user={user}
+            onClose={() => setCurrentView('dashboard')}
+          />
+        )}
+        
         {currentView === 'profile' && (
           <UserProfile 
             user={user} 
