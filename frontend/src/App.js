@@ -79,6 +79,13 @@ function App() {
   // Main dashboard features - clean and minimal
   const features = [
     {
+      id: 'health-dashboard',
+      icon: '📊',
+      title: 'Health Intelligence',
+      description: 'Comprehensive health insights with AI analysis',
+      action: () => setCurrentView('health-dashboard')
+    },
+    {
       id: 'symptom-checker',
       icon: '🩺',
       title: 'Symptom Checker',
@@ -87,7 +94,7 @@ function App() {
     },
     {
       id: 'vitals-tracker',
-      icon: '📊',
+      icon: '📈',
       title: 'Health Monitoring',
       description: 'Track vitals from wearable devices',
       action: () => setCurrentView('vitals')
