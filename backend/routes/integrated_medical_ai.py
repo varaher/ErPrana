@@ -268,8 +268,10 @@ class IntegratedMedicalAI:
                 'last_asked': None,
                 'interview_complete': False
             }
+            print(f"🔧 Created new interview state for {interview_type}")
         elif 'complaint' not in interview_state:
             interview_state['complaint'] = interview_type
+            print(f"🔧 Added complaint {interview_type} to existing state")
         
         # Create structured interview request
         from .structured_medical_interview import InterviewRequest
