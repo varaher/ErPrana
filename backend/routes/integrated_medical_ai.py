@@ -337,6 +337,18 @@ class IntegratedMedicalAI:
             critical_emergency = True  
             emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nVery high fever (≥104°F) detected. **Call 911 immediately** or go to the nearest emergency room. This temperature requires immediate medical evaluation."
         
+        # Thunderclap headache (sudden severe headache - subarachnoid hemorrhage)
+        elif (('headache' in message_lower or 'head pain' in message_lower) and 
+              any(pattern in message_lower for pattern in ['sudden', 'suddenly', 'worst ever', 'worst headache', 'thunderclap', 'most severe', 'never had like this'])):
+            critical_emergency = True
+            emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nSudden severe headache (\"thunderclap headache\") may indicate SUBARACHNOID HEMORRHAGE. **Call 911 immediately** - this is a life-threatening emergency requiring immediate brain imaging. Time is critical."
+        
+        # Headache with meningitis signs
+        elif (('headache' in message_lower or 'head pain' in message_lower) and 
+              ('fever' in message_lower and ('stiff neck' in message_lower or 'neck stiffness' in message_lower))):
+            critical_emergency = True
+            emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nHeadache with fever and neck stiffness suggests possible MENINGITIS. **Call 911 immediately** - this is a life-threatening emergency requiring immediate medical attention."
+        
         # Severe chest pain with classic MI symptoms
         elif ('chest pain' in message_lower and 
               any(symptom in message_lower for symptom in ['crushing', 'severe', 'radiating to arm', 'left arm', 'jaw', 'sweating', 'can\'t breathe'])):
