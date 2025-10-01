@@ -105,6 +105,8 @@ async def get_symptom_feedback():
 # Include the routers in the main app
 app.include_router(api_router)
 app.include_router(symptom_router, prefix="/api")
+app.include_router(advanced_symptom_router, prefix="/api/advanced")
+app.include_router(nlu_router, prefix="/api/nlu")
 app.include_router(feedback_router, prefix="/api/feedback")
 app.include_router(feedback_new_router, prefix="/api/feedback-new")
 app.include_router(adaptive_learning_router, prefix="/api/learning")
