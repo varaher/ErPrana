@@ -67,6 +67,12 @@ class IntegratedMedicalAI:
             return current_interview
         
         # Check for existing interview states
+        if 'shortness_of_breath_interview_state' in conversation_state:
+            sob_state = conversation_state['shortness_of_breath_interview_state']
+            if not sob_state.get('interview_complete', False):
+                print("✅ Continuing shortness of breath interview")
+                return 'shortness_of_breath'
+        
         if 'chest_pain_interview_state' in conversation_state:
             chest_pain_state = conversation_state['chest_pain_interview_state']
             if not chest_pain_state.get('interview_complete', False):
