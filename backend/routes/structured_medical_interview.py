@@ -803,31 +803,79 @@ class StructuredMedicalInterviewer:
     
     def _evaluate_rule_condition(self, condition: str, slots: Dict[str, Any]) -> bool:
         """Safely evaluate a rule condition"""
-        # Simple rule evaluation - replace with more sophisticated parser in production
         try:
-            # Replace slot names with actual values
+            # Handle special cases first
             eval_condition = condition
             
+            # Handle 'includes' operations for arrays
+            # Pattern: "risk_factors includes 'recent_surgery'"
+            import re
+            includes_pattern = r'(\w+)\s+includes\s+[\'"]([^\'"]+)[\'"]'
+            
+            def replace_includes(match):
+                slot_name = match.group(1)
+                target_value = match.group(2)
+                slot_value = slots.get(slot_name, [])
+                
+                # Handle both list and string cases
+                if isinstance(slot_value, list):
+                    return str(target_value in slot_value)
+                elif isinstance(slot_value, str):
+                    return str(target_value in slot_value)
+                else:
+                    return 'False'
+            
+            eval_condition = re.sub(includes_pattern, replace_includes, eval_condition)
+            
+            # Handle 'not empty' operations
+            not_empty_pattern = r'(\w+)\s+not\s+empty'
+            
+            def replace_not_empty(match):
+                slot_name = match.group(1)
+                slot_value = slots.get(slot_name, [])
+                
+                if isinstance(slot_value, list):
+                    return str(len(slot_value) > 0 and slot_value != ['none'])
+                elif isinstance(slot_value, str):
+                    return str(slot_value != '' and slot_value != 'none')
+                else:
+                    return str(bool(slot_value))
+            
+            eval_condition = re.sub(not_empty_pattern, replace_not_empty, eval_condition)
+            
+            # Replace slot names with actual values
             for slot_name, value in slots.items():
                 if isinstance(value, str):
                     eval_condition = eval_condition.replace(slot_name, f"'{value}'")
-                elif isinstance(value, list):
-                    eval_condition = eval_condition.replace(f"{slot_name} includes", f"'{value}' includes")
-                    eval_condition = eval_condition.replace("includes", ".__contains__")
-                else:
+                elif isinstance(value, bool):
                     eval_condition = eval_condition.replace(slot_name, str(value))
+                elif isinstance(value, (int, float)):
+                    eval_condition = eval_condition.replace(slot_name, str(value))
+                elif isinstance(value, list):
+                    # For lists, only replace if it's not part of an includes operation
+                    if f"{slot_name} includes" not in eval_condition:
+                        eval_condition = eval_condition.replace(slot_name, str(value))
             
             # Handle operators
             eval_condition = eval_condition.replace('&&', ' and ')
             eval_condition = eval_condition.replace('||', ' or ')
             eval_condition = eval_condition.replace('==', ' == ')
+            eval_condition = eval_condition.replace('!=', ' != ')
             eval_condition = eval_condition.replace('>=', ' >= ')
             eval_condition = eval_condition.replace('<=', ' <= ')
             
-            # Simple evaluation (in production, use a proper expression parser)
-            return eval(eval_condition)
+            # Debug print for testing
+            print(f"🔍 Evaluating condition: {condition}")
+            print(f"🔍 Processed condition: {eval_condition}")
+            print(f"🔍 Available slots: {slots}")
             
-        except:
+            # Simple evaluation (in production, use a proper expression parser)
+            result = eval(eval_condition)
+            print(f"🔍 Evaluation result: {result}")
+            return result
+            
+        except Exception as e:
+            print(f"❌ Error evaluating condition '{condition}': {e}")
             return False
     
     def determine_triage_level(self, flags: List[Dict[str, Any]]) -> str:
