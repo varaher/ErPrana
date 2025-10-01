@@ -1,0 +1,19 @@
+{
+  "states": [
+    { "name": "GREETING", "entry": "If user greeting only → reply briefly and move to CHIEF_COMPLAINT_CONFIRM.", "next": "CHIEF_COMPLAINT_CONFIRM" },
+
+    { "name": "CHIEF_COMPLAINT_CONFIRM", "ask": "Are you having a fever now or recently?", "capture": "confirm_fever", "onYes": "CORE", "onNo": "END_OR_ROUTE" },
+
+    { "name": "CORE", "ask_order": ["duration_days", "onset", "max_temp_f", "measurement_site", "pattern"], "next": "ASSOCIATED" },
+
+    { "name": "ASSOCIATED", "ask_order": ["resp_symptoms", "gi_symptoms", "neuro_symptoms", "rash", "urinary_symptoms"], "next": "CONTEXT" },
+
+    { "name": "CONTEXT", "ask_order": ["exposure", "comorbidities", "age_group"], "next": "RED_FLAGS" },
+
+    { "name": "RED_FLAGS", "evaluate": "redFlagRules", "next": "SUMMARY" },
+
+    { "name": "SUMMARY", "action": "compose summary using summaryTemplate; decide triage & next_steps", "next": "END" },
+
+    { "name": "END", "action": "return final message with done=true" }
+  ]
+}
