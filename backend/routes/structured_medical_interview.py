@@ -132,10 +132,23 @@ class StructuredMedicalInterviewer:
                     break
             
             # Extract onset pattern
-            if any(word in text_lower for word in ['sudden', 'suddenly', 'acute']):
+            if any(word in text_lower for word in ['sudden', 'suddenly', 'acute', 'quick', 'fast']):
                 entities['onset'] = 'sudden'
-            elif any(word in text_lower for word in ['gradual', 'gradually', 'slow']):
+            elif any(word in text_lower for word in ['gradual', 'gradually', 'slow', 'progressive']):
                 entities['onset'] = 'gradual'
+            
+            # Extract measurement site
+            measurement_sites = {
+                'oral': ['oral', 'mouth', 'under tongue', 'tongue'],
+                'axillary': ['axillary', 'armpit', 'under arm', 'underarm', 'arm'],
+                'tympanic': ['tympanic', 'ear', 'in ear'],
+                'rectal': ['rectal', 'rectum', 'bottom']
+            }
+            
+            for site, keywords in measurement_sites.items():
+                if any(keyword in text_lower for keyword in keywords):
+                    entities['measurement_site'] = site
+                    break
             
             # Extract symptoms
             if any(word in text_lower for word in ['cough', 'coughing']):
