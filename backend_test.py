@@ -1197,7 +1197,7 @@ class BackendAPITester:
             
             # Check for emergency detection or RED triage
             emergency_detected = response.get("emergency_detected", False)
-            triage_level = response.get("triage_level", "").lower()
+            triage_level = (response.get("triage_level") or "").lower()
             
             if emergency_detected or triage_level == "red":
                 print("✅ Emergency/RED triage correctly detected for thunderclap headache")
@@ -1233,7 +1233,7 @@ class BackendAPITester:
         if success:
             # Check for emergency detection
             emergency_detected = response.get("emergency_detected", False)
-            triage_level = response.get("triage_level", "").lower()
+            triage_level = (response.get("triage_level") or "").lower()
             
             if emergency_detected or triage_level == "red":
                 print("✅ Emergency/RED triage correctly detected for meningitis signs")
@@ -1401,7 +1401,7 @@ class BackendAPITester:
             
             # Check for emergency detection or RED triage
             emergency_detected = response.get("emergency_detected", False)
-            triage_level = response.get("triage_level", "").lower()
+            triage_level = (response.get("triage_level") or "").lower()
             
             if emergency_detected or triage_level == "red":
                 print("✅ Emergency/RED triage correctly detected for PE risk factors")
@@ -1444,7 +1444,7 @@ class BackendAPITester:
         
         if success:
             # Check triage level escalation
-            triage_level = response.get("triage_level", "").lower()
+            triage_level = (response.get("triage_level") or "").lower()
             
             if triage_level == "red":
                 print("✅ RED triage correctly assigned for PE with risk factors")
@@ -1488,7 +1488,7 @@ class BackendAPITester:
                 print(f"❌ SOB interview not triggered. Active: {interview_active}, Type: {interview_type}")
             
             # Check for ORANGE triage (heart failure)
-            triage_level = response.get("triage_level", "").lower()
+            triage_level = (response.get("triage_level") or "").lower()
             
             if triage_level in ["orange", "red"]:
                 print(f"✅ Appropriate triage level for heart failure: {triage_level.upper()}")
