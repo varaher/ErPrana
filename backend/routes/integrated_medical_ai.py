@@ -198,6 +198,56 @@ class IntegratedMedicalAI:
             
             merged_data['chest_pain'] = chest_pain_data
         
+        # Extract shortness of breath interview data
+        sob_interview = conversation_state.get('shortness_of_breath_interview_state')
+        if sob_interview and sob_interview.get('slots'):
+            # Ensure collected_symptoms key exists for cross-symptom analyzer
+            sob_data = sob_interview['slots'].copy()
+            if 'collected_symptoms' not in sob_data:
+                # Create collected_symptoms from SOB fields
+                collected_symptoms = []
+                if sob_data.get('confirm_shortness_of_breath'):
+                    collected_symptoms.append('shortness_of_breath')
+                
+                # Add pattern-based symptoms
+                patterns = sob_data.get('pattern', [])
+                if isinstance(patterns, list):
+                    for pattern in patterns:
+                        if pattern == 'at_rest':
+                            collected_symptoms.append('dyspnea_at_rest')
+                        elif pattern == 'orthopnea':
+                            collected_symptoms.append('orthopnea')
+                        elif pattern == 'pnd':
+                            collected_symptoms.append('paroxysmal_nocturnal_dyspnea')
+                
+                # Add associated symptoms
+                if sob_data.get('wheeze'):
+                    collected_symptoms.append('wheeze')
+                if sob_data.get('stridor'):
+                    collected_symptoms.append('stridor')
+                if sob_data.get('chest_pain_pleuritic'):
+                    collected_symptoms.append('pleuritic_chest_pain')
+                if sob_data.get('fever'):
+                    collected_symptoms.append('fever')
+                if sob_data.get('hemoptysis'):
+                    collected_symptoms.append('hemoptysis')
+                if sob_data.get('edema_legs'):
+                    collected_symptoms.append('leg_edema')
+                
+                # Add cough information
+                cough = sob_data.get('cough')
+                if cough and cough != 'none':
+                    collected_symptoms.append(f'{cough}_cough')
+                    
+                    # Add sputum color if present
+                    sputum_color = sob_data.get('sputum_color')
+                    if sputum_color:
+                        collected_symptoms.append(f'{sputum_color}_sputum')
+                
+                sob_data['collected_symptoms'] = collected_symptoms
+            
+            merged_data['shortness_of_breath'] = sob_data
+        
         return merged_data
     
     async def process_message(self, request: IntegratedMedicalRequest) -> IntegratedMedicalResponse:
