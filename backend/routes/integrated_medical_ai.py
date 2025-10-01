@@ -14,7 +14,11 @@ from .advanced_symptom_intelligence import (
     multi_symptom_detector, emergency_detector, 
     recommendation_generator, fallback_system
 )
-from ..diagnosis_engine.cross_symptom_analyzer import CrossSymptomAnalyzer
+
+# Import diagnosis engine with absolute path
+import sys
+sys.path.append('/app/backend')
+from diagnosis_engine.cross_symptom_analyzer import CrossSymptomAnalyzer
 
 load_dotenv()
 
