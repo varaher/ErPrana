@@ -532,6 +532,9 @@ class IntegratedMedicalAI:
         if 'comorbidities' in slots:
             demographics['comorbidities'] = slots['comorbidities']
         
+        if 'risk_factors' in slots:
+            demographics['risk_factors'] = slots['risk_factors']
+        
         # Extract gender from context (would need additional logic)
         # demographics['gender'] = 'unknown'  # Default
         
