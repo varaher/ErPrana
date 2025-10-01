@@ -265,6 +265,46 @@ class IntegratedMedicalAI:
             
             merged_data['shortness_of_breath'] = sob_data
         
+        # Extract headache interview data
+        headache_interview = conversation_state.get('headache_interview_state')
+        if headache_interview and headache_interview.get('slots'):
+            # Ensure collected_symptoms key exists for cross-symptom analyzer
+            headache_data = headache_interview['slots'].copy()
+            if 'collected_symptoms' not in headache_data:
+                # Create collected_symptoms from headache fields
+                collected_symptoms = []
+                if headache_data.get('confirm_headache'):
+                    collected_symptoms.append('headache')
+                
+                # Add associated symptoms
+                associated = headache_data.get('associated', [])
+                if isinstance(associated, list):
+                    for symptom in associated:
+                        collected_symptoms.append(symptom)
+                
+                # Add neurological symptoms
+                neuro = headache_data.get('neuro', [])
+                if isinstance(neuro, list):
+                    for symptom in neuro:
+                        collected_symptoms.append(f'neuro_{symptom}')
+                
+                # Add other symptoms
+                if headache_data.get('fever'):
+                    collected_symptoms.append('fever')
+                if headache_data.get('neck_stiffness'):
+                    collected_symptoms.append('neck_stiffness')
+                if headache_data.get('trauma'):
+                    collected_symptoms.append('head_trauma')
+                
+                # Add onset type
+                onset = headache_data.get('onset')
+                if onset == 'sudden':
+                    collected_symptoms.append('thunderclap_headache')
+                
+                headache_data['collected_symptoms'] = collected_symptoms
+            
+            merged_data['headache'] = headache_data
+        
         return merged_data
     
     async def process_message(self, request: IntegratedMedicalRequest) -> IntegratedMedicalResponse:
