@@ -1,0 +1,19 @@
+{
+  "states": [
+    { "name": "GREETING", "entry": "If user greeting only → reply briefly and move to CHIEF_COMPLAINT_CONFIRM.", "next": "CHIEF_COMPLAINT_CONFIRM" },
+
+    { "name": "CHIEF_COMPLAINT_CONFIRM", "ask": "Are you experiencing shortness of breath or breathing difficulties now or recently?", "capture": "confirm_shortness_of_breath", "onYes": "CORE_HISTORY", "onNo": "END_OR_ROUTE" },
+
+    { "name": "CORE_HISTORY", "ask_order": ["duration", "onset", "pattern", "severity_scale"], "next": "ASSOCIATED" },
+
+    { "name": "ASSOCIATED", "ask_order": ["cough", "sputum_color", "wheeze", "stridor", "chest_pain_pleuritic", "fever", "hemoptysis", "edema_legs", "triggers", "relieving"], "next": "RISK_FACTORS" },
+
+    { "name": "RISK_FACTORS", "ask_order": ["risk_factors", "age_group"], "next": "RED_FLAGS" },
+
+    { "name": "RED_FLAGS", "evaluate": "redFlagRules", "next": "SUMMARY" },
+
+    { "name": "SUMMARY", "action": "compose summary using summaryTemplate; decide triage & next_steps", "next": "END" },
+
+    { "name": "END", "action": "return final message with done=true" }
+  ]
+}
