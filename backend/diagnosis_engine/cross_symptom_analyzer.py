@@ -184,7 +184,7 @@ class CrossSymptomAnalyzer:
                 # Map various user expressions to standardized symptoms
                 "fever": ["fever", "high temperature", "temp", "hot", "chills", "feverish"],
                 "chest_pain": ["chest pain", "chest discomfort", "chest tightness", "chest pressure"],
-                "shortness_of_breath": ["shortness of breath", "breathless", "difficulty breathing", "can't breathe"],
+                "shortness_of_breath": ["shortness of breath", "breathless", "difficulty breathing", "can't breathe", "sob"],
                 "abdominal_pain": ["abdominal pain", "stomach pain", "belly pain", "tummy pain"],
                 "nausea": ["nausea", "nauseous", "sick to stomach", "queasy"],
                 "vomiting": ["vomiting", "throwing up", "puking", "being sick"],
@@ -192,7 +192,13 @@ class CrossSymptomAnalyzer:
                 "cough": ["cough", "coughing", "hacking"],
                 "headache": ["headache", "head pain", "migraine"],
                 "confusion": ["confusion", "confused", "disoriented", "altered mental status"],
-                "stiff_neck": ["stiff neck", "neck stiffness", "neck rigidity"]
+                "stiff_neck": ["stiff neck", "neck stiffness", "neck rigidity"],
+                "sweating": ["sweating", "diaphoresis", "sweats", "perspiration"],
+                "palpitations": ["palpitations", "heart racing", "heart pounding", "rapid heartbeat"],
+                "dizziness": ["dizziness", "dizzy", "lightheaded", "faint", "syncope"],
+                "radiation_to_left_arm": ["radiation to left arm", "pain down left arm", "left arm pain"],
+                "radiation_to_jaw": ["radiation to jaw", "jaw pain", "pain in jaw"],
+                "radiation_to_back": ["radiation to back", "pain through to back", "back pain"]
             },
             
             "risk_factors": {
