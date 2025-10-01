@@ -1166,6 +1166,396 @@ class BackendAPITester:
             200
         )
     
+    # ========== HEADACHE INTEGRATION TESTS ==========
+    
+    def test_headache_thunderclap_subarachnoid_hemorrhage(self):
+        """Test headache: 'I have a sudden severe headache, worst of my life' (should trigger RED - subarachnoid hemorrhage)"""
+        test_data = {
+            "user_message": "I have a sudden severe headache, worst of my life",
+            "session_id": "headache_sah_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Headache Integration - Thunderclap/SAH Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if headache interview is triggered
+            interview_active = response.get("interview_active", False)
+            interview_type = response.get("interview_type")
+            
+            if interview_active and interview_type == "headache":
+                print("✅ Headache interview correctly triggered")
+            else:
+                print(f"❌ Headache interview not triggered. Active: {interview_active}, Type: {interview_type}")
+            
+            # Check for emergency detection or RED triage
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = response.get("triage_level", "").lower()
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ Emergency/RED triage correctly detected for thunderclap headache")
+            else:
+                print(f"❌ Emergency not detected. Emergency: {emergency_detected}, Triage: {triage_level}")
+            
+            # Check assistant message for SAH warning
+            assistant_message = response.get("assistant_message", "").lower()
+            if any(term in assistant_message for term in ["emergency", "911", "subarachnoid", "thunderclap"]):
+                print("✅ Emergency instructions provided for thunderclap headache")
+            else:
+                print("❌ No emergency instructions found in response")
+        
+        return success, response
+    
+    def test_headache_meningitis_fever_neck_stiffness(self):
+        """Test headache: 'I have a headache with fever and stiff neck' (should trigger RED - meningitis)"""
+        test_data = {
+            "user_message": "I have a headache with fever and stiff neck",
+            "session_id": "headache_meningitis_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Headache Integration - Meningitis Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = response.get("triage_level", "").lower()
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ Emergency/RED triage correctly detected for meningitis signs")
+            else:
+                print(f"❌ Emergency not detected for meningitis. Emergency: {emergency_detected}, Triage: {triage_level}")
+            
+            # Check assistant message for meningitis warning
+            assistant_message = response.get("assistant_message", "").lower()
+            if any(term in assistant_message for term in ["emergency", "911", "meningitis", "fever", "neck"]):
+                print("✅ Emergency instructions provided for meningitis signs")
+            else:
+                print("❌ No emergency instructions found for meningitis")
+        
+        return success, response
+    
+    def test_headache_interview_progression(self):
+        """Test headache interview progression through slots"""
+        # Step 1: Initial headache mention
+        test_data_1 = {
+            "user_message": "I have a headache",
+            "session_id": "headache_progression_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "Headache Interview - Step 1: Initial Headache",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Step 2: Provide duration and onset
+        conversation_state_2 = response_1.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "It started 2 hours ago suddenly",
+            "session_id": "headache_progression_test",
+            "conversation_state": conversation_state_2,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "Headache Interview - Step 2: Duration and Onset",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if success_2:
+            # Check if headache slots are being filled
+            updated_state = response_2.get("updated_state", {})
+            headache_state = updated_state.get("headache_interview_state", {})
+            slots = headache_state.get("slots", {})
+            
+            if "duration" in slots or "onset" in slots:
+                print("✅ Headache interview systematically collecting slots")
+            else:
+                print("❌ Headache interview not collecting slots properly")
+            
+            # Check for sudden onset red flag
+            if slots.get("onset") == "sudden":
+                print("✅ Sudden onset detected - should trigger thunderclap red flag")
+            
+            # Check interview continues
+            interview_active = response_2.get("interview_active", False)
+            if interview_active:
+                print("✅ Headache interview continuing as expected")
+            else:
+                print("❌ Headache interview not continuing")
+        
+        return success_2, response_2
+    
+    def test_headache_cross_symptom_analysis(self):
+        """Test headache conditions appear in cross-symptom analysis"""
+        # Simulate completed headache interview
+        conversation_state = {
+            "headache_interview_state": {
+                "slots": {
+                    "duration": "2 hours",
+                    "onset": "sudden",
+                    "severity_scale": 10,
+                    "location": "diffuse",
+                    "character": "worst ever",
+                    "fever": False,
+                    "neck_stiffness": False,
+                    "trauma": False,
+                    "age_group": "adult_18_40"
+                },
+                "interview_complete": True
+            }
+        }
+        
+        test_data = {
+            "user_message": "what's wrong with me?",
+            "session_id": "headache_cross_analysis_test",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Headache Integration - Cross-Symptom Analysis",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for comprehensive diagnoses with headache conditions
+            comprehensive_diagnoses = response.get("comprehensive_diagnoses", [])
+            
+            if comprehensive_diagnoses:
+                print(f"✅ Comprehensive diagnoses generated: {len(comprehensive_diagnoses)} conditions")
+                
+                # Look for headache-specific conditions
+                headache_conditions = []
+                for diagnosis in comprehensive_diagnoses:
+                    name = diagnosis.get("name", "").lower()
+                    if any(term in name for term in ["subarachnoid", "hemorrhage", "headache", "migraine", "meningitis"]):
+                        headache_conditions.append(diagnosis["name"])
+                
+                if headache_conditions:
+                    print(f"✅ Headache-specific conditions found: {headache_conditions}")
+                else:
+                    print("❌ No headache-specific conditions in comprehensive diagnoses")
+                    print(f"Available diagnoses: {[d.get('name') for d in comprehensive_diagnoses]}")
+            else:
+                print("❌ No comprehensive diagnoses generated")
+        
+        return success, response
+    
+    # ========== SOB TRIAGE BUG FIX TESTS ==========
+    
+    def test_sob_pulmonary_embolism_risk_factors(self):
+        """Test SOB: 'sudden shortness of breath with chest pain, had surgery last week' (should trigger RED - PE with risk factors)"""
+        test_data = {
+            "user_message": "sudden shortness of breath with chest pain, I had surgery last week",
+            "session_id": "sob_pe_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "SOB Triage Bug Fix - PE Risk Factors",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if SOB interview is triggered
+            interview_active = response.get("interview_active", False)
+            interview_type = response.get("interview_type")
+            
+            if interview_active and interview_type == "shortness_of_breath":
+                print("✅ SOB interview correctly triggered")
+            else:
+                print(f"❌ SOB interview not triggered. Active: {interview_active}, Type: {interview_type}")
+            
+            # Check for emergency detection or RED triage
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = response.get("triage_level", "").lower()
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ Emergency/RED triage correctly detected for PE risk factors")
+            else:
+                print(f"❌ Emergency not detected for PE. Emergency: {emergency_detected}, Triage: {triage_level}")
+        
+        return success, response
+    
+    def test_sob_risk_factor_evaluation_includes_operation(self):
+        """Test SOB risk factor evaluation with 'includes' operation for recent surgery"""
+        # Simulate SOB interview state with risk factors
+        conversation_state = {
+            "active_interview": "shortness_of_breath",
+            "shortness_of_breath_interview_state": {
+                "slots": {
+                    "onset": "sudden",
+                    "chest_pain_pleuritic": True,
+                    "risk_factors": ["recent_surgery", "smoking"],
+                    "severity_scale": 8
+                },
+                "stage": "CORE",
+                "interview_complete": False
+            }
+        }
+        
+        test_data = {
+            "user_message": "yes, I had surgery last week and now I have sudden chest pain when breathing",
+            "session_id": "sob_includes_test",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "SOB Triage Bug Fix - Includes Operation Test",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check triage level escalation
+            triage_level = response.get("triage_level", "").lower()
+            
+            if triage_level == "red":
+                print("✅ RED triage correctly assigned for PE with risk factors")
+            else:
+                print(f"❌ Expected RED triage for PE, got: {triage_level}")
+            
+            # Check for PE-specific messaging
+            assistant_message = response.get("assistant_message", "").lower()
+            if any(term in assistant_message for term in ["pulmonary embolism", "blood clot", "emergency"]):
+                print("✅ PE-specific emergency messaging provided")
+            else:
+                print("❌ No PE-specific messaging found")
+        
+        return success, response
+    
+    def test_sob_heart_failure_orthopnea_edema(self):
+        """Test SOB: 'shortness of breath, can't breathe lying flat, my legs are swollen' (should trigger ORANGE - heart failure)"""
+        test_data = {
+            "user_message": "shortness of breath, can't breathe lying flat, my legs are swollen",
+            "session_id": "sob_hf_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "SOB Integration - Heart Failure Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if SOB interview is triggered
+            interview_active = response.get("interview_active", False)
+            interview_type = response.get("interview_type")
+            
+            if interview_active and interview_type == "shortness_of_breath":
+                print("✅ SOB interview correctly triggered for heart failure symptoms")
+            else:
+                print(f"❌ SOB interview not triggered. Active: {interview_active}, Type: {interview_type}")
+            
+            # Check for ORANGE triage (heart failure)
+            triage_level = response.get("triage_level", "").lower()
+            
+            if triage_level in ["orange", "red"]:
+                print(f"✅ Appropriate triage level for heart failure: {triage_level.upper()}")
+            else:
+                print(f"❌ Expected ORANGE/RED triage for heart failure, got: {triage_level}")
+        
+        return success, response
+    
+    def test_sob_interview_risk_factor_collection(self):
+        """Test SOB interview properly collects and evaluates risk factors"""
+        # Step 1: Initial SOB mention
+        test_data_1 = {
+            "user_message": "I have sudden shortness of breath with chest pain",
+            "session_id": "sob_risk_collection_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "SOB Risk Collection - Step 1: Initial SOB",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Step 2: Provide risk factors
+        conversation_state_2 = response_1.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "I had surgery last week and have been immobilized",
+            "session_id": "sob_risk_collection_test",
+            "conversation_state": conversation_state_2,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "SOB Risk Collection - Step 2: Risk Factors",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if success_2:
+            # Check if risk factors are being collected
+            updated_state = response_2.get("updated_state", {})
+            sob_state = updated_state.get("shortness_of_breath_interview_state", {})
+            slots = sob_state.get("slots", {})
+            
+            risk_factors = slots.get("risk_factors", [])
+            if any(factor in risk_factors for factor in ["recent_surgery", "immobilization"]):
+                print("✅ SOB interview correctly collecting risk factors")
+            else:
+                print(f"❌ Risk factors not collected properly. Got: {risk_factors}")
+            
+            # Check for escalated triage due to risk factors
+            triage_level = response_2.get("triage_level", "").lower()
+            if triage_level in ["red", "orange"]:
+                print(f"✅ Triage escalated due to risk factors: {triage_level.upper()}")
+            else:
+                print(f"❌ Triage not escalated for risk factors: {triage_level}")
+        
+        return success_2, response_2
+    
     def test_fever_interview_basic_trigger(self):
         """Test 1 - Basic Fever Interview: 'i have fever since 2 days'"""
         test_data = {
