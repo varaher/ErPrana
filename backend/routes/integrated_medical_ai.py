@@ -163,6 +163,18 @@ class IntegratedMedicalAI:
         interview_state_key = f'{interview_type}_interview_state'
         interview_state = conversation_state.get(interview_state_key)
         
+        # Ensure interview state has the complaint field
+        if not interview_state:
+            interview_state = {
+                'complaint': interview_type,
+                'stage': 'GREETING',
+                'slots': {},
+                'last_asked': None,
+                'interview_complete': False
+            }
+        elif 'complaint' not in interview_state:
+            interview_state['complaint'] = interview_type
+        
         # Create structured interview request
         from .structured_medical_interview import InterviewRequest
         
