@@ -1,0 +1,35 @@
+{
+  "complaint": "chest_pain",
+  "version": "1.0.0",
+  "slots": [
+    { "name": "duration", "type": "string", "question": "When did the chest pain start?", "required": true },
+    { "name": "onset", "type": "enum", "values": ["sudden", "gradual", "unsure"], "question": "Did it start suddenly or gradually?", "required": true },
+    { "name": "nature", "type": "enum", "values": ["pressure", "stabbing", "burning", "tightness", "unsure"], "question": "What does it feel like — pressure, stabbing, burning, or tightness?", "required": true },
+    { "name": "location", "type": "string", "question": "Where exactly is the pain? Can you point to it?", "required": true },
+    { "name": "radiation", "type": "enum", "values": ["jaw", "left_arm", "right_arm", "back", "none"], "question": "Does it spread to your jaw, arm, or back?", "required": true },
+    { "name": "severity", "type": "number", "question": "On a scale of 1–10, how severe is it?", "required": true },
+    
+    { "name": "associated", "type": "multiselect", "values": ["shortness_of_breath", "sweating", "nausea", "palpitations", "dizziness", "none"], "question": "Any shortness of breath, sweating, nausea, palpitations, or dizziness?", "required": false },
+    { "name": "triggers", "type": "enum", "values": ["exertion", "rest", "stress", "unsure"], "question": "Did it occur with exertion, at rest, or during stress?", "required": false },
+    { "name": "relieving", "type": "string", "question": "Does anything make it better or worse?", "required": false },
+    
+    { "name": "risk_factors", "type": "multiselect", "values": ["hypertension", "diabetes", "smoking", "family_history", "high_cholesterol", "none"], "question": "Do you have hypertension, diabetes, high cholesterol, do you smoke, or family heart disease?", "required": false },
+    { "name": "age_group", "type": "enum", "values": ["adult_18_40", "adult_41_64", "older_65_plus"], "question": "What is your age group: 18–40, 41–64, or 65+?", "required": true }
+  ],
+
+  "redFlagRules": [
+    { "name": "sudden_severe_pain", "if": "onset == 'sudden' && severity >= 8", "triage": "red", "message": "Sudden, severe chest pain." },
+    { "name": "classic_radiation", "if": "radiation == 'jaw' || radiation == 'left_arm' || radiation == 'back'", "triage": "red", "message": "Radiation to jaw/arm/back." },
+    { "name": "associated_symptoms", "if": "associated includes 'shortness_of_breath' || associated includes 'sweating'", "triage": "red", "message": "Pain with shortness of breath/sweating." },
+    { "name": "syncope_symptoms", "if": "associated includes 'dizziness'", "triage": "orange", "message": "Chest pain with dizziness/near syncope." },
+    { "name": "cardiac_risk_factors", "if": "risk_factors includes 'diabetes' || risk_factors includes 'hypertension' || risk_factors includes 'smoking'", "triage": "orange", "message": "Cardiac risk factors present." },
+    { "name": "elderly_significant_pain", "if": "age_group == 'older_65_plus' && severity >= 5", "triage": "orange", "message": "Older age with significant chest pain." },
+    { "name": "moderate_pain", "if": "severity >= 5 && severity < 8", "triage": "yellow", "message": "Moderate chest pain requiring evaluation." }
+  ],
+
+  "completionCriteria": [
+    "duration", "onset", "nature", "location", "radiation", "severity", "age_group"
+  ],
+
+  "summaryTemplate": "Chest pain since {{duration}}, onset {{onset}}, nature {{nature}}, location {{location}}, severity {{severity}}/10, radiation {{radiation}}. Associated: {{associated}}, triggers {{triggers}}, relief {{relieving}}. Risk factors: {{risk_factors}}, age {{age_group}}. Red flags: {{red_flags}}. Triage: {{triage}}. Next steps: {{next_steps}}."
+}
