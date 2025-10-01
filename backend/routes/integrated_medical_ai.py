@@ -85,7 +85,19 @@ class IntegratedMedicalAI:
                 print("✅ Continuing fever interview")
                 return 'fever'
         
-        # Chest pain interview triggers (check first - higher priority)
+        # Shortness of breath interview triggers (check first - highest priority for respiratory emergencies)
+        sob_patterns = [
+            r'shortness of breath', r'short of breath', r'breathless', r'difficulty breathing',
+            r'can\'t breathe', r'cannot breathe', r'breathing problems', r'dyspnea', r'sob',
+            r'trouble breathing', r'hard to breathe', r'breathing difficulty'
+        ]
+        
+        for pattern in sob_patterns:
+            if re.search(pattern, message_lower):
+                print(f"✅ Shortness of breath detected with pattern: {pattern}")
+                return 'shortness_of_breath'
+        
+        # Chest pain interview triggers
         chest_pain_patterns = [
             r'chest pain', r'chest discomfort', r'chest pressure', r'chest tightness',
             r'heart pain', r'cardiac pain', r'angina', r'heart attack', r'crushing chest',
