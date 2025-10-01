@@ -1,0 +1,46 @@
+{
+  "complaint": "fever",
+  "version": "1.0.0",
+  "slots": [
+    { "name": "duration_days", "type": "number", "question": "How many days have you had the fever?", "required": true },
+    { "name": "onset", "type": "enum", "values": ["sudden", "gradual", "unsure"], "question": "Did it start suddenly or gradually?", "required": true },
+    { "name": "max_temp_f", "type": "number", "question": "What was the highest temperature you recorded (in °F)?", "required": true },
+    { "name": "measurement_site", "type": "enum", "values": ["oral","axillary","tympanic","rectal","unsure"], "question": "How was it measured (oral, axillary, tympanic, rectal)?", "required": false },
+    { "name": "pattern", "type": "enum", "values": ["continuous","intermittent","nightly","unsure"], "question": "Is the fever constant or does it come and go (intermittent/nightly)?", "required": false },
+
+    { "name": "resp_symptoms", "type": "multiselect", "values": ["cough_dry","cough_phlegm","sore_throat","runny_nose","shortness_of_breath","chest_pain","wheezing","none"], "question": "Any cough (dry or with phlegm), sore throat, runny nose, shortness of breath, chest pain, or wheezing?", "required": false },
+
+    { "name": "gi_symptoms", "type": "multiselect", "values": ["nausea","vomiting","diarrhea","abdominal_pain","none"], "question": "Any nausea, vomiting, diarrhea, or abdominal pain?", "required": false },
+
+    { "name": "neuro_symptoms", "type": "multiselect", "values": ["severe_headache","stiff_neck","confusion","seizure","fainting","none"], "question": "Any severe headache, stiff neck, confusion, seizure, or fainting?", "required": false },
+
+    { "name": "rash", "type": "enum", "values": ["yes","no","unsure"], "question": "Any new rash or tiny red/purple spots that don't fade when pressed?", "required": false },
+
+    { "name": "urinary_symptoms", "type": "multiselect", "values": ["burning","frequency","flank_pain","blood_in_urine","none"], "question": "Any urinary symptoms like burning, frequency, flank pain, or blood in urine?", "required": false },
+
+    { "name": "exposure", "type": "multiselect", "values": ["sick_contacts","travel","animal_bite","contaminated_food_water","none"], "question": "Any sick contacts, recent travel, animal bites, or suspect food/water?", "required": false },
+
+    { "name": "comorbidities", "type": "multiselect", "values": ["diabetes","hypertension","copd_asthma","heart_disease","kidney_disease","cancer_chemo","hiv_immunosuppression","pregnancy","none"], "question": "Do you have any of these conditions (diabetes, heart/kidney disease, lung disease, cancer/chemo, HIV/immunosuppression, or are you pregnant)?", "required": false },
+
+    { "name": "age_group", "type": "enum", "values": ["infant_lt_3m","child_3m_5y","child_6y_17y","adult_18_64","older_65_plus"], "question": "What is the patient's age group? (infant <3 months, child, adult, older adult)", "required": true }
+  ],
+
+  "redFlagRules": [
+    { "name": "very_high_temp", "if": "max_temp_f >= 104", "triage": "red", "message": "Very high fever (≥104°F)." },
+    { "name": "infant_fever", "if": "age_group == 'infant_lt_3m' && max_temp_f >= 100.4", "triage": "red", "message": "Fever in an infant <3 months." },
+    { "name": "meningitis_signs", "if": "neuro_symptoms includes 'stiff_neck' || neuro_symptoms includes 'confusion' || neuro_symptoms includes 'seizure'", "triage": "red", "message": "Possible meningitis/serious neuro involvement." },
+    { "name": "septic_pattern", "if": "neuro_symptoms includes 'confusion' && duration_days >= 1", "triage": "red", "message": "Confusion with fever may indicate sepsis." },
+    { "name": "resp_distress", "if": "resp_symptoms includes 'shortness_of_breath' || resp_symptoms includes 'chest_pain' || resp_symptoms includes 'wheezing'", "triage": "orange", "message": "Fever with breathing difficulty/chest pain." },
+    { "name": "purpuric_rash", "if": "rash == 'yes'", "triage": "orange", "message": "Rash with fever—assess for petechiae/purpura." },
+    { "name": "immunocompromised", "if": "comorbidities includes 'cancer_chemo' || comorbidities includes 'hiv_immunosuppression'", "triage": "orange", "message": "Immunocompromised with fever." },
+    { "name": "older_high_risk", "if": "age_group == 'older_65_plus' && duration_days >= 3 && (resp_symptoms not empty || gi_symptoms not empty)", "triage": "yellow", "message": "Older adult with persistent fever and systemic symptoms." }
+  ],
+
+  "completionCriteria": [
+    "duration_days", "onset", "max_temp_f",
+    "resp_symptoms", "gi_symptoms", "neuro_symptoms",
+    "age_group"
+  ],
+
+  "summaryTemplate": "Fever for {{duration_days}} day(s), onset {{onset}}, max {{max_temp_f}}°F ({{measurement_site}}), pattern {{pattern}}. Associated: resp={{resp_symptoms}}, GI={{gi_symptoms}}, neuro={{neuro_symptoms}}, rash={{rash}}, urinary={{urinary_symptoms}}. Risks: {{comorbidities}}, exposures={{exposure}}. Red flags: {{red_flags}}. Triage: {{triage}}. Next steps: {{next_steps}}."
+}
