@@ -204,16 +204,40 @@ const CleanSymptomChecker = ({ user, onBack }) => {
     }, 100);
 
     try {
-      // Call backend API for proper medical processing
-      const response = await fetch(`${BACKEND_URL}/api/symptom-intelligence/analyze`, {
+      // First, process natural language to translate colloquial expressions
+      let processedMessage = userMessage;
+      try {
+        const nluResponse = await fetch(`${BACKEND_URL}/api/nlu/process-natural-language`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: userMessage,
+            language: 'en'
+          }),
+        });
+
+        if (nluResponse.ok) {
+          const nluData = await nluResponse.json();
+          processedMessage = nluData.processed_text;
+          console.log('NLU Processing:', nluData);
+        }
+      } catch (nluError) {
+        console.log('NLU processing failed, using original message:', nluError);
+      }
+
+      // Call advanced symptom intelligence API
+      const response = await fetch(`${BACKEND_URL}/api/advanced/symptom-intelligence/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: String(user.id || user.email || 'anonymous'),
-          message: userMessage,
-          session_id: conversationState.sessionId || null
+          user_message: processedMessage,
+          session_id: conversationState.sessionId || `session_${Date.now()}`,
+          conversation_state: conversationState.backendState || null,
+          user_id: String(user.id || user.email || 'anonymous')
         }),
       });
 
@@ -222,25 +246,64 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
 
       const data = await response.json();
+      console.log('Advanced Symptom Analysis Response:', data);
       
       // Update conversation state with backend response
       setConversationState(prev => ({
         ...prev,
         currentStep: data.next_step,
-        requiresFollowup: data.requires_followup,
-        urgencyLevel: data.urgency_level,
-        sessionId: data.session_id
+        backendState: data.updated_state,
+        urgencyLevel: data.emergency_detected ? 'emergency' : 'normal',
+        sessionId: prev.sessionId || `session_${Date.now()}`
       }));
+
+      // Format assistant message based on response type
+      let assistantMessageText = data.assistant_message;
+      
+      // If recommendations are provided, format them nicely
+      if (data.recommendations && data.recommendations.length > 0) {
+        assistantMessageText += '\n\n**📋 Recommendations:**\n\n';
+        
+        // Group recommendations by timeframe
+        const immediate = data.recommendations.filter(r => r.timeframe === 'immediate');
+        const shortTerm = data.recommendations.filter(r => r.timeframe === 'short-term');
+        const longTerm = data.recommendations.filter(r => r.timeframe === 'long-term');
+        
+        if (immediate.length > 0) {
+          assistantMessageText += '**🚨 Immediate Actions:**\n';
+          immediate.forEach(rec => {
+            assistantMessageText += `${rec.number}. ${rec.recommendation}\n`;
+            assistantMessageText += `   *Reason: ${rec.reasoning}*\n\n`;
+          });
+        }
+        
+        if (shortTerm.length > 0) {
+          assistantMessageText += '**⏰ Short-term (24 hours):**\n';
+          shortTerm.forEach(rec => {
+            assistantMessageText += `${rec.number}. ${rec.recommendation}\n`;
+            assistantMessageText += `   *Reason: ${rec.reasoning}*\n\n`;
+          });
+        }
+        
+        if (longTerm.length > 0) {
+          assistantMessageText += '**📅 Long-term:**\n';
+          longTerm.forEach(rec => {
+            assistantMessageText += `${rec.number}. ${rec.recommendation}\n`;
+            assistantMessageText += `   *Reason: ${rec.reasoning}*\n\n`;
+          });
+        }
+      }
 
       // Add assistant response with message ID for feedback
       const assistantMessageId = Date.now() + 1;
-      const assistantMessage = addMessage('assistant', data.response, data.urgency_level, assistantMessageId);
+      const urgencyLevel = data.emergency_detected ? 'emergency' : 'normal';
+      const assistantMessage = addMessage('assistant', assistantMessageText, urgencyLevel, assistantMessageId);
       
       // Store the user message context for feedback
       assistantMessage.userMessageContext = userMessage;
       
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('Advanced API Error:', error);
       // Fallback to local processing
       const response = processSymptomWithMedicalKnowledge(userMessage);
       addMessage('assistant', response);
