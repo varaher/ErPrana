@@ -367,6 +367,15 @@ class CrossSymptomAnalyzer:
                 if age_group in risk_data.get("groups", []):
                     base_score *= risk_data["multiplier"]
         
+        # Apply condition-specific risk factor boosts
+        condition = self.diagnostic_knowledge_base["conditions"][condition_key]
+        if "risk_factor_boost" in condition:
+            risk_factors = patient_demographics.get("risk_factors", [])
+            for risk_factor, multiplier in condition["risk_factor_boost"].items():
+                if risk_factor in risk_factors:
+                    base_score *= multiplier
+                    print(f"🔥 Applied {risk_factor} boost ({multiplier}x) to {condition['name']}: {base_score}")
+        
         # Cap at 99% (never 100% certain without diagnostics)
         return min(base_score, 99)
     
