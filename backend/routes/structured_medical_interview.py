@@ -225,6 +225,141 @@ class StructuredMedicalInterviewer:
             
             if neuro_symptoms:
                 entities['neuro_symptoms'] = neuro_symptoms
+        
+        elif complaint == 'chest_pain':
+            # Chest pain-specific entity extraction
+            
+            # Extract duration
+            duration_patterns = [
+                r'since\s+(\d+)\s+(hours?|days?|weeks?)',
+                r'for\s+(\d+)\s+(hours?|days?|weeks?)',
+                r'(\d+)\s+(hours?|days?|weeks?)\s+ago',
+                r'since\s+(yesterday|today|this morning|last night)',
+                r'for\s+the\s+last\s+(\d+)\s+(hours?|days?)'
+            ]
+            
+            for pattern in duration_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    entities['duration'] = match.group(0)
+                    break
+            
+            # Extract onset
+            if any(word in text_lower for word in ['sudden', 'suddenly', 'acute', 'came on quick']):
+                entities['onset'] = 'sudden'
+            elif any(word in text_lower for word in ['gradual', 'gradually', 'slow', 'progressive']):
+                entities['onset'] = 'gradual'
+            
+            # Extract nature/character of pain
+            if any(word in text_lower for word in ['pressure', 'pressing', 'tight', 'squeezing']):
+                entities['nature'] = 'pressure'
+            elif any(word in text_lower for word in ['stabbing', 'sharp', 'knife-like']):
+                entities['nature'] = 'stabbing'
+            elif any(word in text_lower for word in ['burning', 'acid']):
+                entities['nature'] = 'burning'
+            elif any(word in text_lower for word in ['tightness', 'tight']):
+                entities['nature'] = 'tightness'
+            
+            # Extract location
+            if any(word in text_lower for word in ['center', 'middle', 'sternum', 'center of chest']):
+                entities['location'] = 'center of chest'
+            elif any(word in text_lower for word in ['left chest', 'left side']):
+                entities['location'] = 'left chest'
+            elif any(word in text_lower for word in ['right chest', 'right side']):
+                entities['location'] = 'right chest'
+            elif any(word in text_lower for word in ['substernal', 'under breastbone']):
+                entities['location'] = 'substernal'
+            
+            # Extract radiation
+            if any(word in text_lower for word in ['jaw', 'to jaw', 'radiates to jaw']):
+                entities['radiation'] = 'jaw'
+            elif any(word in text_lower for word in ['left arm', 'down left arm']):
+                entities['radiation'] = 'left_arm'
+            elif any(word in text_lower for word in ['right arm', 'down right arm']):
+                entities['radiation'] = 'right_arm'
+            elif any(word in text_lower for word in ['back', 'to back', 'through to back']):
+                entities['radiation'] = 'back'
+            elif any(word in text_lower for word in ['no radiation', 'doesn\'t spread', 'localized']):
+                entities['radiation'] = 'none'
+            
+            # Extract severity (1-10 scale)
+            severity_patterns = [
+                r'(\d+)\s*(?:out of|/)\s*10',
+                r'severity\s*(\d+)',
+                r'pain\s*(?:is\s*)?(\d+)',
+                r'(\d+)\s*(?:on the scale|scale)'
+            ]
+            
+            for pattern in severity_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    severity = int(match.group(1))
+                    if 1 <= severity <= 10:
+                        entities['severity'] = severity
+                        break
+            
+            # Extract associated symptoms
+            associated_symptoms = []
+            if any(word in text_lower for word in ['shortness of breath', 'breathless', 'short of breath', 'sob']):
+                associated_symptoms.append('shortness_of_breath')
+            if any(word in text_lower for word in ['sweating', 'diaphoresis', 'sweats']):
+                associated_symptoms.append('sweating')
+            if any(word in text_lower for word in ['nausea', 'nauseous', 'sick']):
+                associated_symptoms.append('nausea')
+            if any(word in text_lower for word in ['palpitations', 'heart racing', 'pounding heart']):
+                associated_symptoms.append('palpitations')
+            if any(word in text_lower for word in ['dizziness', 'dizzy', 'lightheaded', 'faint']):
+                associated_symptoms.append('dizziness')
+            if any(word in text_lower for word in ['none', 'no other symptoms']):
+                associated_symptoms.append('none')
+            
+            if associated_symptoms:
+                entities['associated'] = associated_symptoms
+            
+            # Extract triggers
+            if any(word in text_lower for word in ['exertion', 'exercise', 'climbing stairs', 'walking']):
+                entities['triggers'] = 'exertion'
+            elif any(word in text_lower for word in ['at rest', 'resting', 'sitting']):
+                entities['triggers'] = 'rest'
+            elif any(word in text_lower for word in ['stress', 'anxiety', 'emotional']):
+                entities['triggers'] = 'stress'
+            
+            # Extract risk factors
+            risk_factors = []
+            if any(word in text_lower for word in ['hypertension', 'high blood pressure', 'high bp']):
+                risk_factors.append('hypertension')
+            if any(word in text_lower for word in ['diabetes', 'diabetic', 'sugar']):
+                risk_factors.append('diabetes')
+            if any(word in text_lower for word in ['smoke', 'smoker', 'smoking']):
+                risk_factors.append('smoking')
+            if any(word in text_lower for word in ['family history', 'family heart', 'father heart attack']):
+                risk_factors.append('family_history')
+            if any(word in text_lower for word in ['high cholesterol', 'cholesterol', 'lipids']):
+                risk_factors.append('high_cholesterol')
+            if any(word in text_lower for word in ['none', 'no risk factors']):
+                risk_factors.append('none')
+            
+            if risk_factors:
+                entities['risk_factors'] = risk_factors
+            
+            # Extract age group
+            age_patterns = [
+                r'(\d{2})\s*(?:years old|year old|yo)',
+                r'age\s*(\d{2})',
+                r'i am\s*(\d{2})'
+            ]
+            
+            for pattern in age_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    age = int(match.group(1))
+                    if age >= 65:
+                        entities['age_group'] = 'older_65_plus'
+                    elif age >= 41:
+                        entities['age_group'] = 'adult_41_64'
+                    elif age >= 18:
+                        entities['age_group'] = 'adult_18_40'
+                    break
             
             # Extract age group (simple heuristic)
             age_patterns = [
