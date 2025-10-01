@@ -410,7 +410,7 @@ class CrossSymptomAnalyzer:
         age_group = demographics.get("age_group")
         if age_group and "age_modifiers" in condition:
             if condition["age_modifiers"].get(age_group, 1.0) > 1.0:
-                reasons.append(f"Higher risk due to age group")
+                reasons.append("Higher risk due to age group")
         
         return "; ".join(reasons) if reasons else "Based on symptom pattern"
     
