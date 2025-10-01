@@ -864,14 +864,8 @@ class StructuredMedicalInterviewer:
             eval_condition = eval_condition.replace('>=', ' >= ')
             eval_condition = eval_condition.replace('<=', ' <= ')
             
-            # Debug print for testing
-            print(f"🔍 Evaluating condition: {condition}")
-            print(f"🔍 Processed condition: {eval_condition}")
-            print(f"🔍 Available slots: {slots}")
-            
             # Simple evaluation (in production, use a proper expression parser)
             result = eval(eval_condition)
-            print(f"🔍 Evaluation result: {result}")
             return result
             
         except Exception as e:
