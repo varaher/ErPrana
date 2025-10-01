@@ -448,7 +448,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete headache integration in cross_symptom_analyzer and fix SOB triage bug"
+    - "Fix thunderclap headache emergency detection and SOB triage escalation logic"
+    - "Debug cross-symptom analysis 'collected_symptoms' error"
+    - "Fix red flag rule evaluation during active interviews"
   stuck_tasks:
     - "OpenAI speech integration backend (API key authentication failing)"
     - "Intelligent Wearable Medical Analytics System (Phase 3) - Login system blocking access"
