@@ -104,12 +104,32 @@ class IntegratedMedicalAI:
         # Extract fever interview data
         fever_interview = conversation_state.get('fever_interview_state')
         if fever_interview and fever_interview.get('slots'):
-            merged_data['fever'] = fever_interview['slots']
-        
-        # Future: Extract other interview data
-        # chest_pain_interview = conversation_state.get('chest_pain_interview_state')
-        # if chest_pain_interview:
-        #     merged_data['chest_pain'] = chest_pain_interview['slots']
+            # Ensure collected_symptoms key exists for cross-symptom analyzer
+            fever_data = fever_interview['slots'].copy()
+            if 'collected_symptoms' not in fever_data:
+                # Create collected_symptoms from various symptom fields
+                collected_symptoms = []
+                if fever_data.get('confirm_fever'):
+                    collected_symptoms.append('fever')
+                
+                # Add respiratory symptoms
+                resp_symptoms = fever_data.get('resp_symptoms', [])
+                if isinstance(resp_symptoms, list):
+                    collected_symptoms.extend([s for s in resp_symptoms if s != 'none'])
+                
+                # Add GI symptoms
+                gi_symptoms = fever_data.get('gi_symptoms', [])
+                if isinstance(gi_symptoms, list):
+                    collected_symptoms.extend([s for s in gi_symptoms if s != 'none'])
+                
+                # Add neurological symptoms
+                neuro_symptoms = fever_data.get('neuro_symptoms', [])
+                if isinstance(neuro_symptoms, list):
+                    collected_symptoms.extend([s for s in neuro_symptoms if s != 'none'])
+                
+                fever_data['collected_symptoms'] = collected_symptoms
+            
+            merged_data['fever'] = fever_data
         
         return merged_data
     
