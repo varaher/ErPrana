@@ -174,7 +174,7 @@ class IntegratedMedicalAI:
         conversation_state = request.conversation_state or {}
         user_message = request.user_message.strip()
         
-        # Enhanced emergency detection first (highest priority)
+        # Enhanced emergency detection first (highest priority) 
         all_symptoms = self._extract_all_mentioned_symptoms(conversation_state, user_message)
         emergency_result = emergency_detector.detect_emergency(user_message, all_symptoms)
         
@@ -198,15 +198,19 @@ class IntegratedMedicalAI:
             critical_emergency = True  
             emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nVery high fever (≥104°F) detected. **Call 911 immediately** or go to the nearest emergency room. This temperature requires immediate medical evaluation."
         
-        # Use original emergency detection or critical detection
-        if critical_emergency or emergency_result["is_emergency"]:
+        # Severe chest pain with classic MI symptoms
+        elif ('chest pain' in message_lower and 
+              any(symptom in message_lower for symptom in ['crushing', 'severe', 'radiating to arm', 'left arm', 'jaw', 'sweating', 'can\'t breathe'])):
+            critical_emergency = True
+            emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nSevere chest pain with concerning features may indicate HEART ATTACK. **Call 911 immediately** - do not drive yourself. Time is critical for heart muscle preservation."
+        
+        # Use critical detection only (not the general emergency detector for chest pain)
+        if critical_emergency:
             conversation_state['emergency_detected'] = True
-            conversation_state['emergency_type'] = emergency_result.get("emergency_flags", ["critical_emergency"])
-            
-            final_message = emergency_message if critical_emergency else emergency_result["emergency_message"]
+            conversation_state['emergency_type'] = ["critical_emergency"]
             
             return IntegratedMedicalResponse(
-                assistant_message=final_message,
+                assistant_message=emergency_message,
                 updated_state=conversation_state,
                 next_step="emergency_care",
                 emergency_detected=True,
