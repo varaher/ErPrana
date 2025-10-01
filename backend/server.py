@@ -13,6 +13,7 @@ from datetime import datetime
 # Import all routers
 from routes.symptom_intelligence import router as symptom_router
 from routes.advanced_symptom_intelligence import router as advanced_symptom_router
+from routes.structured_medical_interview import router as structured_interview_router
 from routes.natural_language_processor import router as nlu_router
 from routes.feedback_system import router as feedback_router
 from routes.feedback import router as feedback_new_router
