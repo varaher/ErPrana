@@ -70,6 +70,15 @@ class StructuredMedicalInterviewer:
         """Detect the primary complaint from user message"""
         message_lower = message.lower()
         
+        # Chest pain detection patterns (check first - higher priority)
+        chest_pain_patterns = [
+            r'chest pain', r'chest discomfort', r'chest pressure', r'chest tightness',
+            r'heart pain', r'cardiac pain', r'angina', r'heart attack', r'crushing chest'
+        ]
+        
+        if any(re.search(pattern, message_lower) for pattern in chest_pain_patterns):
+            return 'chest_pain'
+        
         # Fever detection patterns
         fever_patterns = [
             r'fever', r'high temperature', r'temp', r'burning up', r'hot', 
@@ -78,10 +87,6 @@ class StructuredMedicalInterviewer:
         
         if any(re.search(pattern, message_lower) for pattern in fever_patterns):
             return 'fever'
-        
-        # Add more complaint detection as we add more interview scripts
-        # abdominal_pain_patterns = [r'abdominal pain', r'stomach pain', r'belly pain']
-        # chest_pain_patterns = [r'chest pain', r'chest discomfort']
         
         return 'general'  # Default to general if no specific complaint detected
     
