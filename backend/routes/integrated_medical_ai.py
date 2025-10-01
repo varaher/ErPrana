@@ -119,16 +119,39 @@ class IntegratedMedicalAI:
         conversation_state = request.conversation_state or {}
         user_message = request.user_message.strip()
         
-        # Emergency detection first (highest priority)
+        # Enhanced emergency detection first (highest priority)
         all_symptoms = self._extract_all_mentioned_symptoms(conversation_state, user_message)
         emergency_result = emergency_detector.detect_emergency(user_message, all_symptoms)
         
-        if emergency_result["is_emergency"]:
+        # Check for critical emergency combinations
+        message_lower = user_message.lower()
+        critical_emergency = False
+        emergency_message = ""
+        
+        # Meningitis signs
+        if ('fever' in message_lower and ('stiff neck' in message_lower or 'confusion' in message_lower)):
+            critical_emergency = True
+            emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nFever with neurological symptoms (stiff neck/confusion) suggests possible MENINGITIS. **Call 911 immediately** - this is a life-threatening emergency requiring immediate medical attention. Time is critical."
+        
+        # Sepsis signs  
+        elif ('fever' in message_lower and 'confusion' in message_lower):
+            critical_emergency = True
+            emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nFever with confusion may indicate SEPSIS. **Call 911 immediately** - this is a life-threatening condition requiring emergency care."
+        
+        # High fever
+        elif re.search(r'(104|105|106)\s*(?:degree|°)?\s*(?:f|fahrenheit)', message_lower):
+            critical_emergency = True  
+            emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nVery high fever (≥104°F) detected. **Call 911 immediately** or go to the nearest emergency room. This temperature requires immediate medical evaluation."
+        
+        # Use original emergency detection or critical detection
+        if critical_emergency or emergency_result["is_emergency"]:
             conversation_state['emergency_detected'] = True
-            conversation_state['emergency_type'] = emergency_result["emergency_flags"]
+            conversation_state['emergency_type'] = emergency_result.get("emergency_flags", ["critical_emergency"])
+            
+            final_message = emergency_message if critical_emergency else emergency_result["emergency_message"]
             
             return IntegratedMedicalResponse(
-                assistant_message=emergency_result["emergency_message"],
+                assistant_message=final_message,
                 updated_state=conversation_state,
                 next_step="emergency_care",
                 emergency_detected=True,
