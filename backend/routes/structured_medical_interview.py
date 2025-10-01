@@ -968,6 +968,198 @@ class StructuredMedicalInterviewer:
                     'icd10': 'R50.9'
                 })
         
+        elif complaint == 'shortness_of_breath':
+            # SOB-specific diagnosis logic
+            onset = slots.get('onset')
+            pattern = slots.get('pattern', [])
+            severity = slots.get('severity_scale', 0)
+            risk_factors = slots.get('risk_factors', [])
+            
+            # High-risk diagnoses based on red flags
+            if triage_level == 'red':
+                if slots.get('stridor'):
+                    diagnoses.append({
+                        'name': 'Upper Airway Obstruction',
+                        'probability': 90,
+                        'reasoning': 'Stridor indicates upper airway obstruction',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'J39.9'
+                    })
+                
+                if (onset == 'sudden' and slots.get('chest_pain_pleuritic') and
+                    (slots.get('hemoptysis') or any(rf in risk_factors for rf in ['recent_surgery', 'immobilization', 'clot_history']))):
+                    diagnoses.append({
+                        'name': 'Pulmonary Embolism',
+                        'probability': 85,
+                        'reasoning': 'Sudden onset with pleuritic pain and risk factors',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'I26.9'
+                    })
+                
+                if 'at_rest' in pattern or severity >= 8:
+                    diagnoses.append({
+                        'name': 'Acute Respiratory Failure',
+                        'probability': 80,
+                        'reasoning': 'Severe dyspnea at rest',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'J96.9'
+                    })
+            
+            # Orange triage diagnoses
+            elif triage_level == 'orange':
+                if ('orthopnea' in pattern or 'pnd' in pattern) and slots.get('edema_legs'):
+                    diagnoses.append({
+                        'name': 'Acute Heart Failure',
+                        'probability': 75,
+                        'reasoning': 'Orthopnea/PND with leg edema',
+                        'urgency': 'URGENT',
+                        'icd10': 'I50.9'
+                    })
+                
+                if slots.get('fever') and (slots.get('cough') == 'productive' or slots.get('chest_pain_pleuritic')):
+                    diagnoses.append({
+                        'name': 'Pneumonia',
+                        'probability': 70,
+                        'reasoning': 'Fever with productive cough or pleuritic pain',
+                        'urgency': 'URGENT',
+                        'icd10': 'J18.9'
+                    })
+                
+                if slots.get('wheeze') and severity >= 7:
+                    if 'asthma' in risk_factors:
+                        diagnoses.append({
+                            'name': 'Acute Asthma Exacerbation',
+                            'probability': 75,
+                            'reasoning': 'Severe wheeze in known asthmatic',
+                            'urgency': 'URGENT',
+                            'icd10': 'J45.9'
+                        })
+                    elif 'copd' in risk_factors:
+                        diagnoses.append({
+                            'name': 'COPD Exacerbation',
+                            'probability': 70,
+                            'reasoning': 'Severe wheeze in COPD patient',
+                            'urgency': 'URGENT',
+                            'icd10': 'J44.1'
+                        })
+            
+            # Common respiratory conditions
+            if 'exertional' in pattern and not diagnoses:
+                diagnoses.append({
+                    'name': 'Exercise Intolerance',
+                    'probability': 60,
+                    'reasoning': 'Dyspnea primarily with exertion',
+                    'urgency': 'ROUTINE',
+                    'icd10': 'R06.0'
+                })
+            
+            # Default if no specific pattern
+            if not diagnoses:
+                diagnoses.append({
+                    'name': 'Dyspnea - Unspecified',
+                    'probability': 40,
+                    'reasoning': 'Shortness of breath without specific pattern',
+                    'urgency': 'ROUTINE',
+                    'icd10': 'R06.0'
+                })
+        
+        elif complaint == 'headache':
+            # Headache-specific diagnosis logic
+            onset = slots.get('onset')
+            severity = slots.get('severity_scale', 0)
+            location = slots.get('location', '')
+            character = slots.get('character', '')
+            associated = slots.get('associated', [])
+            neuro = slots.get('neuro', [])
+            
+            # High-risk diagnoses based on red flags
+            if triage_level == 'red':
+                if onset == 'sudden' or severity >= 9:
+                    diagnoses.append({
+                        'name': 'Subarachnoid Hemorrhage',
+                        'probability': 85,
+                        'reasoning': 'Sudden severe headache (thunderclap pattern)',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'I60.9'
+                    })
+                
+                if slots.get('fever') and slots.get('neck_stiffness'):
+                    diagnoses.append({
+                        'name': 'Bacterial Meningitis',
+                        'probability': 90,
+                        'reasoning': 'Headache with fever and neck stiffness',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'G00.9'
+                    })
+                
+                if neuro and len(neuro) > 0:
+                    diagnoses.append({
+                        'name': 'Intracranial Hemorrhage',
+                        'probability': 80,
+                        'reasoning': 'Headache with neurologic deficits',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'I61.9'
+                    })
+                
+                if slots.get('trauma'):
+                    diagnoses.append({
+                        'name': 'Post-Traumatic Intracranial Hemorrhage',
+                        'probability': 85,
+                        'reasoning': 'Headache following head trauma',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'S06.9'
+                    })
+            
+            # Orange triage diagnoses
+            elif triage_level == 'orange':
+                age_group = slots.get('age_group')
+                past_history = slots.get('past_history', [])
+                
+                if age_group == 'older_65_plus' and not past_history:
+                    diagnoses.append({
+                        'name': 'Temporal Arteritis',
+                        'probability': 70,
+                        'reasoning': 'New headache in elderly patient',
+                        'urgency': 'URGENT',
+                        'icd10': 'M31.6'
+                    })
+            
+            # Primary headache disorders
+            if not diagnoses and triage_level in ['yellow', 'green']:
+                if ('unilateral' in location and 'throbbing' in character and 
+                    any(s in associated for s in ['nausea', 'photophobia', 'phonophobia'])):
+                    diagnoses.append({
+                        'name': 'Migraine',
+                        'probability': 75,
+                        'reasoning': 'Unilateral throbbing headache with associated symptoms',
+                        'urgency': 'ROUTINE',
+                        'icd10': 'G43.9'
+                    })
+                elif 'bilateral' in location and 'pressure' in character:
+                    diagnoses.append({
+                        'name': 'Tension-Type Headache',
+                        'probability': 70,
+                        'reasoning': 'Bilateral pressure-type headache',
+                        'urgency': 'ROUTINE',
+                        'icd10': 'G44.2'
+                    })
+                elif 'unilateral' in location and severity >= 8:
+                    diagnoses.append({
+                        'name': 'Cluster Headache',
+                        'probability': 65,
+                        'reasoning': 'Severe unilateral headache',
+                        'urgency': 'ROUTINE',
+                        'icd10': 'G44.0'
+                    })
+                else:
+                    diagnoses.append({
+                        'name': 'Headache - Unspecified',
+                        'probability': 50,
+                        'reasoning': 'Headache without specific pattern',
+                        'urgency': 'ROUTINE',
+                        'icd10': 'R51'
+                    })
+        
         # Sort by probability descending and return top 5
         diagnoses.sort(key=lambda x: x['probability'], reverse=True)
         return diagnoses[:5]
