@@ -560,6 +560,101 @@ class CrossSymptomAnalyzer:
             if chest_pain_data.get("nature"):
                 collected_symptoms.append(f"{chest_pain_data['nature']}_pain")
         
+        # From shortness of breath interview
+        if "shortness_of_breath" in all_symptoms:
+            sob_data = all_symptoms["shortness_of_breath"]
+            if sob_data.get("confirm_shortness_of_breath"):
+                collected_symptoms.append("shortness_of_breath")
+            
+            # Add onset information
+            onset = sob_data.get("onset")
+            if onset:
+                collected_symptoms.append(f"{onset}_onset")
+            
+            # Add pattern symptoms
+            pattern = sob_data.get("pattern", [])
+            if isinstance(pattern, list):
+                for p in pattern:
+                    if p != "none":
+                        collected_symptoms.append(p.replace("_", " "))
+            
+            # Add associated symptoms
+            if sob_data.get("cough") and sob_data.get("cough") != "none":
+                collected_symptoms.append(f"{sob_data['cough']}_cough")
+            
+            if sob_data.get("wheeze"):
+                collected_symptoms.append("wheeze")
+            
+            if sob_data.get("stridor"):
+                collected_symptoms.append("stridor")
+                
+            if sob_data.get("chest_pain_pleuritic"):
+                collected_symptoms.append("pleuritic_chest_pain")
+                
+            if sob_data.get("fever"):
+                collected_symptoms.append("fever")
+                
+            if sob_data.get("hemoptysis"):
+                collected_symptoms.append("hemoptysis")
+                
+            if sob_data.get("edema_legs"):
+                collected_symptoms.append("leg_edema")
+
+        # From headache interview
+        if "headache" in all_symptoms:
+            headache_data = all_symptoms["headache"]
+            if headache_data.get("confirm_headache"):
+                collected_symptoms.append("headache")
+            
+            # Add onset information
+            onset = headache_data.get("onset")
+            if onset == "sudden":
+                collected_symptoms.append("sudden_onset")
+            
+            # Add severity
+            severity = headache_data.get("severity_scale")
+            if severity and severity >= 9:
+                collected_symptoms.append("worst_ever_headache")
+            
+            # Add location information
+            location = headache_data.get("location")
+            if location and "one side" in location.lower():
+                collected_symptoms.append("unilateral_headache")
+            elif location and any(term in location.lower() for term in ["both", "all over", "whole"]):
+                collected_symptoms.append("bilateral_headache")
+            
+            # Add character information
+            character = headache_data.get("character")
+            if character and "throbbing" in character.lower():
+                collected_symptoms.append("throbbing_pain")
+            elif character and "pressure" in character.lower():
+                collected_symptoms.append("pressure_pain")
+            
+            # Add associated symptoms
+            associated = headache_data.get("associated", [])
+            if isinstance(associated, list):
+                for symptom in associated:
+                    if symptom != "none":
+                        collected_symptoms.append(symptom.replace("_", " "))
+            
+            # Add neurological symptoms
+            neuro = headache_data.get("neuro", [])
+            if isinstance(neuro, list) and neuro:
+                collected_symptoms.append("neurologic_deficits")
+                for symptom in neuro:
+                    if symptom != "none":
+                        collected_symptoms.append(symptom)
+            
+            # Add fever and neck stiffness flags
+            if headache_data.get("fever"):
+                collected_symptoms.append("fever")
+                
+            if headache_data.get("neck_stiffness"):
+                collected_symptoms.append("neck_stiffness")
+                
+            if headache_data.get("trauma"):
+                collected_symptoms.append("post_trauma_headache")
+
         # From other complaint interviews (to be added as more scripts are implemented)
         # if "abdominal_pain" in all_symptoms: ...
         
