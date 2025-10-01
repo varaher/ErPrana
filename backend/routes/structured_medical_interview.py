@@ -150,23 +150,61 @@ class StructuredMedicalInterviewer:
                     entities['measurement_site'] = site
                     break
             
-            # Extract symptoms
-            if any(word in text_lower for word in ['cough', 'coughing']):
-                if any(word in text_lower for word in ['dry', 'hacking']):
-                    entities['resp_symptoms'] = ['cough_dry']
-                elif any(word in text_lower for word in ['phlegm', 'mucus', 'sputum']):
-                    entities['resp_symptoms'] = ['cough_phlegm']
+            # Extract symptoms - enhanced detection
+            resp_symptoms = []
+            if any(word in text_lower for word in ['cough', 'coughing', 'hacking']):
+                if any(word in text_lower for word in ['dry', 'hacking', 'tickle']):
+                    resp_symptoms.append('cough_dry')
+                elif any(word in text_lower for word in ['phlegm', 'mucus', 'sputum', 'productive', 'wet']):
+                    resp_symptoms.append('cough_phlegm')
                 else:
-                    entities['resp_symptoms'] = ['cough_dry']  # Default
+                    resp_symptoms.append('cough_dry')  # Default to dry
             
-            if any(word in text_lower for word in ['nausea', 'nauseous', 'sick']):
-                entities['gi_symptoms'] = entities.get('gi_symptoms', []) + ['nausea']
+            if any(word in text_lower for word in ['sore throat', 'throat pain', 'throat']):
+                resp_symptoms.append('sore_throat')
             
-            if any(word in text_lower for word in ['vomiting', 'throwing up', 'puking']):
-                entities['gi_symptoms'] = entities.get('gi_symptoms', []) + ['vomiting']
+            if any(word in text_lower for word in ['runny nose', 'nasal', 'stuffy']):
+                resp_symptoms.append('runny_nose')
             
-            if any(word in text_lower for word in ['diarrhea', 'loose stools', 'watery stools']):
-                entities['gi_symptoms'] = entities.get('gi_symptoms', []) + ['diarrhea']
+            if any(word in text_lower for word in ['shortness of breath', 'breathless', 'short of breath']):
+                resp_symptoms.append('shortness_of_breath')
+            
+            if any(word in text_lower for word in ['chest pain', 'chest discomfort']):
+                resp_symptoms.append('chest_pain')
+            
+            if resp_symptoms:
+                entities['resp_symptoms'] = resp_symptoms
+            
+            # Extract GI symptoms
+            gi_symptoms = []
+            if any(word in text_lower for word in ['nausea', 'nauseous', 'sick to stomach', 'queasy']):
+                gi_symptoms.append('nausea')
+            
+            if any(word in text_lower for word in ['vomiting', 'throwing up', 'puking', 'being sick']):
+                gi_symptoms.append('vomiting')
+            
+            if any(word in text_lower for word in ['diarrhea', 'loose stools', 'watery stools', 'runs']):
+                gi_symptoms.append('diarrhea')
+            
+            if any(word in text_lower for word in ['abdominal pain', 'stomach pain', 'belly pain']):
+                gi_symptoms.append('abdominal_pain')
+            
+            if gi_symptoms:
+                entities['gi_symptoms'] = gi_symptoms
+            
+            # Extract neurological symptoms
+            neuro_symptoms = []
+            if any(word in text_lower for word in ['severe headache', 'bad headache', 'terrible headache']):
+                neuro_symptoms.append('severe_headache')
+            
+            if any(word in text_lower for word in ['stiff neck', 'neck stiffness', 'neck rigidity']):
+                neuro_symptoms.append('stiff_neck')
+            
+            if any(word in text_lower for word in ['confusion', 'confused', 'disoriented']):
+                neuro_symptoms.append('confusion')
+            
+            if neuro_symptoms:
+                entities['neuro_symptoms'] = neuro_symptoms
             
             # Extract age group (simple heuristic)
             age_patterns = [
