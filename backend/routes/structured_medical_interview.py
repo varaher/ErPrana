@@ -409,6 +409,179 @@ class StructuredMedicalInterviewer:
                         entities['age_group'] = 'older_65_plus'
                     break
         
+        elif complaint == 'shortness_of_breath':
+            # Shortness of breath-specific entity extraction
+            
+            # Extract duration
+            duration_patterns = [
+                r'since\s+(\d+)\s+(hours?|days?|weeks?)',
+                r'for\s+(\d+)\s+(hours?|days?|weeks?)',
+                r'(\d+)\s+(hours?|days?|weeks?)\s+ago',
+                r'since\s+(yesterday|today|this morning|last night)',
+                r'for\s+the\s+last\s+(\d+)\s+(hours?|days?)'
+            ]
+            
+            for pattern in duration_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    entities['duration'] = match.group(0)
+                    break
+            
+            # Extract onset
+            if any(word in text_lower for word in ['sudden', 'suddenly', 'acute', 'came on quick']):
+                entities['onset'] = 'sudden'
+            elif any(word in text_lower for word in ['gradual', 'gradually', 'slow', 'progressive']):
+                entities['onset'] = 'gradual'
+            
+            # Extract breathing patterns
+            patterns = []
+            if any(word in text_lower for word in ['at rest', 'resting', 'while resting']):
+                patterns.append('at_rest')
+            if any(word in text_lower for word in ['exertion', 'exercise', 'stairs', 'walking']):
+                patterns.append('exertional')
+            if any(word in text_lower for word in ['orthopnea', 'lying flat', 'can\'t lie flat', 'cant lie flat']):
+                patterns.append('orthopnea')
+            if any(word in text_lower for word in ['pnd', 'paroxysmal', 'waking up breathless', 'night breathless']):
+                patterns.append('pnd')
+            if any(word in text_lower for word in ['position', 'positional', 'better sitting up']):
+                patterns.append('positional')
+            
+            if patterns:
+                entities['pattern'] = patterns
+            
+            # Extract severity (1-10 scale)
+            severity_patterns = [
+                r'(\d+)\s*(?:out of|/)\s*10',
+                r'severity\s*(\d+)',
+                r'breathlessness\s*(?:is\s*)?(\d+)',
+                r'(\d+)\s*(?:on the scale|scale)'
+            ]
+            
+            for pattern in severity_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    severity = int(match.group(1))
+                    if 1 <= severity <= 10:
+                        entities['severity_scale'] = severity
+                        break
+            
+            # Extract cough type
+            if any(word in text_lower for word in ['no cough', 'none']):
+                entities['cough'] = 'none'
+            elif any(word in text_lower for word in ['dry cough', 'dry']):
+                entities['cough'] = 'dry'
+            elif any(word in text_lower for word in ['phlegm', 'sputum', 'productive']):
+                entities['cough'] = 'productive'
+            
+            # Extract sputum color (if productive cough mentioned)
+            if any(word in text_lower for word in ['sputum', 'phlegm']):
+                if any(word in text_lower for word in ['bloody', 'blood']):
+                    entities['sputum_color'] = 'bloody'
+                elif any(word in text_lower for word in ['green']):
+                    entities['sputum_color'] = 'green'
+                elif any(word in text_lower for word in ['yellow']):
+                    entities['sputum_color'] = 'yellow'
+                elif any(word in text_lower for word in ['white']):
+                    entities['sputum_color'] = 'white'
+                elif any(word in text_lower for word in ['clear']):
+                    entities['sputum_color'] = 'clear'
+            
+            # Extract boolean symptoms
+            if any(word in text_lower for word in ['wheeze', 'wheezing']):
+                entities['wheeze'] = True
+            elif any(word in text_lower for word in ['no wheeze', 'no wheezing']):
+                entities['wheeze'] = False
+            
+            if any(word in text_lower for word in ['stridor', 'harsh breathing', 'noisy inhale']):
+                entities['stridor'] = True
+            elif any(word in text_lower for word in ['no stridor']):
+                entities['stridor'] = False
+            
+            if any(word in text_lower for word in ['pleuritic', 'pain on deep breath', 'worse deep breath']):
+                entities['chest_pain_pleuritic'] = True
+            elif any(word in text_lower for word in ['no pleuritic', 'no chest pain']):
+                entities['chest_pain_pleuritic'] = False
+            
+            if any(word in text_lower for word in ['fever', 'febrile', 'temperature']):
+                entities['fever'] = True
+            elif any(word in text_lower for word in ['no fever', 'afebrile']):
+                entities['fever'] = False
+            
+            if any(word in text_lower for word in ['hemoptysis', 'coughing blood', 'blood in sputum']):
+                entities['hemoptysis'] = True
+            elif any(word in text_lower for word in ['no blood', 'no hemoptysis']):
+                entities['hemoptysis'] = False
+            
+            if any(word in text_lower for word in ['leg swelling', 'swollen legs', 'edema']):
+                entities['edema_legs'] = True
+            elif any(word in text_lower for word in ['no swelling', 'no edema']):
+                entities['edema_legs'] = False
+            
+            # Extract triggers
+            triggers = []
+            if any(word in text_lower for word in ['allergen', 'pollen', 'allergies']):
+                triggers.append('allergens')
+            if any(word in text_lower for word in ['cold air', 'cold weather']):
+                triggers.append('cold_air')
+            if any(word in text_lower for word in ['dust']):
+                triggers.append('dust')
+            if any(word in text_lower for word in ['exercise', 'exertion']):
+                triggers.append('exercise')
+            if any(word in text_lower for word in ['infection', 'flu', 'cold']):
+                triggers.append('infection')
+            if any(word in text_lower for word in ['smoke', 'smoking', 'smoky']):
+                triggers.append('smoke')
+            
+            if triggers:
+                entities['triggers'] = triggers
+            
+            # Extract risk factors
+            risk_factors = []
+            if any(word in text_lower for word in ['asthma']):
+                risk_factors.append('asthma')
+            if any(word in text_lower for word in ['copd', 'emphysema', 'chronic bronchitis']):
+                risk_factors.append('copd')
+            if any(word in text_lower for word in ['smoke', 'smoker', 'smoking']):
+                risk_factors.append('smoking')
+            if any(word in text_lower for word in ['heart failure', 'hf', 'chf']):
+                risk_factors.append('heart_failure')
+            if any(word in text_lower for word in ['surgery', 'post op', 'post-op', 'recent surgery']):
+                risk_factors.append('recent_surgery')
+            if any(word in text_lower for word in ['bedridden', 'immobilization', 'cast']):
+                risk_factors.append('immobilization')
+            if any(word in text_lower for word in ['clot', 'dvt', 'pe', 'pulmonary embolism', 'thrombosis']):
+                risk_factors.append('clot_history')
+            if any(word in text_lower for word in ['cancer', 'malignancy']):
+                risk_factors.append('cancer')
+            if any(word in text_lower for word in ['pregnant', 'pregnancy']):
+                risk_factors.append('pregnancy')
+            if any(word in text_lower for word in ['none', 'no risk factors']) and not risk_factors:
+                risk_factors.append('none')
+            
+            if risk_factors:
+                entities['risk_factors'] = risk_factors
+            
+            # Extract age group
+            age_patterns = [
+                r'(\d{1,2})\s*(?:years old|year old|yo)',
+                r'age\s*(\d{1,2})',
+                r'i am\s*(\d{1,2})'
+            ]
+            
+            for pattern in age_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    age = int(match.group(1))
+                    if age < 18:
+                        entities['age_group'] = 'child'
+                    elif age >= 65:
+                        entities['age_group'] = 'older_65_plus'
+                    elif age >= 41:
+                        entities['age_group'] = 'adult_41_64'
+                    elif age >= 18:
+                        entities['age_group'] = 'adult_18_40'
+                    break
+        
         return entities
     
     def evaluate_red_flag_rules(self, rules: List[Dict], slots: Dict[str, Any]) -> List[Dict[str, Any]]:
