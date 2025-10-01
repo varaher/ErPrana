@@ -2339,7 +2339,7 @@ def main():
         print(f"\n⚠️  {failed_tests} backend tests failed. See details above.")
         return 1
 
-    def run_headache_and_sob_tests(self):
+def run_headache_and_sob_tests():
         """Run focused tests for headache integration and SOB triage bug fix as requested in review"""
         print("🚀 Starting Headache Integration & SOB Triage Bug Fix Testing...")
         print(f"Base URL: {self.base_url}")
