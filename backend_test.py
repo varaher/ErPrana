@@ -1379,6 +1379,32 @@ def main():
     # Test health insights aggregation
     tester.test_wearable_intelligence_health_insights()
 
+    # Test ADVANCED SYMPTOM INTELLIGENCE SYSTEM - PRIORITY TESTING
+    print("\n🧠 ADVANCED SYMPTOM INTELLIGENCE SYSTEM TESTS - PRIORITY")
+    print("=" * 50)
+    
+    # Test health check first
+    tester.test_advanced_symptom_intelligence_health_check()
+    
+    # Test specific scenarios from review request
+    print("\n🔍 SPECIFIC TEST SCENARIOS:")
+    tester.test_advanced_symptom_intelligence_single_symptom()
+    tester.test_advanced_symptom_intelligence_multiple_symptoms()
+    tester.test_advanced_symptom_intelligence_complex_multi_symptom()
+    tester.test_advanced_symptom_intelligence_emergency_detection()
+    tester.test_advanced_symptom_intelligence_final_assessment_recommendations()
+    tester.test_advanced_symptom_intelligence_conversation_handlers()
+
+    # Test NATURAL LANGUAGE PROCESSING - PRIORITY TESTING
+    print("\n🗣️ NATURAL LANGUAGE PROCESSING TESTS - PRIORITY")
+    print("=" * 50)
+    
+    tester.test_nlu_health_check()
+    tester.test_nlu_colloquial_translation_vertigo()
+    tester.test_nlu_colloquial_translation_loose_stools()
+    tester.test_nlu_supported_phrases()
+    tester.test_nlu_translate_symptoms_quick()
+
     # Print final results
     print("\n" + "=" * 80)
     print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
