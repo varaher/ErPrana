@@ -1,0 +1,39 @@
+{
+  "complaint": "headache",
+  "version": "1.0.0",
+  "slots": [
+    { "name": "duration", "type": "string", "question": "When did this headache start?", "required": true },
+    { "name": "onset", "type": "enum", "values": ["sudden", "gradual", "unsure"], "question": "Did it start suddenly (like a thunderclap) or gradually?", "required": true },
+    { "name": "severity_scale", "type": "number", "question": "On a scale of 1–10, how severe is it?", "required": true },
+    { "name": "location", "type": "string", "question": "Where exactly is the pain — one side, back of head, diffuse?", "required": true },
+    { "name": "character", "type": "string", "question": "What kind of pain is it — throbbing, sharp, pressure?", "required": true },
+    
+    { "name": "radiation", "type": "string", "question": "Does the pain spread anywhere — neck, behind eyes, jaw?", "required": false },
+    { "name": "associated", "type": "multiselect", "values": ["nausea", "vomiting", "photophobia", "phonophobia", "aura"], "question": "Do you have nausea, vomiting, sensitivity to light (photophobia), sound (phonophobia), or an aura?", "required": false },
+    { "name": "neuro", "type": "multiselect", "values": ["weakness", "numbness", "speech", "vision"], "question": "Any weakness, numbness, speech problems, or vision changes with the headache?", "required": false },
+    { "name": "fever", "type": "boolean", "question": "Have you had a fever with this headache?", "required": false },
+    { "name": "neck_stiffness", "type": "boolean", "question": "Do you have stiffness in your neck?", "required": false },
+    { "name": "trauma", "type": "boolean", "question": "Did you have any recent head injury?", "required": false },
+    { "name": "triggers", "type": "multiselect", "values": ["stress", "sleep_loss", "menstruation", "alcohol"], "question": "Any triggers you noticed — stress, lack of sleep, menstruation, alcohol?", "required": false },
+    { "name": "relieving", "type": "string", "question": "What makes it better — rest, medicines, dark room?", "required": false },
+    
+    { "name": "past_history", "type": "multiselect", "values": ["migraine", "tension", "cluster", "hypertension"], "question": "Have you had similar headaches before — migraine, tension, cluster, hypertension?", "required": false },
+    { "name": "age_group", "type": "enum", "values": ["child", "adult_18_40", "adult_41_64", "older_65_plus"], "question": "What is your age group: child, 18–40, 41–64, or 65+?", "required": true }
+  ],
+
+  "redFlagRules": [
+    { "name": "thunderclap_headache", "if": "onset == 'sudden'", "triage": "red", "message": "Thunderclap headache (possible subarachnoid hemorrhage)." },
+    { "name": "severe_intensity", "if": "severity_scale >= 9", "triage": "red", "message": "Severe headache intensity (≥9/10)." },
+    { "name": "meningitis_signs", "if": "fever == true && neck_stiffness == true", "triage": "red", "message": "Possible meningitis/encephalitis (fever + neck stiffness)." },
+    { "name": "neurologic_deficit", "if": "neuro not empty", "triage": "red", "message": "Neurologic deficit (possible stroke/TIA)." },
+    { "name": "post_trauma_headache", "if": "trauma == true", "triage": "red", "message": "Headache after trauma (possible intracranial bleed)." },
+    { "name": "new_headache_elderly", "if": "age_group == 'older_65_plus' && past_history == []", "triage": "orange", "message": "New headache in elderly (temporal arteritis, space-occupying lesion)." },
+    { "name": "moderate_severity", "if": "severity_scale >= 7 && severity_scale < 9", "triage": "yellow", "message": "Moderate to severe headache requiring evaluation." }
+  ],
+
+  "completionCriteria": [
+    "duration", "onset", "severity_scale", "location", "character", "age_group"
+  ],
+
+  "summaryTemplate": "Headache since {{duration}}, onset {{onset}}, severity {{severity_scale}}/10, location {{location}}, character {{character}}. Radiation {{radiation}}, associated {{associated}}, neuro {{neuro}}, fever {{fever}}, neck stiffness {{neck_stiffness}}, trauma {{trauma}}. Triggers {{triggers}}, relief {{relieving}}. Past history {{past_history}}, age {{age_group}}. Red flags: {{red_flags}}. Triage: {{triage}}. Next steps: {{next_steps}}."
+}
