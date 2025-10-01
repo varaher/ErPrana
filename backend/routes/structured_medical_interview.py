@@ -433,6 +433,182 @@ class StructuredMedicalInterviewer:
                         entities['age_group'] = 'older_65_plus'
                     break
         
+        elif complaint == 'headache':
+            # Headache-specific entity extraction
+            
+            # Extract duration
+            duration_patterns = [
+                r'since\s+(\d+)\s+(hours?|days?|weeks?)',
+                r'for\s+(\d+)\s+(hours?|days?|weeks?)',
+                r'(\d+)\s+(hours?|days?|weeks?)\s+ago',
+                r'since\s+(yesterday|today|this morning|last night)',
+                r'for\s+the\s+last\s+(\d+)\s+(hours?|days?)'
+            ]
+            
+            for pattern in duration_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    entities['duration'] = match.group(0)
+                    break
+            
+            # Extract onset
+            if any(word in text_lower for word in ['sudden', 'suddenly', 'thunderclap', 'worst ever', 'came on quick']):
+                entities['onset'] = 'sudden'
+            elif any(word in text_lower for word in ['gradual', 'gradually', 'slow', 'progressive']):
+                entities['onset'] = 'gradual'
+            
+            # Extract severity (1-10 scale)
+            severity_patterns = [
+                r'(\d+)\s*(?:out of|/)\s*10',
+                r'severity\s*(\d+)',
+                r'pain\s*(?:is\s*)?(\d+)',
+                r'(\d+)\s*(?:on the scale|scale)'
+            ]
+            
+            for pattern in severity_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    severity = int(match.group(1))
+                    if 1 <= severity <= 10:
+                        entities['severity_scale'] = severity
+                        break
+            
+            # Extract location
+            if any(word in text_lower for word in ['one side', 'unilateral', 'left side', 'right side']):
+                if any(word in text_lower for word in ['left']):
+                    entities['location'] = 'left side'
+                elif any(word in text_lower for word in ['right']):
+                    entities['location'] = 'right side'
+                else:
+                    entities['location'] = 'unilateral'
+            elif any(word in text_lower for word in ['frontal', 'front', 'forehead']):
+                entities['location'] = 'frontal'
+            elif any(word in text_lower for word in ['back of head', 'occipital', 'back']):
+                entities['location'] = 'occipital'
+            elif any(word in text_lower for word in ['diffuse', 'all over', 'whole head']):
+                entities['location'] = 'diffuse'
+            elif any(word in text_lower for word in ['temples', 'temporal']):
+                entities['location'] = 'temporal'
+            
+            # Extract character/quality
+            if any(word in text_lower for word in ['throbbing', 'pulsating', 'pounding']):
+                entities['character'] = 'throbbing'
+            elif any(word in text_lower for word in ['sharp', 'stabbing', 'knife-like']):
+                entities['character'] = 'sharp'
+            elif any(word in text_lower for word in ['pressure', 'tight', 'squeezing', 'band-like']):
+                entities['character'] = 'pressure'
+            elif any(word in text_lower for word in ['burning', 'searing']):
+                entities['character'] = 'burning'
+            elif any(word in text_lower for word in ['dull', 'aching']):
+                entities['character'] = 'dull ache'
+            
+            # Extract radiation
+            if any(word in text_lower for word in ['to neck', 'down neck', 'neck']):
+                entities['radiation'] = 'to neck'
+            elif any(word in text_lower for word in ['behind eye', 'behind eyes', 'into eye']):
+                entities['radiation'] = 'behind eyes'
+            elif any(word in text_lower for word in ['to jaw', 'jaw']):
+                entities['radiation'] = 'to jaw'
+            elif any(word in text_lower for word in ['to shoulder', 'shoulder']):
+                entities['radiation'] = 'to shoulder'
+            elif any(word in text_lower for word in ['no radiation', 'doesn\'t spread', 'localized']):
+                entities['radiation'] = 'none'
+            
+            # Extract associated symptoms
+            associated_symptoms = []
+            if any(word in text_lower for word in ['nausea', 'nauseous', 'sick']):
+                associated_symptoms.append('nausea')
+            if any(word in text_lower for word in ['vomiting', 'throwing up', 'being sick']):
+                associated_symptoms.append('vomiting')
+            if any(word in text_lower for word in ['light sensitivity', 'photophobia', 'bright light hurts']):
+                associated_symptoms.append('photophobia')
+            if any(word in text_lower for word in ['sound sensitivity', 'phonophobia', 'noise hurts', 'loud sounds']):
+                associated_symptoms.append('phonophobia')
+            if any(word in text_lower for word in ['aura', 'visual changes before', 'flashing lights']):
+                associated_symptoms.append('aura')
+            
+            if associated_symptoms:
+                entities['associated'] = associated_symptoms
+            
+            # Extract neurological symptoms
+            neuro_symptoms = []
+            if any(word in text_lower for word in ['weakness', 'weak', 'can\'t move']):
+                neuro_symptoms.append('weakness')
+            if any(word in text_lower for word in ['numbness', 'numb', 'tingling']):
+                neuro_symptoms.append('numbness')
+            if any(word in text_lower for word in ['speech problems', 'slurred speech', 'can\'t speak']):
+                neuro_symptoms.append('speech')
+            if any(word in text_lower for word in ['vision changes', 'blurred vision', 'vision loss', 'double vision']):
+                neuro_symptoms.append('vision')
+            
+            if neuro_symptoms:
+                entities['neuro'] = neuro_symptoms
+            
+            # Extract boolean symptoms
+            if any(word in text_lower for word in ['fever', 'febrile', 'temperature']):
+                entities['fever'] = True
+            elif any(word in text_lower for word in ['no fever', 'afebrile']):
+                entities['fever'] = False
+            
+            if any(word in text_lower for word in ['neck stiffness', 'stiff neck', 'neck rigid']):
+                entities['neck_stiffness'] = True
+            elif any(word in text_lower for word in ['no neck stiffness', 'neck fine']):
+                entities['neck_stiffness'] = False
+            
+            if any(word in text_lower for word in ['head injury', 'trauma', 'hit head', 'fall', 'accident']):
+                entities['trauma'] = True
+            elif any(word in text_lower for word in ['no injury', 'no trauma']):
+                entities['trauma'] = False
+            
+            # Extract triggers
+            triggers = []
+            if any(word in text_lower for word in ['stress', 'stressful', 'anxiety']):
+                triggers.append('stress')
+            if any(word in text_lower for word in ['lack of sleep', 'no sleep', 'tired', 'sleep loss']):
+                triggers.append('sleep_loss')
+            if any(word in text_lower for word in ['menstruation', 'period', 'menstrual']):
+                triggers.append('menstruation')
+            if any(word in text_lower for word in ['alcohol', 'wine', 'drinking', 'beer']):
+                triggers.append('alcohol')
+            
+            if triggers:
+                entities['triggers'] = triggers
+            
+            # Extract past history
+            past_history = []
+            if any(word in text_lower for word in ['migraine', 'migraines']):
+                past_history.append('migraine')
+            if any(word in text_lower for word in ['tension headache', 'tension']):
+                past_history.append('tension')
+            if any(word in text_lower for word in ['cluster headache', 'cluster']):
+                past_history.append('cluster')
+            if any(word in text_lower for word in ['hypertension', 'high blood pressure', 'high bp']):
+                past_history.append('hypertension')
+            
+            if past_history:
+                entities['past_history'] = past_history
+            
+            # Extract age group
+            age_patterns = [
+                r'(\d{1,2})\s*(?:years old|year old|yo)',
+                r'age\s*(\d{1,2})',
+                r'i am\s*(\d{1,2})'
+            ]
+            
+            for pattern in age_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    age = int(match.group(1))
+                    if age < 18:
+                        entities['age_group'] = 'child'
+                    elif age >= 65:
+                        entities['age_group'] = 'older_65_plus'
+                    elif age >= 41:
+                        entities['age_group'] = 'adult_41_64'
+                    elif age >= 18:
+                        entities['age_group'] = 'adult_18_40'
+                    break
+        
         elif complaint == 'shortness_of_breath':
             # Shortness of breath-specific entity extraction
             
