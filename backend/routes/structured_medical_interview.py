@@ -817,6 +817,8 @@ class StructuredMedicalInterviewer:
                 confirmation_keywords = ['yes', 'fever', 'temperature', 'hot']
             elif complaint == 'chest_pain':
                 confirmation_keywords = ['yes', 'chest pain', 'chest', 'pain', 'discomfort']
+            elif complaint == 'shortness_of_breath':
+                confirmation_keywords = ['yes', 'shortness of breath', 'breathless', 'breathing', 'dyspnea', 'sob']
             else:
                 confirmation_keywords = ['yes']
             
