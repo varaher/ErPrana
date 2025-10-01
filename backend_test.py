@@ -906,6 +906,367 @@ class BackendAPITester:
             data=test_data
         )
 
+    # ========== ADVANCED SYMPTOM INTELLIGENCE TESTS ==========
+    
+    def test_advanced_symptom_intelligence_health_check(self):
+        """Test advanced symptom intelligence health check"""
+        return self.run_test(
+            "Advanced Symptom Intelligence - Health Check",
+            "GET",
+            "advanced/health",
+            200
+        )
+    
+    def test_advanced_symptom_intelligence_single_symptom(self):
+        """Test single symptom detection - should ask follow-up questions, NOT generate recommendations yet"""
+        test_data = {
+            "user_message": "i have fever since 2days",
+            "session_id": str(uuid.uuid4()),
+            "user_id": "test_user_advanced"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Symptom Intelligence - Single Symptom (Fever)",
+            "POST",
+            "advanced/symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Verify it asks follow-up questions and doesn't generate recommendations yet
+            next_step = response.get("next_step", "")
+            all_collected = response.get("all_symptoms_collected", True)
+            recommendations = response.get("recommendations")
+            
+            if next_step in ["followup_questions", "conversation_continue"] and not all_collected:
+                print("✅ Single symptom: Correctly asks follow-up questions without recommendations")
+            else:
+                print(f"❌ Single symptom: Expected follow-up questions, got next_step='{next_step}', all_collected={all_collected}")
+            
+            if not recommendations:
+                print("✅ Single symptom: Correctly no recommendations generated yet")
+            else:
+                print(f"❌ Single symptom: Unexpected recommendations generated: {len(recommendations) if recommendations else 0}")
+        
+        return success, response
+    
+    def test_advanced_symptom_intelligence_multiple_symptoms(self):
+        """Test multiple symptom detection - should detect BOTH fever AND loose stools"""
+        test_data = {
+            "user_message": "i have fever along with loose stools",
+            "session_id": str(uuid.uuid4()),
+            "user_id": "test_user_advanced"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Symptom Intelligence - Multiple Symptoms",
+            "POST",
+            "advanced/symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if both symptoms are detected
+            state = response.get("updated_state", {})
+            collected_symptoms = state.get("collected_symptoms", [])
+            
+            fever_detected = any("fever" in str(symptom).lower() for symptom in collected_symptoms)
+            diarrhea_detected = any(any(term in str(symptom).lower() for term in ["loose", "stool", "diarrhea"]) for symptom in collected_symptoms)
+            
+            if fever_detected and diarrhea_detected:
+                print("✅ Multiple symptoms: Both fever and loose stools detected")
+            else:
+                print(f"❌ Multiple symptoms: Missing detection - fever: {fever_detected}, loose stools: {diarrhea_detected}")
+                print(f"Collected symptoms: {collected_symptoms}")
+        
+        return success, response
+    
+    def test_advanced_symptom_intelligence_complex_multi_symptom(self):
+        """Test complex multi-symptom detection"""
+        test_data = {
+            "user_message": "i also have other symptoms like abdominal pain on right side",
+            "session_id": str(uuid.uuid4()),
+            "user_id": "test_user_advanced"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Symptom Intelligence - Complex Multi-Symptom",
+            "POST",
+            "advanced/symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if abdominal pain is detected
+            state = response.get("updated_state", {})
+            collected_symptoms = state.get("collected_symptoms", [])
+            
+            abdominal_pain_detected = any(any(term in str(symptom).lower() for term in ["abdominal", "pain"]) for symptom in collected_symptoms)
+            
+            if abdominal_pain_detected:
+                print("✅ Complex multi-symptom: Abdominal pain detected")
+            else:
+                print(f"❌ Complex multi-symptom: Abdominal pain not detected")
+                print(f"Collected symptoms: {collected_symptoms}")
+        
+        return success, response
+    
+    def test_advanced_symptom_intelligence_emergency_detection(self):
+        """Test emergency detection - should detect emergency and provide immediate instructions"""
+        test_data = {
+            "user_message": "severe chest pain and can't breathe",
+            "session_id": str(uuid.uuid4()),
+            "user_id": "test_user_advanced"
+        }
+        
+        success, response = self.run_test(
+            "Advanced Symptom Intelligence - Emergency Detection",
+            "POST",
+            "advanced/symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            emergency_detected = response.get("emergency_detected", False)
+            next_step = response.get("next_step", "")
+            assistant_message = response.get("assistant_message", "").lower()
+            
+            if emergency_detected:
+                print("✅ Emergency detection: Emergency correctly detected")
+            else:
+                print("❌ Emergency detection: Emergency not detected")
+            
+            if next_step == "emergency_assessment":
+                print("✅ Emergency detection: Correct next step (emergency_assessment)")
+            else:
+                print(f"❌ Emergency detection: Expected emergency_assessment, got {next_step}")
+            
+            if "911" in assistant_message or "emergency" in assistant_message:
+                print("✅ Emergency detection: Emergency instructions provided")
+            else:
+                print("❌ Emergency detection: No emergency instructions found")
+        
+        return success, response
+    
+    def test_advanced_symptom_intelligence_final_assessment_recommendations(self):
+        """Test final assessment with point-wise recommendations"""
+        # First, simulate a conversation that has collected symptoms
+        conversation_state = {
+            "collected_symptoms": [
+                {"symptom": "fever", "details": "high fever for 2 days", "collected_at": "2024-01-01T10:00:00Z"},
+                {"symptom": "headache", "details": "severe headache", "collected_at": "2024-01-01T10:01:00Z"}
+            ],
+            "symptom_collection_complete": True,
+            "conversation_history": []
+        }
+        
+        test_data = {
+            "user_message": "no, i don't have any other symptoms",
+            "session_id": str(uuid.uuid4()),
+            "user_id": "test_user_advanced",
+            "conversation_state": conversation_state
+        }
+        
+        success, response = self.run_test(
+            "Advanced Symptom Intelligence - Final Assessment with Recommendations",
+            "POST",
+            "advanced/symptom-intelligence/analyze",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            recommendations = response.get("recommendations", [])
+            all_collected = response.get("all_symptoms_collected", False)
+            
+            if recommendations and len(recommendations) > 0:
+                print(f"✅ Final assessment: {len(recommendations)} recommendations generated")
+                
+                # Check if recommendations are numbered and have reasoning
+                has_numbers = all("number" in rec for rec in recommendations)
+                has_reasoning = all("reasoning" in rec for rec in recommendations)
+                has_timeframes = all("timeframe" in rec for rec in recommendations)
+                
+                if has_numbers:
+                    print("✅ Final assessment: Recommendations are numbered")
+                else:
+                    print("❌ Final assessment: Recommendations missing numbers")
+                
+                if has_reasoning:
+                    print("✅ Final assessment: Recommendations include reasoning")
+                else:
+                    print("❌ Final assessment: Recommendations missing reasoning")
+                
+                if has_timeframes:
+                    print("✅ Final assessment: Recommendations grouped by timeframes")
+                    timeframes = [rec["timeframe"] for rec in recommendations]
+                    print(f"Timeframes found: {set(timeframes)}")
+                else:
+                    print("❌ Final assessment: Recommendations missing timeframes")
+                
+            else:
+                print("❌ Final assessment: No recommendations generated")
+        
+        return success, response
+    
+    def test_advanced_symptom_intelligence_conversation_handlers(self):
+        """Test conversation flow handlers"""
+        # Test followup_questions endpoint
+        test_data = {
+            "user_message": "i have chest pain",
+            "session_id": str(uuid.uuid4()),
+            "user_id": "test_user_advanced"
+        }
+        
+        success1, response1 = self.run_test(
+            "Advanced Symptom Intelligence - Followup Questions Handler",
+            "POST",
+            "advanced/followup-questions",
+            200,
+            data=test_data
+        )
+        
+        # Test conversation continue endpoint
+        success2, response2 = self.run_test(
+            "Advanced Symptom Intelligence - Conversation Continue Handler",
+            "POST",
+            "advanced/conversation/continue",
+            200,
+            data=test_data
+        )
+        
+        if success1:
+            questions = response1.get("questions", [])
+            if questions and len(questions) > 0:
+                print(f"✅ Followup questions: {len(questions)} questions generated")
+            else:
+                print("❌ Followup questions: No questions generated")
+        
+        if success2:
+            next_step = response2.get("next_step", "")
+            if next_step == "conversation_continue":
+                print("✅ Conversation continue: Correct flow maintained")
+            else:
+                print(f"❌ Conversation continue: Expected conversation_continue, got {next_step}")
+        
+        return success1 and success2, {"followup": response1, "continue": response2}
+    
+    # ========== NATURAL LANGUAGE PROCESSING TESTS ==========
+    
+    def test_nlu_health_check(self):
+        """Test NLU health check"""
+        return self.run_test(
+            "NLU - Health Check",
+            "GET",
+            "nlu/health",
+            200
+        )
+    
+    def test_nlu_colloquial_translation_vertigo(self):
+        """Test colloquial language processing - 'surrounding is spinning' → 'vertigo'"""
+        test_data = {
+            "text": "surrounding is spinning and i feel dizzy"
+        }
+        
+        success, response = self.run_test(
+            "NLU - Colloquial Translation (Vertigo)",
+            "POST",
+            "nlu/process-natural-language",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            medical_translations = response.get("medical_translations", {})
+            detected_symptoms = response.get("detected_symptoms", [])
+            
+            if "surrounding is spinning" in medical_translations:
+                translation = medical_translations["surrounding is spinning"]
+                if translation == "vertigo":
+                    print("✅ NLU Translation: 'surrounding is spinning' correctly translated to 'vertigo'")
+                else:
+                    print(f"❌ NLU Translation: Expected 'vertigo', got '{translation}'")
+            else:
+                print("❌ NLU Translation: 'surrounding is spinning' not found in translations")
+            
+            if "vertigo" in detected_symptoms or "dizziness" in detected_symptoms:
+                print("✅ NLU Translation: Vertigo/dizziness detected in symptoms")
+            else:
+                print(f"❌ NLU Translation: Vertigo/dizziness not detected. Found: {detected_symptoms}")
+        
+        return success, response
+    
+    def test_nlu_colloquial_translation_loose_stools(self):
+        """Test colloquial translation for loose stools"""
+        test_data = {
+            "text": "i have loose stools and feel queasy"
+        }
+        
+        success, response = self.run_test(
+            "NLU - Colloquial Translation (Loose Stools)",
+            "POST",
+            "nlu/process-natural-language",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            medical_translations = response.get("medical_translations", {})
+            detected_symptoms = response.get("detected_symptoms", [])
+            
+            # Check for loose stools → diarrhea translation
+            if "loose stools" in medical_translations:
+                translation = medical_translations["loose stools"]
+                if translation == "diarrhea":
+                    print("✅ NLU Translation: 'loose stools' correctly translated to 'diarrhea'")
+                else:
+                    print(f"❌ NLU Translation: Expected 'diarrhea', got '{translation}'")
+            
+            # Check for queasy → nausea translation
+            if "queasy" in medical_translations:
+                translation = medical_translations["queasy"]
+                if translation == "nausea":
+                    print("✅ NLU Translation: 'queasy' correctly translated to 'nausea'")
+                else:
+                    print(f"❌ NLU Translation: Expected 'nausea', got '{translation}'")
+        
+        return success, response
+    
+    def test_nlu_supported_phrases(self):
+        """Test getting supported colloquial phrases"""
+        return self.run_test(
+            "NLU - Get Supported Phrases",
+            "GET",
+            "nlu/supported-phrases",
+            200
+        )
+    
+    def test_nlu_translate_symptoms_quick(self):
+        """Test quick symptom translation endpoint"""
+        test_data = "room is spinning and i feel woozy"
+        
+        # Note: This endpoint expects text as a query parameter, not JSON body
+        # We'll test it as a POST with text parameter
+        success, response = self.run_test(
+            "NLU - Quick Symptom Translation",
+            "POST",
+            f"nlu/translate-symptoms?text={test_data}",
+            200
+        )
+        
+        if success:
+            translations = response.get("translations", {})
+            if translations:
+                print(f"✅ NLU Quick Translation: {len(translations)} translations found")
+            else:
+                print("❌ NLU Quick Translation: No translations found")
+        
+        return success, response
+
 def main():
     print("🚀 Starting Comprehensive Backend API Tests for Phase 2 Advanced Features")
     print("=" * 80)
