@@ -110,12 +110,63 @@ class CrossSymptomAnalyzer:
                     "icd10": "I21.9",
                     "priority": "EMERGENCY",
                     "required_symptoms": ["chest_pain"],
-                    "supporting_symptoms": ["shortness_of_breath", "diaphoresis", "nausea", "left_arm_pain"],
-                    "red_flags": ["severe_chest_pain", "hemodynamic_instability"],
-                    "age_modifiers": {"older_65_plus": 1.4, "adult_18_64": 1.0},
+                    "supporting_symptoms": ["shortness_of_breath", "sweating", "nausea", "radiation_to_left_arm", "radiation_to_jaw"],
+                    "red_flags": ["radiation_to_left_arm", "radiation_to_jaw", "sweating", "shortness_of_breath"],
+                    "age_modifiers": {"older_65_plus": 1.4, "adult_41_64": 1.2},
                     "gender_modifiers": {"male": 1.2},
                     "score_weight": 95,
                     "description": "Heart attack due to blocked coronary artery"
+                },
+                "unstable_angina": {
+                    "name": "Unstable Angina",
+                    "icd10": "I20.0",
+                    "priority": "EMERGENCY",
+                    "required_symptoms": ["chest_pain"],
+                    "supporting_symptoms": ["shortness_of_breath", "sweating", "radiation_to_left_arm", "exertional_trigger"],
+                    "red_flags": ["rest_angina", "crescendo_pattern"],
+                    "age_modifiers": {"older_65_plus": 1.3, "adult_41_64": 1.1},
+                    "score_weight": 85,
+                    "description": "Unstable coronary artery disease requiring urgent intervention"
+                },
+                "aortic_dissection": {
+                    "name": "Aortic Dissection",
+                    "icd10": "I71.00",
+                    "priority": "EMERGENCY",
+                    "required_symptoms": ["chest_pain"],
+                    "supporting_symptoms": ["radiation_to_back", "sudden_onset", "tearing_pain"],
+                    "red_flags": ["sudden_severe_pain", "radiation_to_back", "blood_pressure_differential"],
+                    "age_modifiers": {"older_65_plus": 1.5},
+                    "score_weight": 90,
+                    "description": "Tear in aortic wall - immediately life-threatening"
+                },
+                "pericarditis": {
+                    "name": "Acute Pericarditis",
+                    "icd10": "I30.9",
+                    "priority": "URGENT",
+                    "required_symptoms": ["chest_pain"],
+                    "supporting_symptoms": ["positional_chest_pain", "pleuritic_pain", "fever"],
+                    "score_weight": 60,
+                    "description": "Inflammation of the pericardium"
+                },
+                "gerd": {
+                    "name": "Gastroesophageal Reflux Disease",
+                    "icd10": "K21.9",
+                    "priority": "ROUTINE",
+                    "required_symptoms": ["chest_pain"],
+                    "supporting_symptoms": ["burning_pain", "food_related", "acid_taste"],
+                    "exclusion_factors": ["radiation_to_arm", "shortness_of_breath"],
+                    "score_weight": 40,
+                    "description": "Acid reflux causing chest burning sensation"
+                },
+                "costochondritis": {
+                    "name": "Costochondritis",
+                    "icd10": "M94.0",
+                    "priority": "ROUTINE",
+                    "required_symptoms": ["chest_pain"],
+                    "supporting_symptoms": ["reproducible_pain", "chest_wall_tenderness", "sharp_pain"],
+                    "exclusion_factors": ["radiation_to_arm", "associated_symptoms"],
+                    "score_weight": 35,
+                    "description": "Inflammation of chest wall cartilage"
                 },
                 "pulmonary_embolism": {
                     "name": "Pulmonary Embolism",
