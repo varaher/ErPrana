@@ -1,0 +1,19 @@
+{
+  "states": [
+    { "name": "GREETING", "entry": "If user greeting only → reply briefly and move to CHIEF_COMPLAINT_CONFIRM.", "next": "CHIEF_COMPLAINT_CONFIRM" },
+
+    { "name": "CHIEF_COMPLAINT_CONFIRM", "ask": "Are you experiencing a headache or head pain now or recently?", "capture": "confirm_headache", "onYes": "CORE_HISTORY", "onNo": "END_OR_ROUTE" },
+
+    { "name": "CORE_HISTORY", "ask_order": ["duration", "onset", "severity_scale", "location", "character"], "next": "ASSOCIATED" },
+
+    { "name": "ASSOCIATED", "ask_order": ["radiation", "associated", "neuro", "fever", "neck_stiffness", "trauma", "triggers", "relieving"], "next": "RISK_FACTORS" },
+
+    { "name": "RISK_FACTORS", "ask_order": ["past_history", "age_group"], "next": "RED_FLAGS" },
+
+    { "name": "RED_FLAGS", "evaluate": "redFlagRules", "next": "SUMMARY" },
+
+    { "name": "SUMMARY", "action": "compose summary using summaryTemplate; decide triage & next_steps", "next": "END" },
+
+    { "name": "END", "action": "return final message with done=true" }
+  ]
+}
