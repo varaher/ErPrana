@@ -1548,7 +1548,7 @@ class BackendAPITester:
                 print(f"❌ Risk factors not collected properly. Got: {risk_factors}")
             
             # Check for escalated triage due to risk factors
-            triage_level = response_2.get("triage_level", "").lower()
+            triage_level = (response_2.get("triage_level") or "").lower()
             if triage_level in ["red", "orange"]:
                 print(f"✅ Triage escalated due to risk factors: {triage_level.upper()}")
             else:
