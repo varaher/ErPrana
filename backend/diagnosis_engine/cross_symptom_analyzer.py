@@ -265,7 +265,17 @@ class CrossSymptomAnalyzer:
                 "dizziness": ["dizziness", "dizzy", "lightheaded", "faint", "syncope"],
                 "radiation_to_left_arm": ["radiation to left arm", "pain down left arm", "left arm pain"],
                 "radiation_to_jaw": ["radiation to jaw", "jaw pain", "pain in jaw"],
-                "radiation_to_back": ["radiation to back", "pain through to back", "back pain"]
+                "radiation_to_back": ["radiation to back", "pain through to back", "back pain"],
+                "wheeze": ["wheezing", "wheeze", "whistling sound"],
+                "stridor": ["stridor", "harsh breathing", "noisy inhale"],
+                "dyspnea_at_rest": ["shortness of breath at rest", "breathless at rest", "dyspnea at rest"],
+                "orthopnea": ["orthopnea", "can't lie flat", "breathless lying down"],
+                "paroxysmal_nocturnal_dyspnea": ["pnd", "waking up breathless", "night breathlessness"],
+                "pleuritic_chest_pain": ["pleuritic pain", "chest pain on deep breath", "sharp chest pain"],
+                "hemoptysis": ["coughing blood", "blood in sputum", "hemoptysis"],
+                "leg_edema": ["leg swelling", "swollen legs", "ankle swelling", "edema"],
+                "productive_cough": ["cough with phlegm", "wet cough", "productive cough"],
+                "dry_cough": ["dry cough", "hacking cough", "non-productive cough"]
             },
             
             "risk_factors": {
