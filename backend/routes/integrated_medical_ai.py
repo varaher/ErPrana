@@ -70,6 +70,16 @@ class IntegratedMedicalAI:
             if not fever_state.get('interview_complete', False):
                 return 'fever'
         
+        # Chest pain interview triggers (check first - higher priority)
+        chest_pain_patterns = [
+            r'chest pain', r'chest discomfort', r'chest pressure', r'chest tightness',
+            r'heart pain', r'cardiac pain', r'angina', r'heart attack', r'crushing chest',
+            r'chest hurts', r'pain in chest', r'chest ache'
+        ]
+        
+        if any(re.search(pattern, message_lower) for pattern in chest_pain_patterns):
+            return 'chest_pain'
+        
         # Fever interview triggers
         fever_patterns = [
             r'fever', r'high temperature', r'temp', r'burning up', 
