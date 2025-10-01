@@ -83,12 +83,16 @@ class StructuredMedicalInterviewer:
         text_lower = text.lower()
         
         if complaint == 'fever':
-            # Extract temperature values
+            # Extract temperature values - enhanced patterns
             temp_patterns = [
-                r'(\d+(?:\.\d+)?)\s*(?:degree|degrees?|°)?\s*(?:f|fahrenheit)',
-                r'(\d+(?:\.\d+)?)\s*(?:degree|degrees?|°)?\s*(?:c|celsius)',
+                r'(\d+(?:\.\d+)?)\s*(?:degree|degrees?|°)?\s*(?:f|fahrenheit|faranheit|fahr)\b',
+                r'(\d+(?:\.\d+)?)\s*(?:degree|degrees?|°)?\s*(?:c|celsius|centigrade)\b',
                 r'(\d+(?:\.\d+)?)\s*f\b',
-                r'(\d+(?:\.\d+)?)\s*c\b'
+                r'(\d+(?:\.\d+)?)\s*c\b',
+                r'(\d+(?:\.\d+)?)\s+(?:degree|degrees)\s*(?:f|fahrenheit|faranheit)?\b',
+                r'(\d+(?:\.\d+)?)\s+(?:degree|degrees)\s*(?:c|celsius)?\b',
+                r'(?:temperature|temp).*?(\d+(?:\.\d+)?)',  # "temperature was 102"
+                r'^(\d+(?:\.\d+)?)$'  # Just the number alone like "102"
             ]
             
             for pattern in temp_patterns:
@@ -96,10 +100,19 @@ class StructuredMedicalInterviewer:
                 if match:
                     temp_val = float(match.group(1))
                     # Convert celsius to fahrenheit if needed
-                    if 'c' in pattern or 'celsius' in pattern:
+                    if any(x in pattern for x in ['c\\b', 'celsius', 'centigrade']) and temp_val < 50:
                         temp_val = temp_val * 9/5 + 32
-                    entities['max_temp_f'] = temp_val
-                    break
+                    # Assume fahrenheit for normal fever range
+                    elif temp_val >= 96 and temp_val <= 110:
+                        entities['max_temp_f'] = temp_val
+                        break
+                    # For standalone numbers in fever range, assume fahrenheit
+                    elif temp_val >= 99 and temp_val <= 106:
+                        entities['max_temp_f'] = temp_val
+                        break
+                    else:
+                        entities['max_temp_f'] = temp_val
+                        break
             
             # Extract duration
             duration_patterns = [
