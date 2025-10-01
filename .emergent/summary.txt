@@ -1,82 +1,76 @@
 <analysis>
-The trajectory details the phased development of the ErPrana Emergency Medicine Assistant with Voice AI application. The initial request was to integrate an LLM (OpenAI GPT-4o) and a feedback mechanism (Phase 1). This involved creating new backend routes (), updating the  to use GPT-4o, and modifying the frontend  to include feedback buttons and API calls. A critical bug was found where the frontend passed a numeric  while the backend expected a string, which was resolved by type casting on the frontend.
+The trajectory documents the evolution of the ErPrana application's core medical AI, ARYA. The initial user request was to fix conversational loops and enhance the AI to collect multiple symptoms before providing numbered, reasoned recommendations. The first attempt involved creating a new advanced API, but user testing revealed persistent loops and context-awareness failures.
 
-Next, Phase 2 focused on creating an Advanced Medical Knowledge with Adaptive Learning system. This involved creating a new  and an  route, integrating them into the core symptom intelligence logic, and adding a detailed feedback modal to the frontend.
+The user then provided a sophisticated, structured interview architecture, starting with a Fever script. This new paradigm uses a finite state machine, defined in JSON policy files, and a slot-filling mechanism, defined in JSON rule files. This approach eliminates loops by design and ensures a clinically relevant line of questioning.
 
-Phase 3 implemented Intelligent Wearable Medical Analytics. New backend modules () were created to analyze wearable data against provided medical knowledge and generate health reports. A corresponding  component was added to the frontend. This phase required significant debugging to fix backend Enum and ObjectId serialization errors identified by the testing agent. The most recent user request is to integrate a more advanced medical intelligence code snippet and enhance natural language understanding.
+The AI engineer successfully refactored the entire backend to support this new architecture. This involved creating new core modules:  (the interview engine),  (the diagnostic engine), and  (the main orchestrator).
+
+Following the success of the fever implementation, the engineer integrated similar user-provided scripts for Chest Pain and Shortness of Breath (SOB). Significant debugging was required to make the interview engine complaint-agnostic and to fix entity extraction logic. A bug in the SOB triage calculation was identified but not fully resolved. The work concluded mid-implementation of the fourth script, Headache.
 </analysis>
 
 <product_requirements>
-The ErPrana application is an Emergency Medicine Assistant with Voice AI with two modes: Layperson and Doctor. Key features include mandatory user login, a full-page ChatGPT-style symptom checker named ARYA, and user profiles. The core requirement is for ARYA to conduct a structured medical conversation (Chief Complaint, HPI, PMHx, etc.), provide provisional diagnoses with triage risk, and maintain conversational context to avoid repetition.
+The ErPrana application, an Emergency Medicine Assistant with Voice AI, requires a robust, ChatGPT-style symptom checker named ARYA. The core requirement is to evolve ARYA from a simple conversational agent into a clinically structured decision support tool.
 
-The system must integrate a comprehensive 9-system medical knowledge framework, intelligently detect emergencies (e.g., overdose, SAH), and handle multiple symptoms. Recent enhancements include an adaptive learning mechanism based on user feedback and an intelligent analytics engine for wearable data. This engine generates daily, weekly, and monthly health reports by correlating wearable data with the user's health records and past consultations. The overall goal is a robust, context-aware AI that provides safe, reliable medical guidance and escalates emergencies appropriately.
+The system must conduct guided, non-repetitive interviews for specific chief complaints like fever, chest pain, and headache. It needs to intelligently gather information by filling predefined slots (e.g., duration, severity, associated symptoms). Based on the collected data, it must evaluate a set of clinical red-flag rules to determine a triage level (e.g., routine, urgent, emergency).
+
+Finally, ARYA must generate a comprehensive summary that includes a list of potential provisional diagnoses with reasoning and provide clear, actionable, and symptom-specific recommendations. The entire system is designed to be modular, allowing for the easy addition of new medical interview scripts for different complaints.
 </product_requirements>
 
 <key_technical_concepts>
-- **Full-stack Frameworks**: React.js for the frontend and FastAPI (Python) for the backend.
-- **Database**: MongoDB for data storage.
-- **AI/ML**: LLM integration using OpenAI's GPT-4o for Natural Language Understanding (NLU) and intelligent medical assessment.
-- **State Management**: Server-side stateful conversation management to maintain context during user interactions.
-- **Containerization**: The application is deployed in a Kubernetes container environment.
-- **API Design**: RESTful APIs for communication between the frontend and backend.
+- **Full-stack Frameworks**: React.js (frontend), FastAPI (Python backend).
+- **Database**: MongoDB for storing conversation state.
+- **AI/ML**: LLM (GPT-4o) for Natural Language Understanding (NLU) and entity extraction within a structured flow.
+- **State-Machine-Driven Interviews**: A custom-built engine using JSON-based configurations ( and ) to guide conversations through a finite set of states, ensuring no loops.
+- **Slot-Filling Mechanism**: Extracts key medical entities from user input to populate a predefined data structure for each complaint.
+- **Rule-Based Triage**: Evaluates collected symptoms against clinical red-flag rules defined in JSON to determine urgency.
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture with a React frontend and a FastAPI backend.
+The application's architecture was significantly refactored to support a modular, state-driven interview system. The core logic now resides in a new set of interconnected backend modules.
 
 
 
-- ****:
-  - **Importance**: This is the core of the application's medical AI. It manages the conversational flow, state, and integration with the LLM (GPT-4o) and the structured medical knowledge framework.
-  - **Changes**: Heavily modified to transition from a basic rule-based system to a sophisticated, multi-step conversational AI. It now includes functions for LLM-powered analysis (), emergency detection (overdose, SAH), and generation of comprehensive medical assessments. It was updated to integrate the .
+-   ****: This new directory stores the configuration for each medical interview.
+    -    files: Define the slots to be filled, the questions to ask for each slot, red-flag rules, and summary templates.
+    -    files: Define the finite state machine for each interview, controlling the flow of the conversation (e.g., GREETING -> CORE_HISTORY -> SUMMARY).
 
-- ****:
-  - **Importance**: The main entry point for the FastAPI application. It initializes the app, sets up CORS, and includes all the API routers from the  directory.
-  - **Changes**: Updated multiple times to include new routers for feedback (), adaptive learning (), and wearable intelligence ().
+-   ****:
+    -   **Importance**: This is the core engine that runs the interviews. It loads the JSON configurations, manages the conversation state, asks questions for the next unfilled slot based on the policy, extracts entities from user responses, and evaluates red flags.
+    -   **Changes**: Created from scratch to implement the user-provided pseudocode. It was later refactored to be complaint-agnostic, dynamically loading the correct  and  files.
 
-- ****:
-  - **Importance**: A new module created in Phase 3. It contains the logic for analyzing wearable data (sleep, heart rate, SpO₂, etc.) based on the extensive medical knowledge provided by the user.
-  - **Changes**: Created and then heavily patched to fix Enum serialization issues by ensuring all triage levels were returned as strings instead of Enum objects.
+-   ****:
+    -   **Importance**: This is the new primary API endpoint () that the frontend interacts with. It acts as an orchestrator.
+    -   **Changes**: Created to detect the user's chief complaint (e.g., fever, chest pain), initialize the correct interview state, call the  engine to conduct the interview turn, and then pass the final results to the  for diagnosis.
 
-- ****:
-  - **Importance**: The primary user interface for interacting with the ARYA AI. It manages the chat display, user input, and API calls to the backend.
-  - **Changes**: Updated to include feedback buttons (thumbs up/down) and a detailed feedback modal. The API call logic was corrected to ensure the  is passed as a string to match backend Pydantic model requirements.
+-   ****:
+    -   **Importance**: Contains the logic for generating provisional diagnoses and comprehensive recommendations based on the final, filled slots from an interview.
+    -   **Changes**: Created to analyze the structured data from multiple interviews, allowing it to correlate symptoms (e.g., fever + chest pain) for a more accurate diagnosis.
 
-- ****:
-  - **Importance**: A new component added in Phase 3 to display the analysis of the user's wearable data.
-  - **Changes**: Created from scratch to provide visualizations and reports for daily, weekly, and monthly health data.
-
-- ****:
-  - **Importance**: The root component of the React application. It handles routing and renders the main components based on the current view.
-  - **Changes**: Modified to add a navigation link to the new  and to correctly render it as a new view within the application.
+-   ****:
+    -   **Importance**: The main user interface for the ARYA chatbot.
+    -   **Changes**: The API call in the  function was updated to point to the new  endpoint, replacing the previous  endpoint.
 </code_architecture>
 
 <pending_tasks>
-- Integrate the user-provided advanced medical intelligence code to replace or enhance the current .
-- Implement a natural language understanding layer (e.g., using Google Translate or similar services) to interpret colloquial user descriptions of symptoms (e.g., surrounding is spinning -> giddiness).
-- Fix the final identified issue: ObjectId serialization in the health memory retrieval endpoint.
+- Complete the implementation of the Headache interview script by integrating it into the  and other relevant modules.
+- Debug and fix the incorrect triage calculation for the Shortness of Breath interview, where risk factors are not correctly elevating the urgency level.
+- Conduct comprehensive testing of the newly implemented Headache interview flow.
 </pending_tasks>
 
 <current_work>
-The engineer has just completed Phase 3, which involved building the Intelligent Wearable Medical Analytics system. This major feature required creating new backend logic and API endpoints to process wearable data using a comprehensive medical knowledge base.
+The engineer is in the middle of integrating the fourth user-provided medical interview script for Headache. The work so far has involved translating the user's TypeScript controller logic into the existing Python framework.
 
-**Backend Work:**
-- New files were created:  and .
-- These files contain the logic to analyze various health metrics (sleep, heart rate, SpO₂, etc.) and assign triage levels (RED, ORANGE, YELLOW, GREEN).
-- A new route, , was added to expose this functionality.
+**File Creation:**
+-   : Contains the slots, questions, and red-flag rules for the headache interview.
+-   : Defines the conversational state machine for the headache interview.
 
-**Frontend Work:**
-- A new component, , was created to display the analyzed health data in daily, weekly, and monthly reports.
-- The main  was updated to include navigation to this new dashboard.
+**File Modifications:**
+-   ****: Updated to recognize headache as a valid complaint and to include headache-specific entity extraction logic in the  function. The code now parses keywords related to headache onset, severity, and associated symptoms like fever or neck stiffness.
+-   ****: The  method was enhanced to include keywords like headache and migraine to initiate the correct interview. The  method was updated to process and combine data from the headache interview with the overall patient state.
 
-**Debugging:**
-- The initial implementation faced critical backend errors related to returning Python Enum objects in API responses, which are not JSON serializable. This was fixed by converting all triage level enums to strings before returning them from the API.
-- A similar issue was found where the  was trying to perform a  operation on Enum objects, which was also fixed.
-- The most recent test run revealed a remaining issue with MongoDB  serialization in the health memory retrieval logic.
-
-Immediately before this summary, the user provided a new, more advanced code snippet for medical intelligence and requested its integration along with an enhancement for natural language understanding. The engineer's last action was acknowledging this new request and stating the plan to first fix the remaining ObjectId bug from Phase 3 testing.
+The immediate next step was to integrate the headache logic into the diagnostic engine and then begin testing.
 </current_work>
 
 <optional_next_step>
-Fix the ObjectId serialization issue in the health memory retrieval endpoint, as identified in the last test run, to ensure the wearable intelligence system is fully functional before integrating the new medical intelligence code.
+Update the  to include headache-related conditions and diagnoses, then restart the backend and test the full headache interview flow.
 </optional_next_step>
