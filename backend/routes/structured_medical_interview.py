@@ -1,0 +1,537 @@
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Dict, Any, Optional, List
+import os
+import json
+import uuid
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+
+router = APIRouter()
+
+class InterviewRequest(BaseModel):
+    user_message: str
+    session_id: str
+    interview_state: Optional[Dict[str, Any]] = None
+    user_id: str
+
+class InterviewResponse(BaseModel):
+    assistant_message: str
+    updated_state: Dict[str, Any]
+    next_slot: Optional[str] = None
+    done: bool = False
+    red_flags_triggered: List[str] = []
+    provisional_diagnoses: Optional[List[Dict[str, Any]]] = None
+    triage_level: Optional[str] = None
+
+class StructuredMedicalInterviewer:
+    """Handles structured medical interviews with slot filling and red flag detection"""
+    
+    def __init__(self):
+        self.interview_configs = {}
+        self.load_interview_configs()
+    
+    def load_interview_configs(self):
+        """Load all interview configurations from the medical_interviews directory"""
+        interviews_dir = Path("/app/backend/medical_interviews")
+        
+        # Load fever configuration
+        try:
+            with open(interviews_dir / "fever.json", 'r') as f:
+                fever_config = json.load(f)
+            with open(interviews_dir / "fever.policy.json", 'r') as f:
+                fever_policy = json.load(f)
+            
+            self.interview_configs['fever'] = {
+                'config': fever_config,
+                'policy': fever_policy
+            }
+            print("✅ Loaded fever interview configuration")
+        except Exception as e:
+            print(f"❌ Error loading fever configuration: {e}")
+    
+    def detect_primary_complaint(self, message: str) -> str:
+        """Detect the primary complaint from user message"""
+        message_lower = message.lower()
+        
+        # Fever detection patterns
+        fever_patterns = [
+            r'fever', r'high temperature', r'temp', r'burning up', r'hot', 
+            r'chills', r'feverish', r'pyrexia', r'\d+\s*(?:degree|°)?\s*(?:f|fahrenheit|c|celsius)'
+        ]
+        
+        if any(re.search(pattern, message_lower) for pattern in fever_patterns):
+            return 'fever'
+        
+        # Add more complaint detection as we add more interview scripts
+        # abdominal_pain_patterns = [r'abdominal pain', r'stomach pain', r'belly pain']
+        # chest_pain_patterns = [r'chest pain', r'chest discomfort']
+        
+        return 'general'  # Default to general if no specific complaint detected
+    
+    def first_unfilled_slot(self, slots_needed: List[str], filled_slots: Dict[str, Any]) -> Optional[str]:
+        """Find the first unfilled required slot"""
+        for slot_name in slots_needed:
+            if slot_name not in filled_slots or filled_slots[slot_name] is None:
+                return slot_name
+        return None
+    
+    def extract_entities_from_text(self, text: str, complaint: str) -> Dict[str, Any]:
+        """Extract medical entities from free text based on complaint type"""
+        entities = {}
+        text_lower = text.lower()
+        
+        if complaint == 'fever':
+            # Extract temperature values
+            temp_patterns = [
+                r'(\d+(?:\.\d+)?)\s*(?:degree|degrees?|°)?\s*(?:f|fahrenheit)',
+                r'(\d+(?:\.\d+)?)\s*(?:degree|degrees?|°)?\s*(?:c|celsius)',
+                r'(\d+(?:\.\d+)?)\s*f\b',
+                r'(\d+(?:\.\d+)?)\s*c\b'
+            ]
+            
+            for pattern in temp_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    temp_val = float(match.group(1))
+                    # Convert celsius to fahrenheit if needed
+                    if 'c' in pattern or 'celsius' in pattern:
+                        temp_val = temp_val * 9/5 + 32
+                    entities['max_temp_f'] = temp_val
+                    break
+            
+            # Extract duration
+            duration_patterns = [
+                r'(\d+)\s*days?',
+                r'(\d+)\s*weeks?',
+                r'since\s*(\d+)\s*days?',
+                r'for\s*(\d+)\s*days?'
+            ]
+            
+            for pattern in duration_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    days = int(match.group(1))
+                    if 'week' in pattern:
+                        days *= 7
+                    entities['duration_days'] = days
+                    break
+            
+            # Extract onset pattern
+            if any(word in text_lower for word in ['sudden', 'suddenly', 'acute']):
+                entities['onset'] = 'sudden'
+            elif any(word in text_lower for word in ['gradual', 'gradually', 'slow']):
+                entities['onset'] = 'gradual'
+            
+            # Extract symptoms
+            if any(word in text_lower for word in ['cough', 'coughing']):
+                if any(word in text_lower for word in ['dry', 'hacking']):
+                    entities['resp_symptoms'] = ['cough_dry']
+                elif any(word in text_lower for word in ['phlegm', 'mucus', 'sputum']):
+                    entities['resp_symptoms'] = ['cough_phlegm']
+                else:
+                    entities['resp_symptoms'] = ['cough_dry']  # Default
+            
+            if any(word in text_lower for word in ['nausea', 'nauseous', 'sick']):
+                entities['gi_symptoms'] = entities.get('gi_symptoms', []) + ['nausea']
+            
+            if any(word in text_lower for word in ['vomiting', 'throwing up', 'puking']):
+                entities['gi_symptoms'] = entities.get('gi_symptoms', []) + ['vomiting']
+            
+            if any(word in text_lower for word in ['diarrhea', 'loose stools', 'watery stools']):
+                entities['gi_symptoms'] = entities.get('gi_symptoms', []) + ['diarrhea']
+            
+            # Extract age group (simple heuristic)
+            age_patterns = [
+                r'(\d+)\s*(?:years?|yrs?)\s*old',
+                r'age\s*(\d+)',
+                r'(\d+)\s*yo'
+            ]
+            
+            for pattern in age_patterns:
+                match = re.search(pattern, text_lower)
+                if match:
+                    age = int(match.group(1))
+                    if age < 1:
+                        entities['age_group'] = 'infant_lt_3m'
+                    elif age <= 5:
+                        entities['age_group'] = 'child_3m_5y'
+                    elif age <= 17:
+                        entities['age_group'] = 'child_6y_17y'
+                    elif age <= 64:
+                        entities['age_group'] = 'adult_18_64'
+                    else:
+                        entities['age_group'] = 'older_65_plus'
+                    break
+        
+        return entities
+    
+    def evaluate_red_flag_rules(self, rules: List[Dict], slots: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Evaluate red flag rules against current slots"""
+        triggered_flags = []
+        
+        for rule in rules:
+            try:
+                if self._evaluate_rule_condition(rule['if'], slots):
+                    triggered_flags.append({
+                        'name': rule['name'],
+                        'triage': rule['triage'],
+                        'message': rule['message']
+                    })
+            except Exception as e:
+                print(f"Error evaluating rule {rule['name']}: {e}")
+        
+        return triggered_flags
+    
+    def _evaluate_rule_condition(self, condition: str, slots: Dict[str, Any]) -> bool:
+        """Safely evaluate a rule condition"""
+        # Simple rule evaluation - replace with more sophisticated parser in production
+        try:
+            # Replace slot names with actual values
+            eval_condition = condition
+            
+            for slot_name, value in slots.items():
+                if isinstance(value, str):
+                    eval_condition = eval_condition.replace(slot_name, f"'{value}'")
+                elif isinstance(value, list):
+                    eval_condition = eval_condition.replace(f"{slot_name} includes", f"'{value}' includes")
+                    eval_condition = eval_condition.replace("includes", ".__contains__")
+                else:
+                    eval_condition = eval_condition.replace(slot_name, str(value))
+            
+            # Handle operators
+            eval_condition = eval_condition.replace('&&', ' and ')
+            eval_condition = eval_condition.replace('||', ' or ')
+            eval_condition = eval_condition.replace('==', ' == ')
+            eval_condition = eval_condition.replace('>=', ' >= ')
+            eval_condition = eval_condition.replace('<=', ' <= ')
+            
+            # Simple evaluation (in production, use a proper expression parser)
+            return eval(eval_condition)
+            
+        except:
+            return False
+    
+    def determine_triage_level(self, flags: List[Dict[str, Any]]) -> str:
+        """Determine overall triage level from triggered flags"""
+        if any(f['triage'] == 'red' for f in flags):
+            return 'red'
+        elif any(f['triage'] == 'orange' for f in flags):
+            return 'orange'
+        elif any(f['triage'] == 'yellow' for f in flags):
+            return 'yellow'
+        else:
+            return 'green'
+    
+    def generate_provisional_diagnoses(self, complaint: str, slots: Dict[str, Any], triage_level: str) -> List[Dict[str, Any]]:
+        """Generate provisional diagnoses based on complaint and symptoms"""
+        diagnoses = []
+        
+        if complaint == 'fever':
+            # Fever-specific diagnosis logic
+            resp_symptoms = slots.get('resp_symptoms', [])
+            gi_symptoms = slots.get('gi_symptoms', [])
+            neuro_symptoms = slots.get('neuro_symptoms', [])
+            duration = slots.get('duration_days', 0)
+            max_temp = slots.get('max_temp_f', 0)
+            
+            # High-risk diagnoses based on red flags
+            if triage_level == 'red':
+                if any(s in neuro_symptoms for s in ['stiff_neck', 'confusion']):
+                    diagnoses.append({
+                        'name': 'Meningitis/Encephalitis',
+                        'probability': 85,
+                        'reasoning': 'Fever with neurological signs (stiff neck/confusion)',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'G03.9'
+                    })
+                
+                if max_temp >= 104:
+                    diagnoses.append({
+                        'name': 'Hyperthermia/Severe Infection',
+                        'probability': 80,
+                        'reasoning': 'Very high fever (≥104°F) indicates severe systemic illness',
+                        'urgency': 'EMERGENCY',
+                        'icd10': 'R50.9'
+                    })
+            
+            # Common fever diagnoses
+            if 'cough_dry' in resp_symptoms or 'cough_phlegm' in resp_symptoms:
+                if 'shortness_of_breath' in resp_symptoms or 'chest_pain' in resp_symptoms:
+                    diagnoses.append({
+                        'name': 'Pneumonia',
+                        'probability': 70,
+                        'reasoning': 'Fever with cough and respiratory symptoms',
+                        'urgency': 'URGENT',
+                        'icd10': 'J18.9'
+                    })
+                else:
+                    diagnoses.append({
+                        'name': 'Upper Respiratory Tract Infection',
+                        'probability': 60,
+                        'reasoning': 'Fever with cough, likely viral or bacterial URTI',
+                        'urgency': 'ROUTINE',
+                        'icd10': 'J06.9'
+                    })
+            
+            if any(s in gi_symptoms for s in ['nausea', 'vomiting', 'diarrhea']):
+                diagnoses.append({
+                    'name': 'Gastroenteritis',
+                    'probability': 65,
+                    'reasoning': 'Fever with gastrointestinal symptoms',
+                    'urgency': 'ROUTINE',
+                    'icd10': 'K59.1'
+                })
+            
+            if 'burning' in slots.get('urinary_symptoms', []) or 'frequency' in slots.get('urinary_symptoms', []):
+                diagnoses.append({
+                    'name': 'Urinary Tract Infection',
+                    'probability': 75,
+                    'reasoning': 'Fever with urinary symptoms',
+                    'urgency': 'URGENT',
+                    'icd10': 'N39.0'
+                })
+            
+            # Default viral syndrome if no specific pattern
+            if not diagnoses:
+                diagnoses.append({
+                    'name': 'Viral Syndrome',
+                    'probability': 50,
+                    'reasoning': 'Fever without specific localizing symptoms',
+                    'urgency': 'ROUTINE',
+                    'icd10': 'R50.9'
+                })
+        
+        # Sort by probability descending and return top 5
+        diagnoses.sort(key=lambda x: x['probability'], reverse=True)
+        return diagnoses[:5]
+    
+    def conduct_interview(self, request: InterviewRequest) -> InterviewResponse:
+        """Conduct structured medical interview"""
+        
+        # Initialize or get existing interview state
+        if not request.interview_state:
+            complaint = self.detect_primary_complaint(request.user_message)
+            interview_state = {
+                'complaint': complaint,
+                'stage': 'GREETING' if request.user_message.lower().strip() in ['hi', 'hello', 'hey'] else 'CHIEF_COMPLAINT_CONFIRM',
+                'slots': {},
+                'last_asked': None,
+                'interview_complete': False
+            }
+        else:
+            interview_state = request.interview_state
+            complaint = interview_state['complaint']
+        
+        # Get interview configuration
+        if complaint not in self.interview_configs:
+            # Fallback to general conversation
+            return InterviewResponse(
+                assistant_message="I understand your concern. Can you describe your main symptom in more detail?",
+                updated_state=interview_state,
+                done=False
+            )
+        
+        config = self.interview_configs[complaint]['config']
+        policy = self.interview_configs[complaint]['policy']
+        
+        # Extract entities from user message and update slots
+        new_entities = self.extract_entities_from_text(request.user_message, complaint)
+        interview_state['slots'].update(new_entities)
+        
+        # Find current stage
+        current_stage = None
+        for stage in policy['states']:
+            if stage['name'] == interview_state['stage']:
+                current_stage = stage
+                break
+        
+        if not current_stage:
+            current_stage = policy['states'][0]  # Default to first stage
+        
+        # Process based on stage
+        if current_stage['name'] == 'GREETING':
+            interview_state['stage'] = 'CHIEF_COMPLAINT_CONFIRM'
+            return InterviewResponse(
+                assistant_message="Hello! Are you having a fever now or recently?",
+                updated_state=interview_state,
+                next_slot="confirm_fever",
+                done=False
+            )
+        
+        elif current_stage['name'] == 'CHIEF_COMPLAINT_CONFIRM':
+            if any(word in request.user_message.lower() for word in ['yes', 'fever', 'temperature', 'hot']):
+                interview_state['slots']['confirm_fever'] = True
+                interview_state['stage'] = 'CORE'
+                # Find first unfilled core slot
+                core_slots = policy['states'][2]['ask_order']  # CORE stage
+                next_slot = self.first_unfilled_slot(core_slots, interview_state['slots'])
+                if next_slot:
+                    slot_config = next((s for s in config['slots'] if s['name'] == next_slot), None)
+                    question = slot_config['question'] if slot_config else "Can you tell me more?"
+                    return InterviewResponse(
+                        assistant_message=question,
+                        updated_state=interview_state,
+                        next_slot=next_slot,
+                        done=False
+                    )
+            else:
+                return InterviewResponse(
+                    assistant_message="Which symptom is troubling you most right now?",
+                    updated_state=interview_state,
+                    done=False
+                )
+        
+        elif 'ask_order' in current_stage:
+            # Handle slot-filling stages (CORE, ASSOCIATED, CONTEXT)
+            slots_needed = current_stage['ask_order']
+            next_slot = self.first_unfilled_slot(slots_needed, interview_state['slots'])
+            
+            if next_slot:
+                slot_config = next((s for s in config['slots'] if s['name'] == next_slot), None)
+                question = slot_config['question'] if slot_config else "Can you tell me more?"
+                interview_state['last_asked'] = next_slot
+                return InterviewResponse(
+                    assistant_message=question,
+                    updated_state=interview_state,
+                    next_slot=next_slot,
+                    done=False
+                )
+            else:
+                # All slots filled, advance to next stage
+                interview_state['stage'] = current_stage['next']
+                return self.conduct_interview(InterviewRequest(
+                    user_message="",
+                    session_id=request.session_id,
+                    interview_state=interview_state,
+                    user_id=request.user_id
+                ))
+        
+        elif current_stage['name'] == 'RED_FLAGS':
+            # Evaluate red flags
+            triggered_flags = self.evaluate_red_flag_rules(config['redFlagRules'], interview_state['slots'])
+            interview_state['slots']['red_flags'] = [f['name'] for f in triggered_flags]
+            triage_level = self.determine_triage_level(triggered_flags)
+            interview_state['slots']['triage'] = triage_level
+            
+            if triggered_flags:
+                warning_messages = [f['message'] for f in triggered_flags]
+                warning = f"⚠️ Note: {' '.join(warning_messages)}"
+                interview_state['stage'] = 'SUMMARY'
+                return InterviewResponse(
+                    assistant_message=warning,
+                    updated_state=interview_state,
+                    done=False,
+                    red_flags_triggered=[f['name'] for f in triggered_flags],
+                    triage_level=triage_level
+                )
+            else:
+                interview_state['stage'] = 'SUMMARY'
+                return self.conduct_interview(InterviewRequest(
+                    user_message="",
+                    session_id=request.session_id,
+                    interview_state=interview_state,
+                    user_id=request.user_id
+                ))
+        
+        elif current_stage['name'] == 'SUMMARY':
+            # Generate final summary and recommendations
+            triage_level = interview_state['slots'].get('triage', 'green')
+            
+            # Determine next steps based on triage
+            if triage_level == 'red':
+                next_steps = "🚨 Please seek emergency care now or call 911 immediately."
+            elif triage_level == 'orange':
+                next_steps = "⚠️ Same-day urgent evaluation is recommended. Contact your healthcare provider or visit urgent care."
+            elif triage_level == 'yellow':
+                next_steps = "📞 Consider clinic evaluation within 24-48 hours and monitor hydration."
+            else:
+                next_steps = "🏠 Home care advice: fluids, rest, fever reducers as appropriate; return if symptoms worsen or red flags develop."
+            
+            # Generate provisional diagnoses
+            provisional_diagnoses = self.generate_provisional_diagnoses(
+                complaint, interview_state['slots'], triage_level
+            )
+            
+            # Create summary
+            summary_parts = []
+            duration = interview_state['slots'].get('duration_days', '—')
+            max_temp = interview_state['slots'].get('max_temp_f', '—')
+            onset = interview_state['slots'].get('onset', '—')
+            
+            summary_parts.append(f"**📋 Clinical Summary:**")
+            summary_parts.append(f"Fever for {duration} day(s), onset {onset}, max temperature {max_temp}°F")
+            
+            # Add associated symptoms
+            resp = interview_state['slots'].get('resp_symptoms', [])
+            gi = interview_state['slots'].get('gi_symptoms', [])
+            neuro = interview_state['slots'].get('neuro_symptoms', [])
+            
+            if resp and 'none' not in resp:
+                summary_parts.append(f"Respiratory: {', '.join(resp)}")
+            if gi and 'none' not in gi:
+                summary_parts.append(f"GI: {', '.join(gi)}")
+            if neuro and 'none' not in neuro:
+                summary_parts.append(f"Neurological: {', '.join(neuro)}")
+            
+            summary_parts.append(f"**🎯 Triage Level:** {triage_level.upper()}")
+            
+            # Add provisional diagnoses
+            if provisional_diagnoses:
+                summary_parts.append(f"\n**🔬 Most Likely Diagnoses:**")
+                for i, dx in enumerate(provisional_diagnoses, 1):
+                    summary_parts.append(f"{i}. **{dx['name']}** ({dx['probability']}% likelihood)")
+                    summary_parts.append(f"   *Reasoning:* {dx['reasoning']}")
+                    summary_parts.append(f"   *Urgency:* {dx['urgency']}")
+            
+            summary_parts.append(f"\n**📋 Next Steps:**")
+            summary_parts.append(next_steps)
+            
+            interview_state['interview_complete'] = True
+            
+            return InterviewResponse(
+                assistant_message='\n'.join(summary_parts),
+                updated_state=interview_state,
+                done=True,
+                red_flags_triggered=interview_state['slots'].get('red_flags', []),
+                provisional_diagnoses=provisional_diagnoses,
+                triage_level=triage_level
+            )
+        
+        # Default response
+        return InterviewResponse(
+            assistant_message="Thank you for the information. Let me process this.",
+            updated_state=interview_state,
+            done=True
+        )
+
+# Initialize the interviewer
+medical_interviewer = StructuredMedicalInterviewer()
+
+@router.post("/structured-interview", response_model=InterviewResponse)
+async def conduct_structured_interview(request: InterviewRequest):
+    """Conduct structured medical interview with slot filling"""
+    try:
+        return medical_interviewer.conduct_interview(request)
+    except Exception as e:
+        print(f"Error in structured interview: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error in medical interview: {str(e)}")
+
+@router.get("/available-interviews")
+async def get_available_interviews():
+    """Get list of available structured interviews"""
+    return {
+        "available_interviews": list(medical_interviewer.interview_configs.keys()),
+        "total_interviews": len(medical_interviewer.interview_configs)
+    }
+
+@router.get("/interview-config/{complaint}")
+async def get_interview_config(complaint: str):
+    """Get configuration for a specific medical interview"""
+    if complaint in medical_interviewer.interview_configs:
+        return medical_interviewer.interview_configs[complaint]
+    else:
+        raise HTTPException(status_code=404, detail=f"Interview configuration for '{complaint}' not found")
