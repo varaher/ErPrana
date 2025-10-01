@@ -609,21 +609,35 @@ class StructuredMedicalInterviewer:
             )
         
         elif current_stage['name'] == 'CHIEF_COMPLAINT_CONFIRM':
-            if any(word in request.user_message.lower() for word in ['yes', 'fever', 'temperature', 'hot']):
-                interview_state['slots']['confirm_fever'] = True
-                interview_state['stage'] = 'CORE'
-                # Find first unfilled core slot
-                core_slots = policy['states'][2]['ask_order']  # CORE stage
-                next_slot = self.first_unfilled_slot(core_slots, interview_state['slots'])
-                if next_slot:
-                    slot_config = next((s for s in config['slots'] if s['name'] == next_slot), None)
-                    question = slot_config['question'] if slot_config else "Can you tell me more?"
-                    return InterviewResponse(
-                        assistant_message=question,
-                        updated_state=interview_state,
-                        next_slot=next_slot,
-                        done=False
-                    )
+            # Get confirmation details from policy
+            confirm_stage = next((s for s in policy['states'] if s['name'] == 'CHIEF_COMPLAINT_CONFIRM'), None)
+            confirm_slot = confirm_stage.get('capture', 'confirm_symptom') if confirm_stage else 'confirm_symptom'
+            
+            # Dynamic confirmation based on complaint type
+            confirmation_keywords = []
+            if complaint == 'fever':
+                confirmation_keywords = ['yes', 'fever', 'temperature', 'hot']
+            elif complaint == 'chest_pain':
+                confirmation_keywords = ['yes', 'chest pain', 'chest', 'pain', 'discomfort']
+            else:
+                confirmation_keywords = ['yes']
+            
+            if any(word in request.user_message.lower() for word in confirmation_keywords):
+                interview_state['slots'][confirm_slot] = True
+                # Find CORE stage
+                core_stage = next((s for s in policy['states'] if 'ask_order' in s), None)
+                if core_stage:
+                    interview_state['stage'] = core_stage['name']
+                    next_slot = self.first_unfilled_slot(core_stage['ask_order'], interview_state['slots'])
+                    if next_slot:
+                        slot_config = next((s for s in config['slots'] if s['name'] == next_slot), None)
+                        question = slot_config['question'] if slot_config else "Can you tell me more?"
+                        return InterviewResponse(
+                            assistant_message=question,
+                            updated_state=interview_state,
+                            next_slot=next_slot,
+                            done=False
+                        )
             else:
                 return InterviewResponse(
                     assistant_message="Which symptom is troubling you most right now?",
