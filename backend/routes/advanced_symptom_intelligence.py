@@ -512,65 +512,68 @@ async def advanced_symptom_analysis(request: SymptomRequest):
             chat = create_llm_chat(request.session_id)
             
             # Create enhanced prompt with symptom collection context
-            enhanced_prompt = f"""
-USER MESSAGE: "{user_message}"
+            enhanced_prompt = f"""Patient says: "{user_message}"
 
-CURRENTLY COLLECTED SYMPTOMS: {all_symptoms}
+Context:
+- Current symptoms collected: {', '.join(all_symptoms) if all_symptoms else 'None yet'}
+- Conversation turn: {len(conv_state.state['conversation_history']) + 1}
+- New symptoms detected: {[s['symptom'] for s in symptom_analysis['detected_symptoms']]}
 
-SYMPTOM ANALYSIS:
-- Multiple symptoms detected: {symptom_analysis['has_multiple_symptoms']}
-- New symptoms found: {[s['symptom'] for s in symptom_analysis['detected_symptoms']]}
-- Total symptoms now: {len(all_symptoms)}
+Please provide an empathetic, medical response that:
+1. Acknowledges what they've shared
+2. Asks one specific follow-up question
+3. Recognizes temperature formats like "102f", "102 degree", etc.
 
-CONVERSATION CONTEXT:
-- This is turn {len(conv_state.state['conversation_history']) + 1} of the conversation
-- Symptom collection complete: {conv_state.is_symptom_collection_complete()}
-
-INSTRUCTIONS:
-1. If user has multiple symptoms OR new symptoms detected, acknowledge ALL of them
-2. Ask clarifying questions about the symptoms (timing, severity, triggers)
-3. Before making recommendations, confirm: "Are there any other symptoms you'd like to mention?"
-4. Only when user confirms no more symptoms, set "all_symptoms_collected": true
-
-Respond with empathy and thorough medical questioning."""
+Keep it natural and conversational."""
             
             user_msg = UserMessage(text=enhanced_prompt)
             llm_response = await chat.send_message(user_msg)
             
-            # Parse LLM response
-            try:
-                parsed_response = json.loads(llm_response)
-                
-                assistant_message = parsed_response.get("message", "I understand your concerns.")
-                next_step = parsed_response.get("next_step", "conversation_continue")
-                all_collected = parsed_response.get("all_symptoms_collected", False)
-                
-                # Update conversation state
-                if all_collected:
-                    conv_state.mark_symptom_collection_complete()
-                
-                conv_state.add_conversation_turn(user_message, assistant_message)
-                
-                # If all symptoms collected, generate recommendations
-                recommendations = None
-                if all_collected:
-                    recommendations = recommendation_generator.generate_recommendations(
-                        all_symptoms, emergency_result["is_emergency"]
-                    )
-                    next_step = "assessment_ready"
-                
-                return SymptomResponse(
-                    assistant_message=assistant_message,
-                    updated_state=conv_state.state,
-                    next_step=next_step,
-                    emergency_detected=False,
-                    all_symptoms_collected=all_collected,
-                    recommendations=recommendations
+            # Use the LLM response directly (no JSON parsing)
+            assistant_message = llm_response.strip()
+            
+            # Enhanced conversation logic
+            turn_count = len(conv_state.state['conversation_history'])
+            
+            # Determine if we should generate recommendations
+            should_assess = False
+            
+            # Check if user is asking for advice/recommendations
+            asking_for_advice = any(phrase in user_message.lower() for phrase in [
+                "what should i do", "what do you recommend", "help me", "advice", 
+                "treatment", "medication", "doctor", "hospital"
+            ])
+            
+            # Generate recommendations if they're asking for advice and we have symptoms
+            if asking_for_advice and len(all_symptoms) > 0:
+                should_assess = True
+                conv_state.mark_symptom_collection_complete()
+            
+            # Or if we have multiple conversation turns with symptoms
+            elif len(all_symptoms) > 0 and turn_count >= 3:
+                should_assess = True
+                conv_state.mark_symptom_collection_complete()
+            
+            conv_state.add_conversation_turn(user_message, assistant_message)
+            
+            # Generate recommendations if appropriate
+            recommendations = None
+            next_step = "conversation_continue"
+            
+            if should_assess:
+                recommendations = recommendation_generator.generate_recommendations(
+                    all_symptoms, emergency_result["is_emergency"]
                 )
-                
-            except json.JSONDecodeError:
-                # Fall back if JSON parsing fails
-                raise ValueError("LLM response parsing failed")
+                next_step = "assessment_ready"
+            
+            return SymptomResponse(
+                assistant_message=assistant_message,
+                updated_state=conv_state.state,
+                next_step=next_step,
+                emergency_detected=False,
+                all_symptoms_collected=should_assess,
+                recommendations=recommendations
+            )
             
         except Exception as llm_error:
             print(f"LLM error: {llm_error}, falling back to rule-based system")
