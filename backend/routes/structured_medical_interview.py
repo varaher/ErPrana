@@ -110,6 +110,15 @@ class StructuredMedicalInterviewer:
         if any(re.search(pattern, message_lower) for pattern in sob_patterns):
             return 'shortness_of_breath'
         
+        # Headache detection patterns
+        headache_patterns = [
+            r'headache', r'head pain', r'migraine', r'head ache', r'head hurt',
+            r'pain in head', r'head pounding', r'skull pain', r'cranial pain'
+        ]
+        
+        if any(re.search(pattern, message_lower) for pattern in headache_patterns):
+            return 'headache'
+        
         # Chest pain detection patterns
         chest_pain_patterns = [
             r'chest pain', r'chest discomfort', r'chest pressure', r'chest tightness',
