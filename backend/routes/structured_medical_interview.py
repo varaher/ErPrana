@@ -85,7 +85,17 @@ class StructuredMedicalInterviewer:
         """Detect the primary complaint from user message"""
         message_lower = message.lower()
         
-        # Chest pain detection patterns (check first - higher priority)
+        # Shortness of breath detection patterns (check first - highest priority for respiratory emergencies)
+        sob_patterns = [
+            r'shortness of breath', r'short of breath', r'breathless', r'difficulty breathing',
+            r'can\'t breathe', r'cannot breathe', r'breathing problems', r'dyspnea', r'sob',
+            r'trouble breathing', r'hard to breathe', r'breathing difficulty'
+        ]
+        
+        if any(re.search(pattern, message_lower) for pattern in sob_patterns):
+            return 'shortness_of_breath'
+        
+        # Chest pain detection patterns
         chest_pain_patterns = [
             r'chest pain', r'chest discomfort', r'chest pressure', r'chest tightness',
             r'heart pain', r'cardiac pain', r'angina', r'heart attack', r'crushing chest'
