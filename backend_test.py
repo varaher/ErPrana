@@ -1155,6 +1155,497 @@ class BackendAPITester:
         
         return success1 and success2, {"followup": response1, "continue": response2}
     
+    # ========== INTEGRATED MEDICAL AI TESTS ==========
+    
+    def test_integrated_medical_ai_status(self):
+        """Test integrated medical AI status endpoint"""
+        return self.run_test(
+            "Integrated Medical AI - Status Check",
+            "GET",
+            "integrated/medical-ai/status",
+            200
+        )
+    
+    def test_fever_interview_basic_trigger(self):
+        """Test 1 - Basic Fever Interview: 'i have fever since 2 days'"""
+        test_data = {
+            "user_message": "i have fever since 2 days",
+            "session_id": "fever_test_1",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Integrated Medical AI - Test 1: Basic Fever Interview",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Verify fever interview is triggered
+            interview_active = response.get("interview_active", False)
+            interview_type = response.get("interview_type")
+            next_step = response.get("next_step")
+            
+            if interview_active and interview_type == "fever":
+                print("✅ Fever interview correctly triggered")
+            else:
+                print(f"❌ Fever interview not triggered. Active: {interview_active}, Type: {interview_type}")
+            
+            if next_step == "interview_continue":
+                print("✅ Interview continuation flow correct")
+            else:
+                print(f"❌ Expected interview_continue, got: {next_step}")
+            
+            # Check if duration was extracted
+            updated_state = response.get("updated_state", {})
+            fever_state = updated_state.get("fever_interview_state", {})
+            slots = fever_state.get("slots", {})
+            
+            if "duration_days" in slots and slots["duration_days"] == 2:
+                print("✅ Duration correctly extracted: 2 days")
+            else:
+                print(f"❌ Duration extraction failed. Got: {slots.get('duration_days')}")
+        
+        return success, response
+    
+    def test_fever_interview_temperature_collection(self):
+        """Test 2 - Temperature Collection: Continue with temperature information"""
+        # First establish fever interview state
+        conversation_state = {
+            "active_interview": "fever",
+            "fever_interview_state": {
+                "slots": {"duration_days": 2},
+                "stage": "CORE",
+                "interview_complete": False
+            }
+        }
+        
+        test_data = {
+            "user_message": "it was 102 degree fahrenheit and started gradually",
+            "session_id": "fever_test_1",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Integrated Medical AI - Test 2: Temperature Collection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check temperature extraction
+            updated_state = response.get("updated_state", {})
+            fever_state = updated_state.get("fever_interview_state", {})
+            slots = fever_state.get("slots", {})
+            
+            if "max_temp_f" in slots and slots["max_temp_f"] == 102.0:
+                print("✅ Temperature correctly extracted: 102°F")
+            else:
+                print(f"❌ Temperature extraction failed. Got: {slots.get('max_temp_f')}")
+            
+            if "onset" in slots and slots["onset"] == "gradual":
+                print("✅ Onset correctly extracted: gradual")
+            else:
+                print(f"❌ Onset extraction failed. Got: {slots.get('onset')}")
+        
+        return success, response
+    
+    def test_fever_interview_symptom_collection(self):
+        """Test 3 - Symptom Collection: Continue with symptom information"""
+        conversation_state = {
+            "active_interview": "fever",
+            "fever_interview_state": {
+                "slots": {
+                    "duration_days": 2,
+                    "max_temp_f": 102.0,
+                    "onset": "gradual"
+                },
+                "stage": "ASSOCIATED",
+                "interview_complete": False
+            }
+        }
+        
+        test_data = {
+            "user_message": "i have dry cough and no other symptoms",
+            "session_id": "fever_test_1",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Integrated Medical AI - Test 3: Symptom Collection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check symptom extraction
+            updated_state = response.get("updated_state", {})
+            fever_state = updated_state.get("fever_interview_state", {})
+            slots = fever_state.get("slots", {})
+            
+            resp_symptoms = slots.get("resp_symptoms", [])
+            if "cough_dry" in resp_symptoms:
+                print("✅ Respiratory symptoms correctly extracted: dry cough")
+            else:
+                print(f"❌ Respiratory symptom extraction failed. Got: {resp_symptoms}")
+            
+            gi_symptoms = slots.get("gi_symptoms", [])
+            if "none" in gi_symptoms or not gi_symptoms:
+                print("✅ GI symptoms correctly identified as none")
+            else:
+                print(f"❌ GI symptoms should be none. Got: {gi_symptoms}")
+        
+        return success, response
+    
+    def test_fever_interview_comprehensive_analysis(self):
+        """Test 4 - Comprehensive Analysis: Ask for advice to trigger analysis"""
+        conversation_state = {
+            "fever_interview_state": {
+                "slots": {
+                    "duration_days": 2,
+                    "max_temp_f": 102.0,
+                    "onset": "gradual",
+                    "resp_symptoms": ["cough_dry"],
+                    "gi_symptoms": ["none"],
+                    "neuro_symptoms": ["none"],
+                    "age_group": "adult_18_64"
+                },
+                "interview_complete": True
+            }
+        }
+        
+        test_data = {
+            "user_message": "what should i do?",
+            "session_id": "fever_test_1",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Integrated Medical AI - Test 4: Comprehensive Analysis",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check comprehensive diagnoses
+            comprehensive_diagnoses = response.get("comprehensive_diagnoses", [])
+            if comprehensive_diagnoses and len(comprehensive_diagnoses) >= 3:
+                print(f"✅ Comprehensive diagnoses generated: {len(comprehensive_diagnoses)} diagnoses")
+                
+                # Check for top 5 with percentages
+                has_percentages = all("probability" in diag for diag in comprehensive_diagnoses)
+                if has_percentages:
+                    print("✅ Diagnoses include probability percentages")
+                else:
+                    print("❌ Diagnoses missing probability percentages")
+                
+                # Check for reasoning
+                has_reasoning = all("reasoning" in diag for diag in comprehensive_diagnoses)
+                if has_reasoning:
+                    print("✅ Diagnoses include clinical reasoning")
+                else:
+                    print("❌ Diagnoses missing clinical reasoning")
+                
+            else:
+                print(f"❌ Insufficient comprehensive diagnoses. Got: {len(comprehensive_diagnoses) if comprehensive_diagnoses else 0}")
+            
+            # Check triage level
+            triage_level = response.get("triage_level")
+            if triage_level in ["red", "orange", "yellow", "green"]:
+                print(f"✅ Triage level assigned: {triage_level.upper()}")
+            else:
+                print(f"❌ Invalid or missing triage level: {triage_level}")
+            
+            # Check clinical summary
+            clinical_summary = response.get("clinical_summary")
+            if clinical_summary and len(clinical_summary) > 50:
+                print("✅ Clinical summary provided")
+            else:
+                print("❌ Clinical summary missing or too short")
+        
+        return success, response
+    
+    def test_fever_interview_emergency_detection(self):
+        """Test 5 - Emergency Detection: High fever with neurological symptoms"""
+        test_data = {
+            "user_message": "i have fever and stiff neck with confusion",
+            "session_id": "emergency_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Integrated Medical AI - Test 5: Emergency Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            if emergency_detected:
+                print("✅ Emergency correctly detected")
+            else:
+                print("❌ Emergency not detected")
+            
+            # Check triage level
+            triage_level = response.get("triage_level")
+            if triage_level == "red":
+                print("✅ RED triage level assigned for emergency")
+            else:
+                print(f"❌ Expected RED triage, got: {triage_level}")
+            
+            # Check next step
+            next_step = response.get("next_step")
+            if next_step == "emergency_care":
+                print("✅ Emergency care next step assigned")
+            else:
+                print(f"❌ Expected emergency_care, got: {next_step}")
+            
+            # Check emergency message
+            assistant_message = response.get("assistant_message", "").lower()
+            if "emergency" in assistant_message or "911" in assistant_message:
+                print("✅ Emergency instructions provided")
+            else:
+                print("❌ Emergency instructions missing")
+        
+        return success, response
+    
+    def test_temperature_format_recognition(self):
+        """Test various temperature formats recognition"""
+        temperature_formats = [
+            ("102f", 102.0),
+            ("102 degree fahrenheit", 102.0),
+            ("38.9c", 102.02),  # 38.9°C = 102.02°F
+            ("38.9 degree celsius", 102.02),
+            ("104 degrees f", 104.0),
+            ("39.4 celsius", 102.92)  # 39.4°C = 102.92°F
+        ]
+        
+        results = []
+        for temp_text, expected_f in temperature_formats:
+            test_data = {
+                "user_message": f"my temperature was {temp_text}",
+                "session_id": f"temp_test_{temp_text.replace(' ', '_')}",
+                "conversation_state": None,
+                "user_id": "test_user"
+            }
+            
+            success, response = self.run_test(
+                f"Temperature Format Recognition - {temp_text}",
+                "POST",
+                "integrated/medical-ai",
+                200,
+                data=test_data
+            )
+            
+            if success:
+                # Check if temperature was extracted correctly
+                updated_state = response.get("updated_state", {})
+                fever_state = updated_state.get("fever_interview_state", {})
+                slots = fever_state.get("slots", {})
+                extracted_temp = slots.get("max_temp_f")
+                
+                if extracted_temp and abs(extracted_temp - expected_f) < 0.1:
+                    print(f"✅ {temp_text} correctly recognized as {extracted_temp}°F")
+                    results.append(True)
+                else:
+                    print(f"❌ {temp_text} incorrectly recognized. Expected: {expected_f}°F, Got: {extracted_temp}")
+                    results.append(False)
+            else:
+                results.append(False)
+        
+        overall_success = all(results)
+        return overall_success, {"tested_formats": len(temperature_formats), "successful": sum(results)}
+    
+    def test_cross_symptom_analysis(self):
+        """Test cross-symptom analysis with multiple completed interviews"""
+        # Simulate completed fever interview with respiratory symptoms
+        conversation_state = {
+            "fever_interview_state": {
+                "slots": {
+                    "duration_days": 3,
+                    "max_temp_f": 103.5,
+                    "onset": "gradual",
+                    "resp_symptoms": ["cough_phlegm", "shortness_of_breath"],
+                    "gi_symptoms": ["none"],
+                    "neuro_symptoms": ["none"],
+                    "age_group": "older_65_plus",
+                    "comorbidities": ["copd_asthma"]
+                },
+                "interview_complete": True
+            }
+        }
+        
+        test_data = {
+            "user_message": "what's wrong with me?",
+            "session_id": "cross_symptom_test",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "Integrated Medical AI - Cross-Symptom Analysis",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for interconnected analysis
+            comprehensive_diagnoses = response.get("comprehensive_diagnoses", [])
+            
+            # Should prioritize pneumonia given age, comorbidities, and symptoms
+            pneumonia_found = any("pneumonia" in diag.get("name", "").lower() for diag in comprehensive_diagnoses)
+            if pneumonia_found:
+                print("✅ Cross-symptom analysis correctly identified pneumonia risk")
+            else:
+                print("❌ Cross-symptom analysis missed pneumonia diagnosis")
+            
+            # Check triage level adjustment for high-risk patient
+            triage_level = response.get("triage_level")
+            if triage_level in ["orange", "red"]:
+                print(f"✅ Appropriate triage level for high-risk patient: {triage_level.upper()}")
+            else:
+                print(f"❌ Triage level too low for high-risk patient: {triage_level}")
+            
+            # Check for interconnected findings
+            assistant_message = response.get("assistant_message", "")
+            if "clinical connections" in assistant_message.lower() or "interconnected" in assistant_message.lower():
+                print("✅ Interconnected findings provided")
+            else:
+                print("❌ Interconnected findings missing")
+        
+        return success, response
+    
+    def test_structured_interview_progression(self):
+        """Test that structured interview progresses through slots systematically"""
+        session_id = "progression_test"
+        
+        # Step 1: Initial fever mention
+        test_data_1 = {
+            "user_message": "i have been having fever",
+            "session_id": session_id,
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "Interview Progression - Step 1: Initial Fever",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Step 2: Provide duration
+        conversation_state_2 = response_1.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "for about 4 days now",
+            "session_id": session_id,
+            "conversation_state": conversation_state_2,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "Interview Progression - Step 2: Duration",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if success_2:
+            # Verify systematic progression
+            fever_state = response_2.get("updated_state", {}).get("fever_interview_state", {})
+            slots = fever_state.get("slots", {})
+            
+            if "duration_days" in slots:
+                print("✅ Interview systematically collected duration")
+            else:
+                print("❌ Interview failed to collect duration systematically")
+            
+            # Should ask for next slot (onset or temperature)
+            assistant_message = response_2.get("assistant_message", "").lower()
+            if "sudden" in assistant_message or "gradual" in assistant_message or "temperature" in assistant_message:
+                print("✅ Interview progressing to next slot systematically")
+            else:
+                print("❌ Interview not progressing systematically")
+        
+        return success_2, response_2
+    
+    def test_no_repetitive_questions(self):
+        """Test that interview doesn't ask repetitive questions for already collected data"""
+        # Pre-populate conversation state with already collected data
+        conversation_state = {
+            "active_interview": "fever",
+            "fever_interview_state": {
+                "slots": {
+                    "duration_days": 3,
+                    "max_temp_f": 101.5,
+                    "onset": "sudden"
+                },
+                "stage": "ASSOCIATED",
+                "interview_complete": False
+            }
+        }
+        
+        test_data = {
+            "user_message": "i told you it was 3 days and 101.5 degrees",
+            "session_id": "no_repeat_test",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "No Repetitive Questions Test",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            assistant_message = response.get("assistant_message", "").lower()
+            
+            # Should NOT ask for duration, temperature, or onset again
+            repetitive_questions = [
+                "how many days" in assistant_message,
+                "what temperature" in assistant_message,
+                "sudden or gradual" in assistant_message
+            ]
+            
+            if not any(repetitive_questions):
+                print("✅ No repetitive questions asked for already collected data")
+            else:
+                print("❌ Repetitive questions detected for already collected data")
+            
+            # Should ask for new information (symptoms, etc.)
+            if any(word in assistant_message for word in ["cough", "symptoms", "nausea", "pain"]):
+                print("✅ Interview progressing to new information collection")
+            else:
+                print("❌ Interview not progressing to collect new information")
+        
+        return success, response
+
     # ========== NATURAL LANGUAGE PROCESSING TESTS ==========
     
     def test_nlu_health_check(self):
