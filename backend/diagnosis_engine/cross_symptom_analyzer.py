@@ -244,6 +244,103 @@ class CrossSymptomAnalyzer:
                     "red_flags": ["stridor", "severe_dyspnea", "cyanosis"],
                     "score_weight": 90,
                     "description": "Blockage of upper respiratory tract - life-threatening"
+                },
+                
+                # Headache-related conditions
+                "subarachnoid_hemorrhage": {
+                    "name": "Subarachnoid Hemorrhage",
+                    "icd10": "I60.9",
+                    "priority": "EMERGENCY",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["sudden_onset", "worst_ever_headache", "neck_stiffness", "nausea", "vomiting", "photophobia"],
+                    "red_flags": ["sudden_onset", "worst_ever_headache", "neck_stiffness", "altered_mental_status"],
+                    "score_weight": 95,
+                    "description": "Bleeding in brain - immediate life-threatening emergency"
+                },
+                "meningitis_headache": {
+                    "name": "Bacterial Meningitis",
+                    "icd10": "G00.9",
+                    "priority": "EMERGENCY",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["fever", "neck_stiffness", "photophobia", "phonophobia", "nausea", "vomiting"],
+                    "red_flags": ["fever", "neck_stiffness", "altered_mental_status", "petechial_rash"],
+                    "score_weight": 90,
+                    "description": "Bacterial infection of brain and spinal cord membranes"
+                },
+                "intracranial_hemorrhage": {
+                    "name": "Intracranial Hemorrhage",
+                    "icd10": "I61.9",
+                    "priority": "EMERGENCY",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["sudden_onset", "neurologic_deficits", "weakness", "numbness", "speech_problems"],
+                    "red_flags": ["sudden_onset", "neurologic_deficits", "weakness", "altered_mental_status"],
+                    "risk_factor_boost": {"hypertension": 1.5, "anticoagulation": 2.0, "trauma": 2.5},
+                    "score_weight": 85,
+                    "description": "Bleeding within skull - requires immediate intervention"
+                },
+                "brain_tumor": {
+                    "name": "Brain Tumor/Space-Occupying Lesion",
+                    "icd10": "C71.9",
+                    "priority": "URGENT",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["progressive_headache", "morning_headache", "neurologic_deficits", "personality_changes", "seizures"],
+                    "red_flags": ["neurologic_deficits", "progressive_worsening", "new_onset_seizures"],
+                    "age_modifiers": {"older_65_plus": 1.4, "adult_41_64": 1.2},
+                    "score_weight": 70,
+                    "description": "Space-occupying lesion causing increased intracranial pressure"
+                },
+                "temporal_arteritis": {
+                    "name": "Temporal Arteritis (Giant Cell Arteritis)",
+                    "icd10": "M31.6",
+                    "priority": "URGENT",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["temporal_tenderness", "jaw_claudication", "visual_changes", "scalp_tenderness"],
+                    "red_flags": ["visual_changes", "jaw_claudication", "temporal_tenderness"],
+                    "age_modifiers": {"older_65_plus": 2.0},
+                    "score_weight": 75,
+                    "description": "Inflammation of temporal arteries - risk of blindness"
+                },
+                "migraine": {
+                    "name": "Migraine",
+                    "icd10": "G43.9",
+                    "priority": "ROUTINE",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["unilateral_headache", "throbbing_pain", "nausea", "vomiting", "photophobia", "phonophobia", "aura"],
+                    "exclusion_factors": ["fever", "neck_stiffness", "sudden_onset"],
+                    "gender_modifiers": {"female": 1.3},
+                    "age_modifiers": {"adult_18_40": 1.2, "adult_41_64": 1.1},
+                    "score_weight": 65,
+                    "description": "Recurrent severe headache with associated symptoms"
+                },
+                "tension_headache": {
+                    "name": "Tension-Type Headache",
+                    "icd10": "G44.2",
+                    "priority": "ROUTINE",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["bilateral_headache", "pressure_pain", "band_like_pain", "stress_trigger"],
+                    "exclusion_factors": ["fever", "neck_stiffness", "neurologic_deficits"],
+                    "score_weight": 50,
+                    "description": "Most common primary headache disorder"
+                },
+                "cluster_headache": {
+                    "name": "Cluster Headache",
+                    "icd10": "G44.0",
+                    "priority": "ROUTINE",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["unilateral_headache", "severe_intensity", "eye_tearing", "nasal_congestion", "restlessness"],
+                    "gender_modifiers": {"male": 1.4},
+                    "score_weight": 60,
+                    "description": "Severe unilateral headache with autonomic symptoms"
+                },
+                "medication_overuse_headache": {
+                    "name": "Medication Overuse Headache",
+                    "icd10": "G44.4",
+                    "priority": "ROUTINE",
+                    "required_symptoms": ["headache"],
+                    "supporting_symptoms": ["chronic_headache", "medication_overuse", "daily_headache"],
+                    "risk_factor_boost": {"frequent_analgesic_use": 2.0},
+                    "score_weight": 55,
+                    "description": "Headache caused by excessive use of pain medications"
                 }
             },
             
