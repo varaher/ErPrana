@@ -337,9 +337,30 @@ class CrossSymptomAnalyzer:
                     if symptom != "none":
                         collected_symptoms.append(symptom.replace("_", " "))
         
+        # From chest pain interview
+        if "chest_pain" in all_symptoms:
+            chest_pain_data = all_symptoms["chest_pain"]
+            if chest_pain_data.get("confirm_chest_pain"):
+                collected_symptoms.append("chest_pain")
+            
+            # Add associated symptoms
+            associated = chest_pain_data.get("associated", [])
+            if isinstance(associated, list):
+                for symptom in associated:
+                    if symptom != "none":
+                        collected_symptoms.append(symptom.replace("_", " "))
+            
+            # Add radiation
+            radiation = chest_pain_data.get("radiation")
+            if radiation and radiation != "none":
+                collected_symptoms.append(f"radiation_to_{radiation}")
+            
+            # Add other relevant data
+            if chest_pain_data.get("nature"):
+                collected_symptoms.append(f"{chest_pain_data['nature']}_pain")
+        
         # From other complaint interviews (to be added as more scripts are implemented)
         # if "abdominal_pain" in all_symptoms: ...
-        # if "chest_pain" in all_symptoms: ...
         
         # Standardize symptoms
         standardized_symptoms = self.standardize_symptoms(collected_symptoms)
