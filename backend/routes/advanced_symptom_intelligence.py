@@ -377,6 +377,8 @@ class FallbackSystem:
     def generate_fallback_response(self, user_message: str, symptoms: List[str]) -> Dict[str, Any]:
         """Generate response when LLM is unavailable"""
         
+        message_lower = user_message.lower()
+        
         # Detect emergency even without LLM
         emergency_detector = EmergencyDetector()
         emergency_result = emergency_detector.detect_emergency(user_message, symptoms)
@@ -388,34 +390,81 @@ class FallbackSystem:
                 "emergency_detected": True
             }
         
-        # Detect symptoms in message
-        multi_detector = MultiSymptomDetector()
-        symptom_analysis = multi_detector.detect_multiple_symptoms(user_message)
+        # Handle temperature mentions with recognition of various formats
+        temp_patterns = [
+            r'(\d+)\s*(?:degree|degrees?|°)?\s*(?:f|fahrenheit|faranheet|fahr)',
+            r'(\d+)\s*(?:degree|degrees?|°)?\s*(?:c|celsius|centigrade)',
+            r'(\d+)\s*f\b',
+            r'(\d+)\s*c\b'
+        ]
         
-        # Generate basic response
-        message = "I understand you're experiencing some health concerns. "
+        temp_mentioned = None
+        for pattern in temp_patterns:
+            match = re.search(pattern, message_lower)
+            if match:
+                temp_mentioned = match.group(1)
+                break
         
-        if symptom_analysis["has_multiple_symptoms"]:
-            message += "It sounds like you have several symptoms. Let me help you work through them one by one. "
-            message += f"I can see you mentioned: {', '.join([s['symptom'] for s in symptom_analysis['detected_symptoms'][:3]])}. "
-            
-            # Ask for more details about the most concerning symptom
-            primary_symptom = symptom_analysis['detected_symptoms'][0]['symptom'] if symptom_analysis['detected_symptoms'] else ""
-            if primary_symptom in self.symptom_responses:
-                message += self.symptom_responses[primary_symptom]
+        if temp_mentioned:
+            temp_val = int(temp_mentioned)
+            if temp_val > 100:  # Likely Fahrenheit
+                celsius = round((temp_val - 32) * 5/9, 1)
+                message = f"I understand your temperature has been {temp_val}°F ({celsius}°C). That's a significant fever that must be quite uncomfortable. "
+                
+                if temp_val >= 103:
+                    message += "This is a high fever that requires medical attention. "
+                
+                message += "Since you mentioned paracetamol helps temporarily, it suggests your body is fighting an infection. Are you experiencing any other symptoms along with the fever - such as chills, body aches, headache, nausea, or changes in appetite?"
+            else:  # Likely Celsius
+                fahrenheit = round(temp_val * 9/5 + 32, 1)
+                message = f"I understand your temperature has been {temp_val}°C ({fahrenheit}°F). That's concerning. Are you experiencing any other symptoms along with the fever?"
+        
+        # Handle advice-seeking questions
+        elif any(phrase in message_lower for phrase in ["what should i do", "what do you recommend", "help", "advice"]):
+            if "fever" in ' '.join(symptoms):
+                message = """Based on your fever of 102°F for 2 days, here are my recommendations:
+
+**📋 Immediate Actions:**
+
+1. **Monitor your temperature regularly**
+   *Reason: Track if fever is increasing or responding to treatment*
+
+2. **Stay well hydrated with water, clear broths, or electrolyte solutions**
+   *Reason: Fever increases fluid loss and dehydration can worsen your condition*
+
+3. **Continue paracetamol as directed (every 4-6 hours, not exceeding daily limits)**
+   *Reason: Helps reduce fever and improve comfort*
+
+4. **Get plenty of rest**
+   *Reason: Rest allows your immune system to fight the infection effectively*
+
+**⚠️ Seek medical care if:**
+- Fever rises above 103°F (39.4°C)
+- Severe headache, neck stiffness, or confusion develops
+- Difficulty breathing or chest pain occurs
+- Signs of dehydration (dizziness, dry mouth, little/no urination)
+- Fever persists beyond 3-5 days
+
+Would you like me to ask about any other symptoms you might be experiencing?"""
             else:
-                message += f"Can you tell me more about your {primary_symptom}? When did it start and how severe is it?"
+                message = "To provide the best recommendations, I need to understand your symptoms better. Can you describe what you're experiencing?"
+        
+        # Handle ongoing conversation about existing symptoms
+        elif len(symptoms) > 0:
+            primary_symptom = symptoms[0]
+            if "fever" in primary_symptom:
+                if any(word in message_lower for word in ["started", "days", "ago", "since"]):
+                    message = "Thank you for that information. The timing helps me understand your condition better. Are you experiencing any other symptoms along with the fever? For example, chills, body aches, headache, nausea, or changes in your appetite?"
+                elif "paracetamol" in message_lower or "medication" in message_lower:
+                    message = "It's good that paracetamol provides some relief - this suggests your fever is responsive to treatment. Are there any other symptoms you're experiencing along with the fever? Also, have you noticed any patterns with when the fever is highest or lowest during the day?"
+                else:
+                    message = "I understand. Can you tell me more about any other symptoms you might be experiencing along with the fever?"
+            else:
+                message = f"Thank you for sharing about your {primary_symptom}. Are there any other symptoms you'd like to mention?"
+        
+        # Default response for unclear input
         else:
-            # Single symptom handling
-            detected = False
-            for symptom_key, response in self.symptom_responses.items():
-                if symptom_key in user_message.lower():
-                    message += response
-                    detected = True
-                    break
-            
-            if not detected:
-                message += "Can you tell me more about what you're experiencing? When did it start, and how would you describe it?"
+            message = "I want to help you with your health concerns. Can you tell me what specific symptoms you're experiencing? For example, pain, fever, nausea, or any other discomfort you've noticed."
         
         return {
             "message": message,
