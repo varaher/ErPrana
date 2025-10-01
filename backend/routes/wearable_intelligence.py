@@ -312,6 +312,11 @@ async def get_health_memory(user_id: str):
             {"user_id": user_id}
         ).sort("created_at", -1).to_list(length=None)
         
+        # Convert ObjectId to string for serialization
+        for entry in memory_entries:
+            if '_id' in entry:
+                entry['_id'] = str(entry['_id'])
+        
         return {
             "user_id": user_id,
             "health_memory": memory_entries,
