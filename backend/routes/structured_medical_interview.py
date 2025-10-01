@@ -596,10 +596,15 @@ class StructuredMedicalInterviewer:
         # Process based on stage
         if current_stage['name'] == 'GREETING':
             interview_state['stage'] = 'CHIEF_COMPLAINT_CONFIRM'
+            # Find CHIEF_COMPLAINT_CONFIRM stage to get the right question
+            confirm_stage = next((s for s in policy['states'] if s['name'] == 'CHIEF_COMPLAINT_CONFIRM'), None)
+            confirm_question = confirm_stage.get('ask', "Are you experiencing symptoms?") if confirm_stage else "Are you experiencing symptoms?"
+            confirm_slot = confirm_stage.get('capture', 'confirm_symptom') if confirm_stage else 'confirm_symptom'
+            
             return InterviewResponse(
-                assistant_message="Hello! Are you having a fever now or recently?",
+                assistant_message=confirm_question,
                 updated_state=interview_state,
-                next_slot="confirm_fever",
+                next_slot=confirm_slot,
                 done=False
             )
         
