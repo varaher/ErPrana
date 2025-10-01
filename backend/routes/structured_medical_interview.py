@@ -404,6 +404,30 @@ class StructuredMedicalInterviewer:
         new_entities = self.extract_entities_from_text(request.user_message, complaint)
         interview_state['slots'].update(new_entities)
         
+        # Also check for simple answers to current question
+        current_question = interview_state.get('last_asked')
+        user_text_lower = request.user_message.lower().strip()
+        
+        # Handle simple temperature answers
+        if current_question == 'max_temp_f' and 'max_temp_f' not in new_entities:
+            # Try to extract just a number
+            temp_match = re.search(r'(\d+(?:\.\d+)?)', user_text_lower)
+            if temp_match:
+                temp_val = float(temp_match.group(1))
+                if 96 <= temp_val <= 110:  # Reasonable fever range
+                    interview_state['slots']['max_temp_f'] = temp_val
+        
+        # Handle measurement site answers
+        if current_question == 'measurement_site' and 'measurement_site' not in new_entities:
+            if 'oral' in user_text_lower or 'mouth' in user_text_lower:
+                interview_state['slots']['measurement_site'] = 'oral'
+            elif 'axillary' in user_text_lower or 'armpit' in user_text_lower or 'arm' in user_text_lower:
+                interview_state['slots']['measurement_site'] = 'axillary'
+            elif 'tympanic' in user_text_lower or 'ear' in user_text_lower:
+                interview_state['slots']['measurement_site'] = 'tympanic'
+            elif 'rectal' in user_text_lower:
+                interview_state['slots']['measurement_site'] = 'rectal'
+        
         # Find current stage
         current_stage = None
         for stage in policy['states']:
