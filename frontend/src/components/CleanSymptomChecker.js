@@ -229,8 +229,8 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         console.log('NLU processing failed, using original message:', nluError);
       }
 
-      // Call advanced symptom intelligence API
-      const response = await fetch(`${BACKEND_URL}/api/advanced/symptom-intelligence/analyze`, {
+      // Call integrated medical AI API for comprehensive analysis
+      const response = await fetch(`${BACKEND_URL}/api/integrated/medical-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
