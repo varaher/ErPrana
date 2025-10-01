@@ -141,6 +141,31 @@ class IntegratedMedicalAI:
             
             merged_data['fever'] = fever_data
         
+        # Extract chest pain interview data
+        chest_pain_interview = conversation_state.get('chest_pain_interview_state')
+        if chest_pain_interview and chest_pain_interview.get('slots'):
+            # Ensure collected_symptoms key exists for cross-symptom analyzer
+            chest_pain_data = chest_pain_interview['slots'].copy()
+            if 'collected_symptoms' not in chest_pain_data:
+                # Create collected_symptoms from chest pain fields
+                collected_symptoms = []
+                if chest_pain_data.get('confirm_chest_pain'):
+                    collected_symptoms.append('chest_pain')
+                
+                # Add associated symptoms
+                associated = chest_pain_data.get('associated', [])
+                if isinstance(associated, list):
+                    collected_symptoms.extend([s for s in associated if s != 'none'])
+                
+                # Add radiation as symptom
+                radiation = chest_pain_data.get('radiation')
+                if radiation and radiation != 'none':
+                    collected_symptoms.append(f'radiation_to_{radiation}')
+                
+                chest_pain_data['collected_symptoms'] = collected_symptoms
+            
+            merged_data['chest_pain'] = chest_pain_data
+        
         return merged_data
     
     async def process_message(self, request: IntegratedMedicalRequest) -> IntegratedMedicalResponse:
