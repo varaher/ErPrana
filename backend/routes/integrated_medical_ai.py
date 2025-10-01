@@ -64,6 +64,12 @@ class IntegratedMedicalAI:
         if current_interview:
             return current_interview
         
+        # Check for existing fever interview state
+        if 'fever_interview_state' in conversation_state:
+            fever_state = conversation_state['fever_interview_state']
+            if not fever_state.get('interview_complete', False):
+                return 'fever'
+        
         # Fever interview triggers
         fever_patterns = [
             r'fever', r'high temperature', r'temp', r'burning up', 
@@ -73,10 +79,6 @@ class IntegratedMedicalAI:
         
         if any(re.search(pattern, message_lower) for pattern in fever_patterns):
             return 'fever'
-        
-        # Future: Add more interview triggers
-        # if any(re.search(pattern, message_lower) for pattern in chest_pain_patterns):
-        #     return 'chest_pain'
         
         return None
     
