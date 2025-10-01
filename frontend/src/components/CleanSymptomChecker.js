@@ -22,9 +22,11 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
-  // Structured conversation state following Cursor approach
+  // Enhanced conversation state for advanced symptom intelligence
   const [conversationState, setConversationState] = useState({
-    currentStep: 'initial_assessment',
+    currentStep: 'symptom_collection',
+    backendState: null, // This will store the backend conversation state
+    sessionId: null,
     collectedData: {
       primarySymptom: '',
       location: '',
@@ -34,7 +36,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       triggerFactors: '',
       relievingFactors: ''
     },
-    urgencyLevel: 'low',
+    urgencyLevel: 'normal',
     requiresFollowup: true,
     conversationHistory: []
   });
