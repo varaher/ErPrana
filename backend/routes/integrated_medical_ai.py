@@ -97,6 +97,17 @@ class IntegratedMedicalAI:
                 print(f"✅ Shortness of breath detected with pattern: {pattern}")
                 return 'shortness_of_breath'
         
+        # Headache interview triggers
+        headache_patterns = [
+            r'headache', r'head pain', r'migraine', r'head ache', r'head hurt',
+            r'pain in head', r'head pounding', r'skull pain', r'cranial pain'
+        ]
+        
+        for pattern in headache_patterns:
+            if re.search(pattern, message_lower):
+                print(f"✅ Headache detected with pattern: {pattern}")
+                return 'headache'
+        
         # Chest pain interview triggers
         chest_pain_patterns = [
             r'chest pain', r'chest discomfort', r'chest pressure', r'chest tightness',
