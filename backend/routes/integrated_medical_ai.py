@@ -58,16 +58,25 @@ class IntegratedMedicalAI:
     def detect_structured_interview_trigger(self, message: str, conversation_state: Dict[str, Any]) -> Optional[str]:
         """Detect if we should start a structured interview"""
         message_lower = message.lower()
+        print(f"🔍 Detecting interview trigger for: '{message_lower}'")
         
         # Check if already in an interview
         current_interview = conversation_state.get('active_interview')
         if current_interview:
+            print(f"✅ Continuing existing interview: {current_interview}")
             return current_interview
         
-        # Check for existing fever interview state
+        # Check for existing interview states
+        if 'chest_pain_interview_state' in conversation_state:
+            chest_pain_state = conversation_state['chest_pain_interview_state']
+            if not chest_pain_state.get('interview_complete', False):
+                print("✅ Continuing chest pain interview")
+                return 'chest_pain'
+        
         if 'fever_interview_state' in conversation_state:
             fever_state = conversation_state['fever_interview_state']
             if not fever_state.get('interview_complete', False):
+                print("✅ Continuing fever interview")
                 return 'fever'
         
         # Chest pain interview triggers (check first - higher priority)
@@ -77,8 +86,10 @@ class IntegratedMedicalAI:
             r'chest hurts', r'pain in chest', r'chest ache'
         ]
         
-        if any(re.search(pattern, message_lower) for pattern in chest_pain_patterns):
-            return 'chest_pain'
+        for pattern in chest_pain_patterns:
+            if re.search(pattern, message_lower):
+                print(f"✅ Chest pain detected with pattern: {pattern}")
+                return 'chest_pain'
         
         # Fever interview triggers
         fever_patterns = [
@@ -87,9 +98,12 @@ class IntegratedMedicalAI:
             r'\d+\s*(?:degree|°)?\s*(?:f|fahrenheit|c|celsius)'
         ]
         
-        if any(re.search(pattern, message_lower) for pattern in fever_patterns):
-            return 'fever'
+        for pattern in fever_patterns:
+            if re.search(pattern, message_lower):
+                print(f"✅ Fever detected with pattern: {pattern}")
+                return 'fever'
         
+        print("❌ No interview trigger detected")
         return None
     
     def should_continue_interview(self, interview_state: Dict[str, Any]) -> bool:
