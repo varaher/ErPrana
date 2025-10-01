@@ -248,21 +248,24 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
 
       const data = await response.json();
-      console.log('Advanced Symptom Analysis Response:', data);
+      console.log('Integrated Medical AI Response:', data);
       
       // Update conversation state with backend response
       setConversationState(prev => ({
         ...prev,
         currentStep: data.next_step,
         backendState: data.updated_state,
-        urgencyLevel: data.emergency_detected ? 'emergency' : 'normal',
-        sessionId: prev.sessionId || `session_${Date.now()}`
+        urgencyLevel: data.emergency_detected ? 'emergency' : data.triage_level || 'normal',
+        sessionId: prev.sessionId || `session_${Date.now()}`,
+        interviewActive: data.interview_active,
+        interviewType: data.interview_type
       }));
 
       // Format assistant message based on response type
       let assistantMessageText = data.assistant_message;
       
-      // If recommendations are provided, format them nicely
+      // If comprehensive diagnoses are provided, they're already formatted in the response
+      // If basic recommendations are provided, format them
       if (data.recommendations && data.recommendations.length > 0) {
         assistantMessageText += '\n\n**📋 Recommendations:**\n\n';
         
