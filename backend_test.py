@@ -2340,55 +2340,56 @@ def main():
         return 1
 
 def run_headache_and_sob_tests():
-        """Run focused tests for headache integration and SOB triage bug fix as requested in review"""
-        print("🚀 Starting Headache Integration & SOB Triage Bug Fix Testing...")
-        print(f"Base URL: {self.base_url}")
-        print(f"API URL: {self.api_url}")
-        print("=" * 80)
-        
-        # Test system status first
-        print("\n" + "=" * 50)
-        print("🏥 INTEGRATED MEDICAL AI SYSTEM STATUS")
-        print("=" * 50)
-        self.test_integrated_medical_ai_status()
-        
-        # Headache Integration Tests
-        print("\n" + "=" * 50)
-        print("🧠 HEADACHE INTEGRATION TESTING")
-        print("=" * 50)
-        print("Testing headache interview flow end-to-end...")
-        
-        self.test_headache_thunderclap_subarachnoid_hemorrhage()
-        self.test_headache_meningitis_fever_neck_stiffness()
-        self.test_headache_interview_progression()
-        self.test_headache_cross_symptom_analysis()
-        
-        # SOB Triage Bug Fix Tests
-        print("\n" + "=" * 50)
-        print("🫁 SOB TRIAGE BUG FIX TESTING")
-        print("=" * 50)
-        print("Testing shortness of breath scenarios with risk factors...")
-        
-        self.test_sob_pulmonary_embolism_risk_factors()
-        self.test_sob_risk_factor_evaluation_includes_operation()
-        self.test_sob_heart_failure_orthopnea_edema()
-        self.test_sob_interview_risk_factor_collection()
-        
-        # Print focused results
-        print("\n" + "=" * 80)
-        print("📊 HEADACHE & SOB TESTING RESULTS")
-        print("=" * 80)
-        print(f"Total tests run: {self.tests_run}")
-        print(f"Tests passed: {self.tests_passed}")
-        print(f"Tests failed: {self.tests_run - self.tests_passed}")
-        print(f"Success rate: {(self.tests_passed / self.tests_run * 100):.1f}%")
-        
-        if self.tests_passed == self.tests_run:
-            print("🎉 ALL HEADACHE & SOB TESTS PASSED! Integration working correctly.")
-        else:
-            print(f"⚠️ {self.tests_run - self.tests_passed} tests failed. Please review the issues above.")
-        
-        return self.tests_passed == self.tests_run
+    """Run focused tests for headache integration and SOB triage bug fix as requested in review"""
+    tester = BackendAPITester()
+    print("🚀 Starting Headache Integration & SOB Triage Bug Fix Testing...")
+    print(f"Base URL: {tester.base_url}")
+    print(f"API URL: {tester.api_url}")
+    print("=" * 80)
+    
+    # Test system status first
+    print("\n" + "=" * 50)
+    print("🏥 INTEGRATED MEDICAL AI SYSTEM STATUS")
+    print("=" * 50)
+    tester.test_integrated_medical_ai_status()
+    
+    # Headache Integration Tests
+    print("\n" + "=" * 50)
+    print("🧠 HEADACHE INTEGRATION TESTING")
+    print("=" * 50)
+    print("Testing headache interview flow end-to-end...")
+    
+    tester.test_headache_thunderclap_subarachnoid_hemorrhage()
+    tester.test_headache_meningitis_fever_neck_stiffness()
+    tester.test_headache_interview_progression()
+    tester.test_headache_cross_symptom_analysis()
+    
+    # SOB Triage Bug Fix Tests
+    print("\n" + "=" * 50)
+    print("🫁 SOB TRIAGE BUG FIX TESTING")
+    print("=" * 50)
+    print("Testing shortness of breath scenarios with risk factors...")
+    
+    tester.test_sob_pulmonary_embolism_risk_factors()
+    tester.test_sob_risk_factor_evaluation_includes_operation()
+    tester.test_sob_heart_failure_orthopnea_edema()
+    tester.test_sob_interview_risk_factor_collection()
+    
+    # Print focused results
+    print("\n" + "=" * 80)
+    print("📊 HEADACHE & SOB TESTING RESULTS")
+    print("=" * 80)
+    print(f"Total tests run: {tester.tests_run}")
+    print(f"Tests passed: {tester.tests_passed}")
+    print(f"Tests failed: {tester.tests_run - tester.tests_passed}")
+    print(f"Success rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 ALL HEADACHE & SOB TESTS PASSED! Integration working correctly.")
+        return 0
+    else:
+        print(f"⚠️ {tester.tests_run - tester.tests_passed} tests failed. Please review the issues above.")
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
