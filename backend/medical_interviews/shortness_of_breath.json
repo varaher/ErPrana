@@ -1,0 +1,41 @@
+{
+  "complaint": "shortness_of_breath",
+  "version": "1.0.0",
+  "slots": [
+    { "name": "duration", "type": "string", "question": "When did the breathlessness start?", "required": true },
+    { "name": "onset", "type": "enum", "values": ["sudden", "gradual", "unsure"], "question": "Did it start suddenly or gradually?", "required": true },
+    { "name": "pattern", "type": "multiselect", "values": ["exertional", "at_rest", "orthopnea", "pnd", "positional"], "question": "Does it happen at rest or with activity? Do you have orthopnea (worse lying flat) or PND (waking up breathless at night)?", "required": true },
+    { "name": "severity_scale", "type": "number", "question": "How severe is it from 1–10?", "required": true },
+    { "name": "mmrc", "type": "number", "question": "If you know: your mMRC grade (0–4) — otherwise you can skip this.", "required": false },
+    
+    { "name": "cough", "type": "enum", "values": ["none", "dry", "productive"], "question": "Do you have a cough — none, dry, or productive?", "required": false },
+    { "name": "sputum_color", "type": "enum", "values": ["clear", "white", "yellow", "green", "bloody"], "question": "If productive, what color is the sputum — clear, white, yellow, green, or bloody?", "required": false },
+    { "name": "wheeze", "type": "boolean", "question": "Any wheezing noise when breathing?", "required": false },
+    { "name": "stridor", "type": "boolean", "question": "Any noisy harsh breathing/stridor when inhaling?", "required": false },
+    { "name": "chest_pain_pleuritic", "type": "boolean", "question": "Any chest pain that worsens when taking a deep breath (pleuritic)?", "required": false },
+    { "name": "fever", "type": "boolean", "question": "Have you had fever or chills?", "required": false },
+    { "name": "hemoptysis", "type": "boolean", "question": "Have you coughed up any blood?", "required": false },
+    { "name": "edema_legs", "type": "boolean", "question": "Any leg swelling?", "required": false },
+    { "name": "triggers", "type": "multiselect", "values": ["allergens", "cold_air", "dust", "exercise", "infection", "smoke"], "question": "What seems to trigger it — exercise, allergens, cold air, dust, smoke, infection?", "required": false },
+    { "name": "relieving", "type": "string", "question": "What makes it better — rest, inhaler, medicines, sitting up?", "required": false },
+    
+    { "name": "risk_factors", "type": "multiselect", "values": ["asthma", "copd", "smoking", "heart_failure", "recent_surgery", "immobilization", "clot_history", "cancer", "pregnancy", "none"], "question": "Any of these: asthma, COPD, smoking, heart failure, recent surgery, immobilization, past clots, cancer, or pregnancy?", "required": false },
+    { "name": "age_group", "type": "enum", "values": ["child", "adult_18_40", "adult_41_64", "older_65_plus"], "question": "What is your age group: child (<18), 18–40, 41–64, or 65+?", "required": true }
+  ],
+
+  "redFlagRules": [
+    { "name": "stridor_airway_obstruction", "if": "stridor == true", "triage": "red", "message": "Stridor/noisy inhalation (possible upper airway obstruction)." },
+    { "name": "possible_pulmonary_embolism", "if": "onset == 'sudden' && chest_pain_pleuritic == true && (hemoptysis == true || risk_factors includes 'recent_surgery' || risk_factors includes 'immobilization' || risk_factors includes 'clot_history')", "triage": "red", "message": "Possible pulmonary embolism (sudden pleuritic pain with risk factors/hemoptysis)." },
+    { "name": "severe_distress_at_rest", "if": "severity_scale >= 8 || pattern includes 'at_rest'", "triage": "red", "message": "Severe breathlessness at rest." },
+    { "name": "acute_heart_failure", "if": "(pattern includes 'orthopnea' || pattern includes 'pnd') && edema_legs == true", "triage": "orange", "message": "Possible acute heart failure (orthopnea/PND with leg edema)." },
+    { "name": "possible_pneumonia", "if": "fever == true && (cough == 'productive' || chest_pain_pleuritic == true)", "triage": "orange", "message": "Possible pneumonia (fever with cough/pleuritic pain)." },
+    { "name": "severe_bronchospasm", "if": "wheeze == true && severity_scale >= 7", "triage": "orange", "message": "Severe bronchospasm (asthma/COPD)." },
+    { "name": "moderate_severity", "if": "severity_scale >= 5 && severity_scale < 7", "triage": "yellow", "message": "Moderate breathlessness requiring evaluation." }
+  ],
+
+  "completionCriteria": [
+    "duration", "onset", "pattern", "severity_scale", "age_group"
+  ],
+
+  "summaryTemplate": "SOB since {{duration}}, onset {{onset}}, pattern {{pattern}}, severity {{severity_scale}}/10. Cough {{cough}} {{sputum_color}}, wheeze {{wheeze}}, stridor {{stridor}}, pleuritic pain {{chest_pain_pleuritic}}, fever {{fever}}, hemoptysis {{hemoptysis}}, leg edema {{edema_legs}}. Triggers {{triggers}}, relief {{relieving}}. Risk factors: {{risk_factors}}, age {{age_group}}. Red flags: {{red_flags}}. Triage: {{triage}}. Next steps: {{next_steps}}."
+}
