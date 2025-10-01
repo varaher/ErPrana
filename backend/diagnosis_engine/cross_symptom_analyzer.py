@@ -173,10 +173,77 @@ class CrossSymptomAnalyzer:
                     "icd10": "I26.9",
                     "priority": "EMERGENCY",
                     "required_symptoms": ["shortness_of_breath"],
-                    "supporting_symptoms": ["chest_pain", "cough", "hemoptysis", "leg_swelling"],
-                    "red_flags": ["severe_shortness_of_breath", "hypoxia", "hemodynamic_instability"],
+                    "supporting_symptoms": ["pleuritic_chest_pain", "hemoptysis", "leg_edema", "sudden_onset"],
+                    "red_flags": ["dyspnea_at_rest", "hemoptysis", "leg_edema"],
+                    "risk_factor_boost": {"recent_surgery": 2.0, "immobilization": 1.8, "clot_history": 2.2, "cancer": 1.5},
                     "score_weight": 85,
                     "description": "Blood clot in lung arteries, potentially fatal"
+                },
+                "acute_asthma_exacerbation": {
+                    "name": "Acute Asthma Exacerbation",
+                    "icd10": "J45.9",
+                    "priority": "URGENT",
+                    "required_symptoms": ["shortness_of_breath"],
+                    "supporting_symptoms": ["wheeze", "dry_cough", "chest_tightness"],
+                    "red_flags": ["dyspnea_at_rest", "stridor", "severe_wheeze"],
+                    "risk_factor_boost": {"asthma": 3.0},
+                    "score_weight": 75,
+                    "description": "Acute worsening of asthma with bronchospasm"
+                },
+                "copd_exacerbation": {
+                    "name": "COPD Exacerbation",
+                    "icd10": "J44.1",
+                    "priority": "URGENT",
+                    "required_symptoms": ["shortness_of_breath"],
+                    "supporting_symptoms": ["productive_cough", "wheeze", "increased_sputum"],
+                    "red_flags": ["dyspnea_at_rest", "confusion", "cyanosis"],
+                    "risk_factor_boost": {"copd": 3.0, "smoking": 1.5},
+                    "score_weight": 70,
+                    "description": "Acute worsening of chronic obstructive pulmonary disease"
+                },
+                "pneumonia": {
+                    "name": "Pneumonia",
+                    "icd10": "J18.9",
+                    "priority": "URGENT",
+                    "required_symptoms": ["shortness_of_breath"],
+                    "supporting_symptoms": ["fever", "productive_cough", "pleuritic_chest_pain", "yellow_sputum", "green_sputum"],
+                    "red_flags": ["dyspnea_at_rest", "high_fever", "confusion"],
+                    "age_modifiers": {"older_65_plus": 1.4, "child": 1.3},
+                    "score_weight": 80,
+                    "description": "Infection of the lungs with inflammation"
+                },
+                "acute_heart_failure": {
+                    "name": "Acute Heart Failure",
+                    "icd10": "I50.9",
+                    "priority": "EMERGENCY",
+                    "required_symptoms": ["shortness_of_breath"],
+                    "supporting_symptoms": ["orthopnea", "paroxysmal_nocturnal_dyspnea", "leg_edema", "fatigue"],
+                    "red_flags": ["dyspnea_at_rest", "orthopnea", "paroxysmal_nocturnal_dyspnea"],
+                    "risk_factor_boost": {"heart_failure": 2.5, "hypertension": 1.3},
+                    "score_weight": 85,
+                    "description": "Acute failure of heart to pump effectively"
+                },
+                "spontaneous_pneumothorax": {
+                    "name": "Spontaneous Pneumothorax", 
+                    "icd10": "J93.0",
+                    "priority": "URGENT",
+                    "required_symptoms": ["shortness_of_breath"],
+                    "supporting_symptoms": ["sudden_onset", "pleuritic_chest_pain", "chest_tightness"],
+                    "red_flags": ["sudden_severe_dyspnea", "tension_pneumothorax"],
+                    "age_modifiers": {"adult_18_40": 1.3},
+                    "gender_modifiers": {"male": 1.4},
+                    "score_weight": 70,
+                    "description": "Collapsed lung due to air in pleural space"
+                },
+                "upper_airway_obstruction": {
+                    "name": "Upper Airway Obstruction",
+                    "icd10": "J39.9",
+                    "priority": "EMERGENCY", 
+                    "required_symptoms": ["shortness_of_breath"],
+                    "supporting_symptoms": ["stridor", "voice_changes", "difficulty_swallowing"],
+                    "red_flags": ["stridor", "severe_dyspnea", "cyanosis"],
+                    "score_weight": 90,
+                    "description": "Blockage of upper respiratory tract - life-threatening"
                 }
             },
             
