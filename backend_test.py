@@ -1886,6 +1886,31 @@ def main():
     tester.test_advanced_symptom_intelligence_final_assessment_recommendations()
     tester.test_advanced_symptom_intelligence_conversation_handlers()
 
+    # Test INTEGRATED MEDICAL AI SYSTEM - PRIORITY TESTING
+    print("\n🩺 INTEGRATED MEDICAL AI SYSTEM TESTS - PRIORITY")
+    print("=" * 50)
+    
+    # Test system status first
+    tester.test_integrated_medical_ai_status()
+    
+    # Test specific fever interview scenarios from review request
+    print("\n🔥 FEVER INTERVIEW TESTING:")
+    tester.test_fever_interview_basic_trigger()
+    tester.test_fever_interview_temperature_collection()
+    tester.test_fever_interview_symptom_collection()
+    tester.test_fever_interview_comprehensive_analysis()
+    tester.test_fever_interview_emergency_detection()
+    
+    # Test temperature format recognition
+    print("\n🌡️ TEMPERATURE FORMAT RECOGNITION:")
+    tester.test_temperature_format_recognition()
+    
+    # Test advanced features
+    print("\n🔬 ADVANCED ANALYSIS FEATURES:")
+    tester.test_cross_symptom_analysis()
+    tester.test_structured_interview_progression()
+    tester.test_no_repetitive_questions()
+
     # Test NATURAL LANGUAGE PROCESSING - PRIORITY TESTING
     print("\n🗣️ NATURAL LANGUAGE PROCESSING TESTS - PRIORITY")
     print("=" * 50)
