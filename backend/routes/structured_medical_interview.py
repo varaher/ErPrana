@@ -50,6 +50,21 @@ class StructuredMedicalInterviewer:
             print("✅ Loaded fever interview configuration")
         except Exception as e:
             print(f"❌ Error loading fever configuration: {e}")
+        
+        # Load chest pain configuration
+        try:
+            with open(interviews_dir / "chest_pain.json", 'r') as f:
+                chest_pain_config = json.load(f)
+            with open(interviews_dir / "chest_pain.policy.json", 'r') as f:
+                chest_pain_policy = json.load(f)
+            
+            self.interview_configs['chest_pain'] = {
+                'config': chest_pain_config,
+                'policy': chest_pain_policy
+            }
+            print("✅ Loaded chest pain interview configuration")
+        except Exception as e:
+            print(f"❌ Error loading chest pain configuration: {e}")
     
     def detect_primary_complaint(self, message: str) -> str:
         """Detect the primary complaint from user message"""
