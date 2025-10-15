@@ -436,6 +436,23 @@ class IntegratedMedicalAI:
             critical_emergency = True
             emergency_message = "🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nSevere chest pain with concerning features may indicate HEART ATTACK. **Call 911 immediately** - do not drive yourself. Time is critical for heart muscle preservation."
         
+        # Check general symptom rule engine for additional emergency patterns
+        if not critical_emergency and general_symptom_analysis["overall_urgency"] == "emergency":
+            emergency_patterns = general_symptom_analysis["emergency_patterns"]
+            if emergency_patterns:
+                critical_emergency = True
+                top_pattern = emergency_patterns[0]
+                emergency_message = f"🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\n{top_pattern['recommendation']}"
+        
+        # Check for toxicology emergencies
+        elif not critical_emergency and general_symptom_analysis["toxicology_patterns"]:
+            toxicology_patterns = general_symptom_analysis["toxicology_patterns"]
+            high_priority_toxicology = [p for p in toxicology_patterns if p["urgency"] == "emergency"]
+            if high_priority_toxicology:
+                critical_emergency = True
+                top_toxicology = high_priority_toxicology[0]
+                emergency_message = f"🧪 **POISON EMERGENCY DETECTED** 🧪\n\n{top_toxicology['recommendation']}"
+        
         # Use critical detection only (not the general emergency detector for chest pain)
         if critical_emergency:
             conversation_state['emergency_detected'] = True
