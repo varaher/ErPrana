@@ -306,6 +306,7 @@ class GeneralSymptomRuleEngine:
         results = {
             "emergency_patterns": [],
             "toxicology_patterns": [],
+            "general_clinical_patterns": [],
             "overall_urgency": "routine",
             "recommendations": [],
             "summary": ""
