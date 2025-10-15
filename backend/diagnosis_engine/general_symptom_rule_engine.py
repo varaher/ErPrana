@@ -322,6 +322,10 @@ class GeneralSymptomRuleEngine:
         toxicology_results = self.evaluate_toxicology_patterns(user_symptoms, user_context)
         results["toxicology_patterns"] = toxicology_results
         
+        # Evaluate general clinical patterns
+        general_results = self.evaluate_general_clinical_patterns(user_symptoms, user_context)
+        results["general_clinical_patterns"] = general_results
+        
         # Determine overall urgency
         all_results = emergency_results + toxicology_results
         if any(r["urgency"] == "emergency" for r in all_results):
