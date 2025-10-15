@@ -308,6 +308,79 @@ class IntegratedMedicalAI:
         
         return merged_data
     
+    def _extract_symptoms_from_text(self, text: str) -> List[str]:
+        """Extract symptom mentions from user text"""
+        text_lower = text.lower()
+        detected_symptoms = []
+        
+        # Common symptom patterns
+        symptom_patterns = {
+            "chest pain": ["chest pain", "chest hurt", "chest discomfort", "chest tightness"],
+            "shortness of breath": ["shortness of breath", "breathless", "can't breathe", "difficulty breathing", "short of breath"],
+            "headache": ["headache", "head pain", "head hurt", "migraine"],
+            "severe headache": ["severe headache", "worst headache", "thunderclap headache", "worst pain"],
+            "dizziness": ["dizzy", "dizziness", "lightheaded"],
+            "nausea": ["nausea", "nauseous", "sick to stomach", "queasy"],
+            "vomiting": ["vomiting", "throwing up", "puking"],
+            "fever": ["fever", "feverish", "hot", "temperature"],
+            "sweating": ["sweating", "sweats", "diaphoresis"],
+            "weakness": ["weak", "weakness", "tired", "fatigue"],
+            "confusion": ["confused", "confusion", "disoriented"],
+            "neck stiffness": ["stiff neck", "neck stiffness", "neck rigid"],
+            "photophobia": ["light sensitivity", "photophobia", "light hurts"],
+            "left arm pain": ["left arm pain", "pain down left arm", "arm pain"],
+            "jaw pain": ["jaw pain", "jaw hurt"],
+            "back pain": ["back pain", "back hurt"],
+            "leg weakness": ["leg weakness", "legs weak", "can't move legs"],
+            "abdominal pain": ["stomach pain", "abdominal pain", "belly pain"],
+            "severe abdominal pain": ["severe stomach pain", "severe abdominal pain", "terrible belly pain"],
+            "cough": ["cough", "coughing"],
+            "wheezing": ["wheezing", "wheeze"],
+            "palpitations": ["palpitations", "heart racing", "heart pounding"]
+        }
+        
+        for symptom, patterns in symptom_patterns.items():
+            if any(pattern in text_lower for pattern in patterns):
+                detected_symptoms.append(symptom)
+        
+        return detected_symptoms
+    
+    def _extract_user_context(self, conversation_state: Dict, message: str) -> Dict[str, Any]:
+        """Extract user context for rule evaluation"""
+        context = {}
+        
+        # Extract age if mentioned
+        age_patterns = [
+            r'(\d+)\s*(?:years?\s*old|yo|yrs?\s*old)',
+            r'age\s*(\d+)',
+            r'I\'?m\s*(\d+)'
+        ]
+        
+        for pattern in age_patterns:
+            match = re.search(pattern, message.lower())
+            if match:
+                context['age'] = int(match.group(1))
+                break
+        
+        # Extract onset information
+        message_lower = message.lower()
+        if any(term in message_lower for term in ['sudden', 'suddenly', 'came on quick', 'all at once']):
+            context['onset'] = 'sudden'
+        elif any(term in message_lower for term in ['gradual', 'gradually', 'slow', 'progressive']):
+            context['onset'] = 'gradual'
+        
+        # Extract gender if mentioned
+        if any(term in message_lower for term in ['i\'m a woman', 'i\'m female', 'as a woman']):
+            context['gender'] = 'female'
+        elif any(term in message_lower for term in ['i\'m a man', 'i\'m male', 'as a man']):
+            context['gender'] = 'male'
+        
+        # Extract history/context clues for poisoning
+        if any(term in message_lower for term in ['heating', 'generator', 'winter', 'fireplace', 'gas']):
+            context['history'] = message_lower
+        
+        return context
+    
     async def process_message(self, request: IntegratedMedicalRequest) -> IntegratedMedicalResponse:
         """Process message through integrated medical AI system"""
         
