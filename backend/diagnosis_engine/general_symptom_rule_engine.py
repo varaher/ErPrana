@@ -327,13 +327,16 @@ class GeneralSymptomRuleEngine:
         results["general_clinical_patterns"] = general_results
         
         # Determine overall urgency
-        all_results = emergency_results + toxicology_results
+        all_results = emergency_results + toxicology_results + general_results
         if any(r["urgency"] == "emergency" for r in all_results):
             results["overall_urgency"] = "emergency"
             results["recommendations"] = [r["recommendation"] for r in all_results if r["urgency"] == "emergency"]
         elif any(r["urgency"] == "high" for r in all_results):
             results["overall_urgency"] = "high" 
             results["recommendations"] = [r["recommendation"] for r in all_results if r["urgency"] in ["emergency", "high"]]
+        elif any(r["urgency"] == "moderate" for r in all_results):
+            results["overall_urgency"] = "moderate"
+            results["recommendations"] = [r["recommendation"] for r in all_results if r["urgency"] in ["emergency", "high", "moderate"]]
         elif toxicology_results:
             results["overall_urgency"] = "high"  # Poisoning always high priority
             results["recommendations"] = [r["recommendation"] for r in toxicology_results]
