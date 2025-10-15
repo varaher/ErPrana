@@ -275,6 +275,27 @@ class GeneralSymptomRuleEngine:
         
         return results
     
+    def evaluate_general_clinical_patterns(self, user_symptoms: List[str], 
+                                         user_context: Dict = None) -> List[Dict[str, Any]]:
+        """Evaluate symptoms against general clinical rule patterns"""
+        matches = self.match_symptoms(user_symptoms, self.general_rules, min_matches=2, user_context=user_context)
+        
+        results = []
+        for rule_id, diagnosis, score, rule in matches:
+            if score >= 1.0:  # Threshold for general clinical consideration
+                results.append({
+                    "rule_id": rule_id,
+                    "diagnosis": diagnosis,
+                    "confidence_score": round(score, 1),
+                    "urgency": rule["urgency"],
+                    "recommendation": rule["recommendation"],
+                    "clinical_notes": rule.get("clinical_notes", ""),
+                    "icd10": rule.get("icd10", ""),
+                    "matched_symptoms": [s for s in rule["symptoms"] if s in self.standardize_symptoms(user_symptoms)]
+                })
+        
+        return results
+    
     def comprehensive_symptom_analysis(self, user_symptoms: List[str], 
                                      user_context: Dict = None) -> Dict[str, Any]:
         """
