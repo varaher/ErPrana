@@ -36,6 +36,15 @@ class GeneralSymptomRuleEngine:
                 print(f"✅ Loaded {len(self.toxicology_rules)} toxicology rules")
         except Exception as e:
             print(f"❌ Error loading toxicology rules: {e}")
+        
+        # Load general clinical rules
+        try:
+            with open(rules_dir / "general_clinical_rules.json", 'r') as f:
+                general_data = json.load(f)
+                self.general_rules = general_data.get('rules', [])
+                print(f"✅ Loaded {len(self.general_rules)} general clinical rules")
+        except Exception as e:
+            print(f"❌ Error loading general clinical rules: {e}")
     
     def standardize_symptoms(self, user_symptoms: List[str]) -> List[str]:
         """Convert user symptom descriptions to standardized terms"""
