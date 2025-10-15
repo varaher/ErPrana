@@ -1633,6 +1633,400 @@ class BackendAPITester:
         
         return all_success, results
 
+    # ========== COMPREHENSIVE SYMPTOM RULE ENGINE TESTS (NEW IMPLEMENTATION) ==========
+    
+    def test_comprehensive_symptom_rule_engine_emergency_mi_pattern(self):
+        """REVIEW REQUEST: Test Emergency Pattern Detection (R1) - MI emergency"""
+        test_data = {
+            "user_message": "I have chest pain, shortness of breath, and sweating",
+            "session_id": "emergency_mi_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🚨 EMERGENCY PATTERN R1 - Myocardial Infarction Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = (response.get("triage_level") or "").lower()
+            assistant_message = response.get("assistant_message", "").lower()
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ MI EMERGENCY: Correctly detected")
+            else:
+                print(f"❌ MI EMERGENCY: Not detected. Emergency: {emergency_detected}, Triage: {triage_level}")
+            
+            # Check for 911 instructions
+            if "911" in assistant_message or "call emergency" in assistant_message:
+                print("✅ MI EMERGENCY: 911 instructions provided")
+            else:
+                print("❌ MI EMERGENCY: No 911 instructions found")
+            
+            # Check for general_symptom_analysis in response
+            general_analysis = response.get("general_symptom_analysis")
+            if general_analysis:
+                print("✅ GENERAL SYMPTOM ANALYSIS: Present in response")
+                emergency_patterns = general_analysis.get("emergency_patterns", [])
+                if emergency_patterns:
+                    print(f"✅ EMERGENCY PATTERNS: {len(emergency_patterns)} patterns detected")
+                else:
+                    print("❌ EMERGENCY PATTERNS: No patterns found")
+            else:
+                print("❌ GENERAL SYMPTOM ANALYSIS: Not found in response")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_emergency_meningitis_pattern(self):
+        """REVIEW REQUEST: Test Emergency Pattern Detection (R2) - Meningitis emergency"""
+        test_data = {
+            "user_message": "I have fever, headache, and stiff neck",
+            "session_id": "emergency_meningitis_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🚨 EMERGENCY PATTERN R2 - Meningitis Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = (response.get("triage_level") or "").lower()
+            assistant_message = response.get("assistant_message", "").lower()
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ MENINGITIS EMERGENCY: Correctly detected")
+            else:
+                print(f"❌ MENINGITIS EMERGENCY: Not detected. Emergency: {emergency_detected}, Triage: {triage_level}")
+            
+            # Check for 911 instructions
+            if "911" in assistant_message or "emergency" in assistant_message:
+                print("✅ MENINGITIS EMERGENCY: Emergency instructions provided")
+            else:
+                print("❌ MENINGITIS EMERGENCY: No emergency instructions found")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_toxicology_carbon_monoxide(self):
+        """REVIEW REQUEST: Test Toxicology Pattern Detection (T1) - Carbon monoxide poisoning"""
+        test_data = {
+            "user_message": "I have headache, dizziness, confusion, and weakness - we've been using a generator indoors",
+            "session_id": "toxicology_co_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "☠️ TOXICOLOGY PATTERN T1 - Carbon Monoxide Poisoning",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for toxicology pattern detection
+            general_analysis = response.get("general_symptom_analysis")
+            if general_analysis:
+                toxicology_patterns = general_analysis.get("toxicology_patterns", [])
+                if toxicology_patterns:
+                    print(f"✅ TOXICOLOGY PATTERNS: {len(toxicology_patterns)} patterns detected")
+                    
+                    # Look for carbon monoxide specifically
+                    co_detected = any("carbon monoxide" in str(pattern).lower() for pattern in toxicology_patterns)
+                    if co_detected:
+                        print("✅ CARBON MONOXIDE: Correctly detected")
+                    else:
+                        print("❌ CARBON MONOXIDE: Not detected in toxicology patterns")
+                else:
+                    print("❌ TOXICOLOGY PATTERNS: No patterns found")
+            
+            # Check for antidote recommendations
+            assistant_message = response.get("assistant_message", "").lower()
+            if "hyperbaric" in assistant_message or "oxygen" in assistant_message:
+                print("✅ CO ANTIDOTE: Hyperbaric oxygen treatment mentioned")
+            else:
+                print("❌ CO ANTIDOTE: No specific treatment mentioned")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_toxicology_organophosphate(self):
+        """REVIEW REQUEST: Test Toxicology Pattern Detection (T2) - Organophosphate poisoning"""
+        test_data = {
+            "user_message": "I have excessive salivation, tearing, and diarrhea after using pesticides",
+            "session_id": "toxicology_organophosphate_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "☠️ TOXICOLOGY PATTERN T2 - Organophosphate Poisoning",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for toxicology pattern detection
+            general_analysis = response.get("general_symptom_analysis")
+            if general_analysis:
+                toxicology_patterns = general_analysis.get("toxicology_patterns", [])
+                if toxicology_patterns:
+                    print(f"✅ TOXICOLOGY PATTERNS: {len(toxicology_patterns)} patterns detected")
+                    
+                    # Look for organophosphate specifically
+                    op_detected = any("organophosphate" in str(pattern).lower() for pattern in toxicology_patterns)
+                    if op_detected:
+                        print("✅ ORGANOPHOSPHATE: Correctly detected")
+                    else:
+                        print("❌ ORGANOPHOSPHATE: Not detected in toxicology patterns")
+                else:
+                    print("❌ TOXICOLOGY PATTERNS: No patterns found")
+            
+            # Check for antidote recommendations
+            assistant_message = response.get("assistant_message", "").lower()
+            if "atropine" in assistant_message or "pralidoxime" in assistant_message:
+                print("✅ OP ANTIDOTE: Atropine/pralidoxime treatment mentioned")
+            else:
+                print("❌ OP ANTIDOTE: No specific antidote mentioned")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_general_diabetes_pattern(self):
+        """REVIEW REQUEST: Test General Clinical Pattern (R17) - Diabetes detection"""
+        test_data = {
+            "user_message": "I have frequent urination, excessive thirst, and fatigue",
+            "session_id": "general_diabetes_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 GENERAL PATTERN R17 - Diabetes Mellitus Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for general clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis")
+            if general_analysis:
+                general_patterns = general_analysis.get("general_patterns", [])
+                if general_patterns:
+                    print(f"✅ GENERAL PATTERNS: {len(general_patterns)} patterns detected")
+                    
+                    # Look for diabetes specifically
+                    diabetes_detected = any("diabetes" in str(pattern).lower() for pattern in general_patterns)
+                    if diabetes_detected:
+                        print("✅ DIABETES PATTERN: Correctly detected")
+                    else:
+                        print("❌ DIABETES PATTERN: Not detected in general patterns")
+                else:
+                    print("❌ GENERAL PATTERNS: No patterns found")
+            
+            # Check for appropriate urgency level
+            urgency = response.get("urgency_level", "").lower()
+            if urgency in ["moderate", "high"]:
+                print(f"✅ DIABETES URGENCY: Appropriate level - {urgency.upper()}")
+            else:
+                print(f"❌ DIABETES URGENCY: Inappropriate level - {urgency}")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_general_uti_pattern(self):
+        """REVIEW REQUEST: Test General Clinical Pattern (R8) - UTI detection"""
+        test_data = {
+            "user_message": "I have burning urination, urgency, and cloudy urine",
+            "session_id": "general_uti_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📞 GENERAL PATTERN R8 - Urinary Tract Infection Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for general clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis")
+            if general_analysis:
+                general_patterns = general_analysis.get("general_patterns", [])
+                if general_patterns:
+                    print(f"✅ GENERAL PATTERNS: {len(general_patterns)} patterns detected")
+                    
+                    # Look for UTI specifically
+                    uti_detected = any(any(term in str(pattern).lower() for term in ["uti", "urinary tract", "cystitis"]) for pattern in general_patterns)
+                    if uti_detected:
+                        print("✅ UTI PATTERN: Correctly detected")
+                    else:
+                        print("❌ UTI PATTERN: Not detected in general patterns")
+                else:
+                    print("❌ GENERAL PATTERNS: No patterns found")
+            
+            # Check for appropriate recommendations
+            assistant_message = response.get("assistant_message", "").lower()
+            if "urinalysis" in assistant_message or "antibiotic" in assistant_message:
+                print("✅ UTI RECOMMENDATIONS: Appropriate treatment mentioned")
+            else:
+                print("❌ UTI RECOMMENDATIONS: No specific treatment mentioned")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_integration_with_existing_system(self):
+        """REVIEW REQUEST: Test integration with existing structured interviews"""
+        test_data = {
+            "user_message": "I have fever for 2 days",
+            "session_id": "integration_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🔄 INTEGRATION TEST - Rule Engine + Structured Interview",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check that both systems work together
+            interview_active = response.get("interview_active", False)
+            interview_type = response.get("interview_type")
+            general_analysis = response.get("general_symptom_analysis")
+            
+            if interview_active and interview_type == "fever":
+                print("✅ STRUCTURED INTERVIEW: Fever interview triggered")
+            else:
+                print(f"❌ STRUCTURED INTERVIEW: Not triggered. Active: {interview_active}, Type: {interview_type}")
+            
+            if general_analysis:
+                print("✅ RULE ENGINE: General symptom analysis present")
+            else:
+                print("❌ RULE ENGINE: General symptom analysis missing")
+            
+            # Check no conflicts
+            assistant_message = response.get("assistant_message", "")
+            if "error" not in assistant_message.lower() and "conflict" not in assistant_message.lower():
+                print("✅ NO CONFLICTS: Systems working together without conflicts")
+            else:
+                print("❌ CONFLICTS: System conflicts detected")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_emergency_detection_before_interviews(self):
+        """REVIEW REQUEST: Test emergency detection happens BEFORE interviews start"""
+        test_data = {
+            "user_message": "I have severe chest pain, can't breathe, and I'm sweating profusely",
+            "session_id": "emergency_before_interview_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "⚡ EMERGENCY PRIORITY - Detection Before Interview",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check emergency is detected immediately
+            emergency_detected = response.get("emergency_detected", False)
+            next_step = response.get("next_step", "")
+            
+            if emergency_detected:
+                print("✅ IMMEDIATE EMERGENCY: Detected before interview")
+            else:
+                print("❌ IMMEDIATE EMERGENCY: Not detected")
+            
+            # Check next step is emergency assessment, not interview
+            if next_step == "emergency_assessment":
+                print("✅ EMERGENCY PRIORITY: Emergency assessment prioritized over interview")
+            elif next_step in ["followup_questions", "conversation_continue"]:
+                print("❌ EMERGENCY PRIORITY: Interview started instead of emergency assessment")
+            else:
+                print(f"❌ EMERGENCY PRIORITY: Unexpected next step - {next_step}")
+        
+        return success, response
+    
+    def test_comprehensive_symptom_rule_engine_no_conflicts_with_existing_interviews(self):
+        """REVIEW REQUEST: Test no conflicts with current fever/chest_pain/SOB/headache interviews"""
+        interview_tests = [
+            {"symptom": "fever", "message": "I have fever and chills"},
+            {"symptom": "chest_pain", "message": "I have chest pain"},
+            {"symptom": "shortness_of_breath", "message": "I have shortness of breath"},
+            {"symptom": "headache", "message": "I have a headache"}
+        ]
+        
+        all_success = True
+        results = {}
+        
+        for test_case in interview_tests:
+            test_data = {
+                "user_message": test_case["message"],
+                "session_id": f"no_conflicts_{test_case['symptom']}_test",
+                "conversation_state": None,
+                "user_id": "test_user"
+            }
+            
+            success, response = self.run_test(
+                f"🔄 NO CONFLICTS - {test_case['symptom'].upper()} Interview",
+                "POST",
+                "integrated/medical-ai",
+                200,
+                data=test_data
+            )
+            
+            if success:
+                # Check interview works
+                interview_active = response.get("interview_active", False)
+                general_analysis = response.get("general_symptom_analysis")
+                
+                if interview_active:
+                    print(f"✅ {test_case['symptom'].upper()}: Interview working")
+                else:
+                    print(f"❌ {test_case['symptom'].upper()}: Interview not working")
+                    all_success = False
+                
+                if general_analysis:
+                    print(f"✅ {test_case['symptom'].upper()}: Rule engine working")
+                else:
+                    print(f"❌ {test_case['symptom'].upper()}: Rule engine not working")
+                    all_success = False
+                
+                results[test_case['symptom']] = "SUCCESS" if interview_active and general_analysis else "FAILED"
+            else:
+                results[test_case['symptom']] = "API_FAILED"
+                all_success = False
+        
+        if all_success:
+            print("✅ NO CONFLICTS: All existing interviews work with new rule engine")
+        else:
+            print(f"❌ CONFLICTS DETECTED: Some interviews failed - {results}")
+        
+        return all_success, results
+
     # ========== CRITICAL EMERGENCY DETECTION TESTS (REVIEW REQUEST FOCUS) ==========
     
     def test_critical_thunderclap_headache_emergency_detection(self):
