@@ -1,0 +1,102 @@
+{
+  "rule_engine_version": "1.0",
+  "description": "Toxicology and poisoning clinical rules for poison detection and management",
+  "rules": [
+    {
+      "rule_id": "T1",
+      "name": "Carbon Monoxide Poisoning",
+      "symptoms": ["headache", "dizziness", "confusion", "weakness"],
+      "optional_symptoms": ["nausea", "vomiting", "chest_pain", "shortness_of_breath"],
+      "context_clues": ["winter_heating", "enclosed_space", "multiple_family_members_sick", "generator_use"],
+      "provisional_diagnosis": "Carbon Monoxide Poisoning",
+      "urgency": "emergency",
+      "confidence_weight": 80,
+      "recommendation": "🚨 **POISON EMERGENCY** - Remove from environment immediately, call 911. Carbon monoxide poisoning requires hyperbaric oxygen treatment.",
+      "clinical_notes": "Cherry red skin is late sign - headache and confusion are early"
+    },
+    {
+      "rule_id": "T2",
+      "name": "Organophosphate Poisoning", 
+      "symptoms": ["excessive_salivation", "lacrimation", "urination", "diarrhea"],
+      "optional_symptoms": ["muscle_fasciculations", "respiratory_depression", "bradycardia"],
+      "context_clues": ["pesticide_exposure", "agricultural_work", "insecticide_use"],
+      "provisional_diagnosis": "Organophosphate Poisoning",
+      "urgency": "emergency",
+      "confidence_weight": 85,
+      "recommendation": "🚨 **POISON EMERGENCY** - Call 911 immediately. Requires atropine and pralidoxime. Remove contaminated clothing.",
+      "clinical_notes": "SLUDGE syndrome - Salivation, Lacrimation, Urination, Diarrhea, GI upset, Emesis"
+    },
+    {
+      "rule_id": "T3",
+      "name": "Acetaminophen Overdose",
+      "symptoms": ["nausea", "vomiting", "right_upper_quadrant_pain"],
+      "optional_symptoms": ["jaundice", "confusion", "bleeding"],
+      "context_clues": ["intentional_overdose", "multiple_pain_medications", "chronic_pain"],
+      "provisional_diagnosis": "Acetaminophen Hepatotoxicity",
+      "urgency": "high",
+      "confidence_weight": 75,
+      "recommendation": "⚠️ **URGENT MEDICAL CARE** - Go to ER immediately. N-acetylcysteine most effective within 8 hours of ingestion.",
+      "clinical_notes": "Often asymptomatic initially - hepatotoxicity develops 24-72 hours post-ingestion"
+    },
+    {
+      "rule_id": "T13",
+      "name": "Opioid Overdose",
+      "symptoms": ["respiratory_depression", "pinpoint_pupils", "altered_consciousness"],
+      "optional_symptoms": ["cyanosis", "bradycardia", "hypotension"],
+      "context_clues": ["known_opioid_use", "prescription_medications", "street_drugs"],
+      "provisional_diagnosis": "Opioid Overdose",
+      "urgency": "emergency", 
+      "confidence_weight": 90,
+      "recommendation": "🚨 **OVERDOSE EMERGENCY** - Call 911 immediately. Administer naloxone (Narcan) if available. Provide rescue breathing.",
+      "clinical_notes": "Classic triad: CNS depression, respiratory depression, miosis (pinpoint pupils)"
+    },
+    {
+      "rule_id": "T18",
+      "name": "Anticholinergic Poisoning",
+      "symptoms": ["dry_skin", "hyperthermia", "flushed_face", "delirium"],
+      "optional_symptoms": ["dilated_pupils", "urinary_retention", "decreased_bowel_sounds"],
+      "context_clues": ["plant_ingestion", "medication_overdose", "jimsonweed", "nightshade"],
+      "provisional_diagnosis": "Anticholinergic Toxicity",
+      "urgency": "high",
+      "confidence_weight": 80,
+      "recommendation": "⚠️ **POISON EMERGENCY** - Call 911. 'Mad as a hatter, hot as a hare, red as a beet, dry as a bone, blind as a bat'",
+      "clinical_notes": "Classic anticholinergic syndrome - hyperthermia can be life-threatening"
+    },
+    {
+      "rule_id": "T20",
+      "name": "Serotonin Syndrome", 
+      "symptoms": ["hyperthermia", "muscle_rigidity", "agitation", "clonus"],
+      "optional_symptoms": ["diaphoresis", "diarrhea", "hyperreflexia", "confusion"],
+      "context_clues": ["antidepressant_medications", "drug_interactions", "recent_medication_changes"],
+      "provisional_diagnosis": "Serotonin Syndrome",
+      "urgency": "emergency",
+      "confidence_weight": 85,
+      "recommendation": "🚨 **MEDICAL EMERGENCY** - Call 911 immediately. Stop serotonergic medications. Requires aggressive cooling and sedation.",
+      "clinical_notes": "Often triggered by drug interactions - can be rapidly fatal without treatment"
+    },
+    {
+      "rule_id": "T6",
+      "name": "Cyanide Poisoning",
+      "symptoms": ["headache", "confusion", "seizures", "cardiac_arrest"],
+      "optional_symptoms": ["bitter_almond_odor", "bright_red_skin", "rapid_breathing"],
+      "context_clues": ["house_fire", "industrial_exposure", "bitter_almond_smell"],
+      "provisional_diagnosis": "Cyanide Poisoning",
+      "urgency": "emergency",
+      "confidence_weight": 90,
+      "recommendation": "🚨 **POISON EMERGENCY** - Call 911 immediately. Requires antidote (hydroxocobalamin/sodium thiosulfate). Remove from source.",
+      "clinical_notes": "Rapid progression to cardiovascular collapse - minutes matter"
+    },
+    {
+      "rule_id": "T25",
+      "name": "Methemoglobinemia",
+      "symptoms": ["cyanosis", "headache", "weakness", "shortness_of_breath"],
+      "optional_symptoms": ["chocolate_colored_blood", "altered_mental_status"],
+      "context_clues": ["nitrate_exposure", "well_water", "certain_medications", "industrial_chemicals"],
+      "provisional_diagnosis": "Methemoglobinemia",
+      "urgency": "emergency",
+      "confidence_weight": 75,
+      "recommendation": "🚨 **POISON EMERGENCY** - Call 911 immediately. Requires methylene blue antidote. Central cyanosis with normal oxygen saturation.",
+      "clinical_notes": "Classic: cyanosis that doesn't respond to oxygen therapy"
+    }
+  ]
+}
