@@ -3170,58 +3170,6 @@ def run_comprehensive_headache_integration_tests():
         print(f"⚠️  {failed_tests} tests failed. Check the output above for details.")
         return 1
 
-    def run_comprehensive_symptom_rule_engine_tests(self):
-        """Run comprehensive symptom rule engine tests (REVIEW REQUEST FOCUS)"""
-        print("🚀 Starting Comprehensive Symptom Rule Engine Testing...")
-        print(f"Base URL: {self.base_url}")
-        print(f"API URL: {self.api_url}")
-        
-        # NEW COMPREHENSIVE SYMPTOM RULE ENGINE TESTS (REVIEW REQUEST)
-        print("\n" + "="*80)
-        print("🎯 NEW COMPREHENSIVE SYMPTOM RULE ENGINE TESTS (REVIEW REQUEST)")
-        print("="*80)
-        
-        # Emergency Pattern Detection Tests (R1-R25)
-        print("\n🚨 EMERGENCY PATTERN DETECTION TESTS (R1-R25)")
-        print("-" * 60)
-        self.test_comprehensive_symptom_rule_engine_emergency_mi_pattern()
-        self.test_comprehensive_symptom_rule_engine_emergency_meningitis_pattern()
-        
-        # Toxicology Pattern Detection Tests (T1-T30)
-        print("\n☠️ TOXICOLOGY PATTERN DETECTION TESTS (T1-T30)")
-        print("-" * 60)
-        self.test_comprehensive_symptom_rule_engine_toxicology_carbon_monoxide()
-        self.test_comprehensive_symptom_rule_engine_toxicology_organophosphate()
-        
-        # General Clinical Pattern Tests (R3-R95)
-        print("\n📋 GENERAL CLINICAL PATTERN TESTS (R3-R95)")
-        print("-" * 60)
-        self.test_comprehensive_symptom_rule_engine_general_diabetes_pattern()
-        self.test_comprehensive_symptom_rule_engine_general_uti_pattern()
-        
-        # Integration Tests
-        print("\n🔄 INTEGRATION WITH EXISTING SYSTEM TESTS")
-        print("-" * 60)
-        self.test_comprehensive_symptom_rule_engine_integration_with_existing_system()
-        self.test_comprehensive_symptom_rule_engine_emergency_detection_before_interviews()
-        self.test_comprehensive_symptom_rule_engine_no_conflicts_with_existing_interviews()
-        
-        # Final summary
-        print("\n" + "="*80)
-        print("📊 COMPREHENSIVE SYMPTOM RULE ENGINE TESTING SUMMARY")
-        print("="*80)
-        print(f"Total tests run: {self.tests_run}")
-        print(f"Tests passed: {self.tests_passed}")
-        print(f"Tests failed: {self.tests_run - self.tests_passed}")
-        print(f"Success rate: {(self.tests_passed / self.tests_run * 100):.1f}%")
-        
-        if self.tests_passed == self.tests_run:
-            print("🎉 ALL SYMPTOM RULE ENGINE TESTS PASSED! New implementation is fully operational.")
-        else:
-            print(f"⚠️  {self.tests_run - self.tests_passed} tests failed. Review the failures above.")
-        
-        return self.tests_passed == self.tests_run
-
 def main():
     print("🚀 Starting Comprehensive Backend API Tests for Headache Integration")
     print("=" * 80)
