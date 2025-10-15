@@ -1166,19 +1166,19 @@ class BackendAPITester:
             200
         )
     
-    # ========== HEADACHE INTEGRATION TESTS ==========
+    # ========== CRITICAL EMERGENCY DETECTION TESTS (REVIEW REQUEST FOCUS) ==========
     
-    def test_headache_thunderclap_subarachnoid_hemorrhage(self):
-        """Test headache: 'I have a sudden severe headache, worst of my life' (should trigger RED - subarachnoid hemorrhage)"""
+    def test_critical_thunderclap_headache_emergency_detection(self):
+        """PRIMARY FOCUS: Test 'I have a sudden severe headache, worst of my life' - should trigger immediate RED emergency BEFORE interview"""
         test_data = {
             "user_message": "I have a sudden severe headache, worst of my life",
-            "session_id": "headache_sah_test",
+            "session_id": "critical_thunderclap_test",
             "conversation_state": None,
             "user_id": "test_user"
         }
         
         success, response = self.run_test(
-            "Headache Integration - Thunderclap/SAH Detection",
+            "🎯 CRITICAL TEST - Thunderclap Headache Emergency Detection",
             "POST",
             "integrated/medical-ai",
             200,
@@ -1186,30 +1186,29 @@ class BackendAPITester:
         )
         
         if success:
-            # Check if headache interview is triggered
-            interview_active = response.get("interview_active", False)
-            interview_type = response.get("interview_type")
-            
-            if interview_active and interview_type == "headache":
-                print("✅ Headache interview correctly triggered")
-            else:
-                print(f"❌ Headache interview not triggered. Active: {interview_active}, Type: {interview_type}")
-            
-            # Check for emergency detection or RED triage
+            # CRITICAL CHECK: Emergency detection should happen BEFORE interview starts
             emergency_detected = response.get("emergency_detected", False)
             triage_level = (response.get("triage_level") or "").lower()
+            next_step = response.get("next_step", "")
             
-            if emergency_detected or triage_level == "red":
-                print("✅ Emergency/RED triage correctly detected for thunderclap headache")
+            if emergency_detected and triage_level == "red":
+                print("✅ CRITICAL SUCCESS: Emergency detected with RED triage level")
             else:
-                print(f"❌ Emergency not detected. Emergency: {emergency_detected}, Triage: {triage_level}")
+                print(f"❌ CRITICAL FAILURE: Emergency not detected. Emergency: {emergency_detected}, Triage: {triage_level}")
             
-            # Check assistant message for SAH warning
+            # Check that emergency happens BEFORE interview (next_step should be emergency_care, not interview_continue)
+            if next_step == "emergency_care":
+                print("✅ CRITICAL SUCCESS: Emergency detection happens BEFORE interview starts")
+            else:
+                print(f"❌ CRITICAL FAILURE: Expected emergency_care, got {next_step} - interview may have started instead")
+            
+            # Check for SAH-specific warning and 911 instructions
             assistant_message = response.get("assistant_message", "").lower()
-            if any(term in assistant_message for term in ["emergency", "911", "subarachnoid", "thunderclap"]):
-                print("✅ Emergency instructions provided for thunderclap headache")
+            if "subarachnoid" in assistant_message and "911" in assistant_message:
+                print("✅ CRITICAL SUCCESS: SAH warning and 911 instructions provided")
             else:
-                print("❌ No emergency instructions found in response")
+                print("❌ CRITICAL FAILURE: Missing SAH warning or 911 instructions")
+                print(f"Message: {assistant_message}")
         
         return success, response
     
