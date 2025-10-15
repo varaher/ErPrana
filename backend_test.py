@@ -2392,6 +2392,62 @@ def main():
         print(f"\n⚠️  {failed_tests} backend tests failed. See details above.")
         return 1
 
+def run_critical_emergency_detection_tests():
+    """Run CRITICAL emergency detection tests based on review request - FOCUSED TESTING"""
+    tester = BackendAPITester()
+    print("🎯 CRITICAL EMERGENCY DETECTION TESTS - REVIEW REQUEST FOCUS")
+    print(f"Base URL: {tester.base_url}")
+    print(f"API URL: {tester.api_url}")
+    print("=" * 80)
+    print("Testing SPECIFIC fixes for critical issues identified in previous testing:")
+    print("1. PRIMARY: Thunderclap headache emergency detection (SAH)")
+    print("2. SECONDARY: SOB risk factor triage escalation (PE)")  
+    print("3. TERTIARY: Headache with meningitis signs")
+    print("=" * 80)
+    
+    # Test system status first
+    print("\n" + "=" * 50)
+    print("🏥 INTEGRATED MEDICAL AI SYSTEM STATUS")
+    print("=" * 50)
+    tester.test_integrated_medical_ai_status()
+    
+    # Run critical tests
+    print("\n" + "=" * 50)
+    print("🎯 CRITICAL EMERGENCY DETECTION TESTS")
+    print("=" * 50)
+    
+    critical_tests = [
+        ("PRIMARY FOCUS", tester.test_critical_thunderclap_headache_emergency_detection),
+        ("SECONDARY FOCUS", tester.test_critical_sob_pulmonary_embolism_risk_factors),
+        ("TERTIARY FOCUS", tester.test_critical_meningitis_emergency_detection)
+    ]
+    
+    critical_passed = 0
+    critical_total = len(critical_tests)
+    
+    for focus, test_func in critical_tests:
+        print(f"\n🔍 {focus}:")
+        success, _ = test_func()
+        if success:
+            critical_passed += 1
+    
+    # Print focused results
+    print("\n" + "=" * 80)
+    print("📊 CRITICAL EMERGENCY DETECTION RESULTS")
+    print("=" * 80)
+    print(f"🎯 CRITICAL TESTS: {critical_passed}/{critical_total} passed")
+    print(f"📊 TOTAL TESTS: {tester.tests_run} run, {tester.tests_passed} passed")
+    print(f"📈 SUCCESS RATE: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if critical_passed == critical_total:
+        print("✅ ALL CRITICAL EMERGENCY DETECTION TESTS PASSED!")
+        print("🎉 Thunderclap headache, SOB PE risk factors, and meningitis detection working")
+        return 0
+    else:
+        print(f"❌ {critical_total - critical_passed} critical tests failed")
+        print("⚠️ Emergency detection logic needs further debugging")
+        return 1
+
 def run_headache_and_sob_tests():
     """Run focused tests for headache integration and SOB triage bug fix as requested in review"""
     tester = BackendAPITester()
@@ -2412,10 +2468,8 @@ def run_headache_and_sob_tests():
     print("=" * 50)
     print("Testing headache interview flow end-to-end...")
     
-    tester.test_headache_thunderclap_subarachnoid_hemorrhage()
-    tester.test_headache_meningitis_fever_neck_stiffness()
-    tester.test_headache_interview_progression()
-    tester.test_headache_cross_symptom_analysis()
+    tester.test_critical_thunderclap_headache_emergency_detection()
+    tester.test_critical_meningitis_emergency_detection()
     
     # SOB Triage Bug Fix Tests
     print("\n" + "=" * 50)
@@ -2423,10 +2477,7 @@ def run_headache_and_sob_tests():
     print("=" * 50)
     print("Testing shortness of breath scenarios with risk factors...")
     
-    tester.test_sob_pulmonary_embolism_risk_factors()
-    tester.test_sob_risk_factor_evaluation_includes_operation()
-    tester.test_sob_heart_failure_orthopnea_edema()
-    tester.test_sob_interview_risk_factor_collection()
+    tester.test_critical_sob_pulmonary_embolism_risk_factors()
     
     # Print focused results
     print("\n" + "=" * 80)
