@@ -42,6 +42,7 @@ class IntegratedMedicalResponse(BaseModel):
     triage_level: Optional[str] = None
     clinical_summary: Optional[str] = None
     recommendations: Optional[List[Dict[str, Any]]] = None
+    general_symptom_analysis: Optional[Dict[str, Any]] = None
 
 class IntegratedMedicalAI:
     """
