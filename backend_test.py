@@ -1461,7 +1461,7 @@ class BackendAPITester:
                     print(f"Available diagnoses: {[d.get('name') for d in comprehensive_diagnoses[:3]]}")
             
             # Check triage levels
-            triage_level = response.get("triage_level", "").lower()
+            triage_level = (response.get("triage_level") or "").lower()
             if triage_level in ["yellow", "green", "orange"]:
                 print(f"✅ TRIAGE LEVEL: Appropriate level assigned: {triage_level.upper()}")
             else:
