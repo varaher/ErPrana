@@ -864,6 +864,12 @@ class StructuredMedicalInterviewer:
             eval_condition = eval_condition.replace('>=', ' >= ')
             eval_condition = eval_condition.replace('<=', ' <= ')
             
+            # Convert JSON boolean values to Python boolean values
+            eval_condition = eval_condition.replace(' true', ' True')
+            eval_condition = eval_condition.replace(' false', ' False')
+            eval_condition = eval_condition.replace('(true', '(True')
+            eval_condition = eval_condition.replace('(false', '(False')
+            
             # Simple evaluation (in production, use a proper expression parser)
             result = eval(eval_condition)
             return result
