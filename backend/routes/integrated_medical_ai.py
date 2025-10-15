@@ -19,6 +19,7 @@ from .advanced_symptom_intelligence import (
 import sys
 sys.path.append('/app/backend')
 from diagnosis_engine.cross_symptom_analyzer import CrossSymptomAnalyzer
+from diagnosis_engine.general_symptom_rule_engine import general_symptom_engine
 
 load_dotenv()
 
