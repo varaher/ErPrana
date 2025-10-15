@@ -1556,7 +1556,7 @@ class BackendAPITester:
                 print("❌ 500 ERRORS: Server errors detected in interview")
             
             # Check triage escalation for PE risk
-            triage_level = response_3.get("triage_level", "").lower()
+            triage_level = (response_3.get("triage_level") or "").lower()
             emergency_detected = response_3.get("emergency_detected", False)
             
             if triage_level in ["red", "orange"] or emergency_detected:
