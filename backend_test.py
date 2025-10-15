@@ -2668,8 +2668,64 @@ class BackendAPITester:
         
         return success, response
 
+def run_comprehensive_headache_integration_tests():
+    """Run comprehensive headache integration tests as requested in review"""
+    tester = BackendAPITester()
+    
+    print("🧠 COMPREHENSIVE HEADACHE INTEGRATION TESTING")
+    print("=" * 80)
+    print("Testing comprehensive headache integration as requested in review:")
+    print("1. Complete Headache Interview Flow")
+    print("2. Cross-Symptom Analysis with Headache")
+    print("3. Headache Diagnosis Generation")
+    print("4. Comprehensive SOB Interview with Risk Factors")
+    print("=" * 80)
+    
+    # Comprehensive Headache Integration Tests
+    print("\n🎯 COMPREHENSIVE HEADACHE INTEGRATION TESTS")
+    print("-" * 60)
+    tester.test_comprehensive_headache_interview_flow()
+    tester.test_headache_interview_progression_through_slots()
+    tester.test_headache_cross_symptom_analysis_integration()
+    tester.test_headache_diagnosis_generation_with_icd10()
+    
+    # Comprehensive SOB Integration Tests
+    print("\n🫁 COMPREHENSIVE SOB INTEGRATION TESTS")
+    print("-" * 60)
+    tester.test_comprehensive_sob_interview_with_risk_factors()
+    
+    # All Interview Types Integration
+    print("\n🏥 ALL INTERVIEW TYPES INTEGRATION")
+    print("-" * 60)
+    tester.test_all_interview_types_integration()
+    
+    # Critical Emergency Detection (from review request)
+    print("\n🚨 CRITICAL EMERGENCY DETECTION TESTS")
+    print("-" * 60)
+    tester.test_critical_thunderclap_headache_emergency_detection()
+    tester.test_critical_meningitis_emergency_detection()
+    tester.test_critical_sob_pulmonary_embolism_risk_factors()
+    
+    # Print final results
+    print("\n" + "=" * 80)
+    print(f"🏁 COMPREHENSIVE HEADACHE INTEGRATION TESTING COMPLETE")
+    print(f"📊 Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    print(f"📈 Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 ALL HEADACHE INTEGRATION TESTS PASSED!")
+        print("✅ Headache interview completes without errors")
+        print("✅ Cross-symptom analysis generates headache-specific conditions")
+        print("✅ No 'collected_symptoms' key missing errors")
+        print("✅ All interview types integrate properly with diagnosis engine")
+        return 0
+    else:
+        failed_tests = tester.tests_run - tester.tests_passed
+        print(f"⚠️  {failed_tests} tests failed. Check the output above for details.")
+        return 1
+
 def main():
-    print("🚀 Starting Comprehensive Backend API Tests for Phase 2 Advanced Features")
+    print("🚀 Starting Comprehensive Backend API Tests for Headache Integration")
     print("=" * 80)
     
     # Setup
@@ -2688,6 +2744,9 @@ def main():
         print("❌ Basic API connectivity failed. Backend may not be running.")
         print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
         return 1
+    
+    # Run comprehensive headache integration tests
+    return run_comprehensive_headache_integration_tests()
 
     # Test existing endpoints
     print("\n📝 PHASE 1 - EXISTING ENDPOINT TESTS")
