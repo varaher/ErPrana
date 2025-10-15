@@ -348,8 +348,11 @@ class GeneralSymptomRuleEngine:
         elif toxicology_results:
             top_toxicology = toxicology_results[0]
             results["summary"] = f"🧪 Possible poisoning: {top_toxicology['diagnosis']} (confidence: {top_toxicology['confidence_score']})"
+        elif general_results:
+            top_general = general_results[0]
+            results["summary"] = f"🔍 Clinical pattern detected: {top_general['diagnosis']} (confidence: {top_general['confidence_score']})"
         else:
-            results["summary"] = "No emergency patterns detected. Consider routine evaluation."
+            results["summary"] = "No specific patterns detected. Consider routine evaluation if symptoms persist."
         
         return results
 
