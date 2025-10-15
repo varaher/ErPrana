@@ -661,7 +661,8 @@ class IntegratedMedicalAI:
             updated_state=adv_response.updated_state,
             next_step=adv_response.next_step,
             emergency_detected=adv_response.emergency_detected,
-            recommendations=adv_response.recommendations
+            recommendations=adv_response.recommendations,
+            general_symptom_analysis=general_symptom_analysis
         )
     
     def _extract_all_mentioned_symptoms(self, conversation_state: Dict[str, Any], 
