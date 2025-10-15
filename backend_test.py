@@ -1212,17 +1212,17 @@ class BackendAPITester:
         
         return success, response
     
-    def test_headache_meningitis_fever_neck_stiffness(self):
-        """Test headache: 'I have a headache with fever and stiff neck' (should trigger RED - meningitis)"""
+    def test_critical_meningitis_emergency_detection(self):
+        """TERTIARY FOCUS: Test 'I have a headache with fever and stiff neck' - should trigger immediate RED emergency for meningitis"""
         test_data = {
             "user_message": "I have a headache with fever and stiff neck",
-            "session_id": "headache_meningitis_test",
+            "session_id": "critical_meningitis_test",
             "conversation_state": None,
             "user_id": "test_user"
         }
         
         success, response = self.run_test(
-            "Headache Integration - Meningitis Detection",
+            "🎯 CRITICAL TEST - Meningitis Emergency Detection",
             "POST",
             "integrated/medical-ai",
             200,
@@ -1230,21 +1230,75 @@ class BackendAPITester:
         )
         
         if success:
-            # Check for emergency detection
+            # CRITICAL CHECK: Emergency detection for meningitis
             emergency_detected = response.get("emergency_detected", False)
             triage_level = (response.get("triage_level") or "").lower()
+            next_step = response.get("next_step", "")
             
-            if emergency_detected or triage_level == "red":
-                print("✅ Emergency/RED triage correctly detected for meningitis signs")
+            if emergency_detected and triage_level == "red":
+                print("✅ CRITICAL SUCCESS: Meningitis emergency detected with RED triage")
             else:
-                print(f"❌ Emergency not detected for meningitis. Emergency: {emergency_detected}, Triage: {triage_level}")
+                print(f"❌ CRITICAL FAILURE: Meningitis emergency not detected. Emergency: {emergency_detected}, Triage: {triage_level}")
             
-            # Check assistant message for meningitis warning
+            # Check for immediate emergency response
+            if next_step == "emergency_care":
+                print("✅ CRITICAL SUCCESS: Immediate emergency care triggered")
+            else:
+                print(f"❌ CRITICAL FAILURE: Expected emergency_care, got {next_step}")
+            
+            # Check for meningitis-specific warning and 911 instructions
             assistant_message = response.get("assistant_message", "").lower()
-            if any(term in assistant_message for term in ["emergency", "911", "meningitis", "fever", "neck"]):
-                print("✅ Emergency instructions provided for meningitis signs")
+            if "meningitis" in assistant_message and "911" in assistant_message:
+                print("✅ CRITICAL SUCCESS: Meningitis warning and 911 instructions provided")
             else:
-                print("❌ No emergency instructions found for meningitis")
+                print("❌ CRITICAL FAILURE: Missing meningitis warning or 911 instructions")
+                print(f"Message: {assistant_message}")
+        
+        return success, response
+    
+    def test_critical_sob_pulmonary_embolism_risk_factors(self):
+        """SECONDARY FOCUS: Test 'sudden shortness of breath with chest pain, had surgery last week' - should trigger RED triage for PE"""
+        test_data = {
+            "user_message": "sudden shortness of breath with chest pain, I had surgery last week",
+            "session_id": "critical_sob_pe_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 CRITICAL TEST - SOB PE Risk Factors Triage",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # CRITICAL CHECK: Risk factors should trigger RED triage for PE
+            triage_level = (response.get("triage_level") or "").lower()
+            emergency_detected = response.get("emergency_detected", False)
+            
+            if triage_level == "red" or emergency_detected:
+                print("✅ CRITICAL SUCCESS: RED triage triggered for PE with risk factors")
+            else:
+                print(f"❌ CRITICAL FAILURE: RED triage not triggered. Triage: {triage_level}, Emergency: {emergency_detected}")
+            
+            # Check if risk factors are properly evaluated during RED_FLAGS stage
+            assistant_message = response.get("assistant_message", "").lower()
+            if any(term in assistant_message for term in ["pulmonary embolism", "blood clot", "emergency", "surgery"]):
+                print("✅ CRITICAL SUCCESS: PE risk factors properly evaluated with emergency messaging")
+            else:
+                print("❌ CRITICAL FAILURE: Risk factors not properly evaluated in RED_FLAGS stage")
+                print(f"Message: {assistant_message}")
+            
+            # Check that 'includes' operation works for risk factors
+            interview_active = response.get("interview_active", False)
+            interview_type = response.get("interview_type", "")
+            
+            if interview_active and interview_type == "shortness_of_breath":
+                print("✅ SOB interview triggered (expected for risk factor collection)")
+            else:
+                print(f"⚠️ SOB interview not triggered. Active: {interview_active}, Type: {interview_type}")
         
         return success, response
     
