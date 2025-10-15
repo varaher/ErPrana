@@ -1,0 +1,106 @@
+{
+  "rule_engine_version": "1.0",
+  "description": "Emergency clinical rules for immediate triage and intervention",
+  "rules": [
+    {
+      "rule_id": "R1",
+      "name": "Myocardial Infarction Pattern",
+      "symptoms": ["chest_pain", "shortness_of_breath", "sweating"],
+      "optional_symptoms": ["nausea", "left_arm_pain", "jaw_pain"],
+      "modifiers": {
+        "age_risk": ">40",
+        "onset": "sudden",
+        "exclusions": ["young_age", "known_anxiety"]
+      },
+      "provisional_diagnosis": "Myocardial Infarction",
+      "urgency": "emergency",
+      "icd10": "I21.9",
+      "confidence_weight": 95,
+      "recommendation": "🚨 **MEDICAL EMERGENCY** - Call 911 immediately. Possible heart attack. Do not drive yourself. Chew aspirin if not allergic.",
+      "clinical_notes": "Classic MI presentation - chest pain with autonomic symptoms"
+    },
+    {
+      "rule_id": "R2", 
+      "name": "Meningitis Pattern",
+      "symptoms": ["fever", "headache", "neck_stiffness"],
+      "optional_symptoms": ["photophobia", "nausea", "vomiting", "confusion"],
+      "modifiers": {
+        "onset": "rapid",
+        "exclusions": ["recent_trauma"]
+      },
+      "provisional_diagnosis": "Bacterial Meningitis",
+      "urgency": "emergency",
+      "icd10": "G00.9", 
+      "confidence_weight": 90,
+      "recommendation": "🚨 **MEDICAL EMERGENCY** - Call 911 immediately. Possible meningitis - life-threatening infection requiring immediate treatment.",
+      "clinical_notes": "Classic meningitis triad - fever, headache, neck stiffness"
+    },
+    {
+      "rule_id": "R23",
+      "name": "Subarachnoid Hemorrhage Pattern", 
+      "symptoms": ["severe_headache", "neck_stiffness", "photophobia"],
+      "optional_symptoms": ["nausea", "vomiting", "altered_consciousness"],
+      "modifiers": {
+        "onset": "thunderclap",
+        "severity": "worst_ever",
+        "exclusions": ["chronic_headache"]
+      },
+      "provisional_diagnosis": "Subarachnoid Hemorrhage",
+      "urgency": "emergency",
+      "icd10": "I60.9",
+      "confidence_weight": 95,
+      "recommendation": "🚨 **MEDICAL EMERGENCY** - Call 911 immediately. Thunderclap headache suggests brain bleeding - requires immediate brain imaging.",
+      "clinical_notes": "Sudden severe headache - 'worst headache of life' pattern"
+    },
+    {
+      "rule_id": "R24",
+      "name": "Acute Coronary Syndrome",
+      "symptoms": ["chest_pain", "left_arm_pain", "nausea"],
+      "optional_symptoms": ["shortness_of_breath", "sweating", "jaw_pain"],
+      "modifiers": {
+        "pain_character": "crushing_pressure",
+        "radiation": "left_arm_jaw",
+        "exclusions": ["reproducible_pain"]
+      },
+      "provisional_diagnosis": "Acute Coronary Syndrome",
+      "urgency": "emergency", 
+      "icd10": "I24.9",
+      "confidence_weight": 90,
+      "recommendation": "🚨 **MEDICAL EMERGENCY** - Call 911 immediately. Classic heart attack symptoms. Time is critical for heart muscle preservation.",
+      "clinical_notes": "Classic anginal chest pain with radiation pattern"
+    },
+    {
+      "rule_id": "R25",
+      "name": "Peritonitis/Perforated Viscus",
+      "symptoms": ["severe_abdominal_pain", "rigid_abdomen", "shock"],
+      "optional_symptoms": ["fever", "nausea", "vomiting"],
+      "modifiers": {
+        "onset": "sudden",
+        "pain_character": "severe_constant",
+        "peritoneal_signs": "present"
+      },
+      "provisional_diagnosis": "Perforated Viscus/Peritonitis",
+      "urgency": "emergency",
+      "icd10": "K65.9", 
+      "confidence_weight": 85,
+      "recommendation": "🚨 **MEDICAL EMERGENCY** - Call 911 immediately. Signs suggest abdominal catastrophe requiring emergency surgery.",
+      "clinical_notes": "Acute abdomen with peritoneal signs - surgical emergency"
+    },
+    {
+      "rule_id": "R35",
+      "name": "Cauda Equina Syndrome",
+      "symptoms": ["back_pain", "leg_weakness", "bladder_dysfunction"],
+      "optional_symptoms": ["bowel_dysfunction", "saddle_anesthesia", "leg_numbness"],
+      "modifiers": {
+        "neurologic_signs": "present",
+        "bladder_retention": "acute"
+      },
+      "provisional_diagnosis": "Cauda Equina Syndrome",
+      "urgency": "emergency",
+      "icd10": "G83.4",
+      "confidence_weight": 85,
+      "recommendation": "🚨 **MEDICAL EMERGENCY** - Call 911 immediately. Spinal cord compression - requires urgent decompression surgery within hours.",
+      "clinical_notes": "Neurologic emergency - permanent paralysis if delayed"
+    }
+  ]
+}
