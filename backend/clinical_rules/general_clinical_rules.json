@@ -1,0 +1,134 @@
+{
+  "rule_engine_version": "1.0", 
+  "description": "General clinical rules for common symptom patterns and conditions",
+  "rules": [
+    {
+      "rule_id": "R3",
+      "name": "Pneumonia Pattern",
+      "symptoms": ["cough", "fever", "shortness_of_breath"],
+      "optional_symptoms": ["purulent_sputum", "chest_pain", "chills"],
+      "modifiers": {
+        "age_risk": ">65",
+        "comorbidities": ["COPD", "heart_disease", "diabetes"]
+      },
+      "provisional_diagnosis": "Pneumonia",
+      "urgency": "high",
+      "icd10": "J18.9",
+      "confidence_weight": 75,
+      "recommendation": "⚠️ **URGENT MEDICAL CARE** - Seek immediate medical evaluation. Pneumonia requires antibiotic treatment and monitoring.",
+      "clinical_notes": "Higher risk in elderly and immunocompromised patients"
+    },
+    {
+      "rule_id": "R5",
+      "name": "Possible Malignancy Pattern",
+      "symptoms": ["fatigue", "weight_loss", "night_sweats"],
+      "optional_symptoms": ["lymph_node_swelling", "fever", "loss_of_appetite"],
+      "modifiers": {
+        "duration": "chronic",
+        "weight_loss": ">10_pounds"
+      },
+      "provisional_diagnosis": "Possible Malignancy/Lymphoma",
+      "urgency": "high",
+      "icd10": "R50.9",
+      "confidence_weight": 70,
+      "recommendation": "⚠️ **URGENT EVALUATION NEEDED** - Constitutional symptoms require comprehensive workup including labs and imaging.",
+      "clinical_notes": "B-symptoms concerning for hematologic malignancy"
+    },
+    {
+      "rule_id": "R17",
+      "name": "Diabetes Mellitus Pattern",
+      "symptoms": ["frequent_urination", "excessive_thirst", "fatigue"],
+      "optional_symptoms": ["weight_loss", "blurred_vision", "slow_healing"],
+      "modifiers": {
+        "classic_triad": "polyuria_polydipsia_polyphagia"
+      },
+      "provisional_diagnosis": "Diabetes Mellitus",
+      "urgency": "moderate",
+      "icd10": "E11.9",
+      "confidence_weight": 80,
+      "recommendation": "📋 **MEDICAL EVALUATION NEEDED** - Classic diabetes symptoms require blood glucose testing and medical evaluation.",
+      "clinical_notes": "Classic diabetic triad - requires glucose testing"
+    },
+    {
+      "rule_id": "R8",
+      "name": "Urinary Tract Infection",
+      "symptoms": ["urinary_urgency", "burning_urination", "cloudy_urine"],
+      "optional_symptoms": ["frequency", "pelvic_pain", "low_grade_fever"],
+      "modifiers": {
+        "gender": "female",
+        "risk_factors": ["sexual_activity", "pregnancy"]
+      },
+      "provisional_diagnosis": "Urinary Tract Infection",
+      "urgency": "moderate",
+      "icd10": "N39.0",
+      "confidence_weight": 75,
+      "recommendation": "📞 **MEDICAL EVALUATION** - UTI symptoms require urinalysis and possible antibiotic treatment.",
+      "clinical_notes": "More common in women - can progress to pyelonephritis if untreated"
+    },
+    {
+      "rule_id": "R40",
+      "name": "Pyelonephritis Pattern",
+      "symptoms": ["burning_urination", "fever", "flank_pain"],
+      "optional_symptoms": ["nausea", "vomiting", "chills"],
+      "modifiers": {
+        "fever": ">101F",
+        "flank_tenderness": "present"
+      },
+      "provisional_diagnosis": "Pyelonephritis",
+      "urgency": "high",
+      "icd10": "N10",
+      "confidence_weight": 85,
+      "recommendation": "⚠️ **URGENT MEDICAL CARE** - Kidney infection requires immediate antibiotic treatment to prevent complications.",
+      "clinical_notes": "Upper urinary tract infection - can cause sepsis if severe"
+    },
+    {
+      "rule_id": "R58",
+      "name": "Migraine Pattern",
+      "symptoms": ["headache", "nausea", "photophobia"],
+      "optional_symptoms": ["vomiting", "phonophobia", "visual_aura"],
+      "modifiers": {
+        "headache_character": "throbbing_unilateral",
+        "duration": "4_to_72_hours"
+      },
+      "provisional_diagnosis": "Migraine",
+      "urgency": "moderate",
+      "icd10": "G43.9",
+      "confidence_weight": 70,
+      "recommendation": "💊 **HEADACHE MANAGEMENT** - Consider migraine medications and trigger avoidance. Seek medical care if pattern changes.",
+      "clinical_notes": "Classic migraine features - rule out secondary causes if new onset"
+    },
+    {
+      "rule_id": "R47",
+      "name": "Asthma Exacerbation",
+      "symptoms": ["chest_tightness", "cough", "wheezing"],
+      "optional_symptoms": ["shortness_of_breath", "difficulty_speaking"],
+      "modifiers": {
+        "known_asthma": "yes",
+        "triggers": ["allergens", "cold_air", "exercise"]
+      },
+      "provisional_diagnosis": "Asthma Exacerbation",
+      "urgency": "moderate",
+      "icd10": "J45.9",
+      "confidence_weight": 80,
+      "recommendation": "🫁 **RESPIRATORY CARE** - Use rescue inhaler and seek medical care if symptoms worsen or don't improve.",
+      "clinical_notes": "Can rapidly progress to severe exacerbation requiring emergency care"
+    },
+    {
+      "rule_id": "R95",
+      "name": "Panic Attack Pattern",
+      "symptoms": ["palpitations", "chest_discomfort", "dizziness"],
+      "optional_symptoms": ["sweating", "trembling", "fear_of_dying"],
+      "modifiers": {
+        "age": "<40",
+        "trigger": "stress",
+        "duration": "<30_minutes"
+      },
+      "provisional_diagnosis": "Panic Attack",
+      "urgency": "moderate",
+      "icd10": "F41.0",
+      "confidence_weight": 60,
+      "recommendation": "🧠 **ANXIETY MANAGEMENT** - Consider relaxation techniques. Rule out cardiac causes if recurrent or in older patients.",
+      "clinical_notes": "Diagnosis of exclusion - rule out cardiac and medical causes first"
+    }
+  ]
+}
