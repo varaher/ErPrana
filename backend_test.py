@@ -1166,6 +1166,473 @@ class BackendAPITester:
             200
         )
     
+    # ========== COMPREHENSIVE HEADACHE INTEGRATION TESTS (REVIEW REQUEST FOCUS) ==========
+    
+    def test_comprehensive_headache_interview_flow(self):
+        """REVIEW REQUEST: Test complete headache interview flow - 'I have a headache for 3 days, it's throbbing on the left side'"""
+        test_data = {
+            "user_message": "I have a headache for 3 days, it's throbbing on the left side",
+            "session_id": "comprehensive_headache_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 COMPREHENSIVE HEADACHE INTERVIEW - Complete Flow Test",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if headache interview is triggered
+            interview_active = response.get("interview_active", False)
+            interview_type = response.get("interview_type")
+            
+            if interview_active and interview_type == "headache":
+                print("✅ HEADACHE INTERVIEW: Successfully triggered")
+            else:
+                print(f"❌ HEADACHE INTERVIEW: Not triggered. Active: {interview_active}, Type: {interview_type}")
+            
+            # Check for proper slot collection (duration, location, character)
+            updated_state = response.get("updated_state", {})
+            headache_state = updated_state.get("headache_interview_state", {})
+            slots = headache_state.get("slots", {})
+            
+            duration_detected = any(key in slots for key in ["duration", "confirm_duration"])
+            location_detected = any(key in slots for key in ["location", "confirm_location"])
+            character_detected = any(key in slots for key in ["character", "confirm_character"])
+            
+            if duration_detected:
+                print("✅ DURATION COLLECTION: Working")
+            else:
+                print("❌ DURATION COLLECTION: Not detected")
+            
+            if location_detected:
+                print("✅ LOCATION COLLECTION: Working")
+            else:
+                print("❌ LOCATION COLLECTION: Not detected")
+            
+            if character_detected:
+                print("✅ CHARACTER COLLECTION: Working")
+            else:
+                print("❌ CHARACTER COLLECTION: Not detected")
+            
+            # Check for no errors in response
+            assistant_message = response.get("assistant_message", "")
+            if "error" not in assistant_message.lower() and "500" not in assistant_message:
+                print("✅ NO ERRORS: Interview progressing without errors")
+            else:
+                print("❌ ERRORS DETECTED: Interview has errors")
+        
+        return success, response
+    
+    def test_headache_interview_progression_through_slots(self):
+        """REVIEW REQUEST: Test headache interview progression through all slots (duration, location, character, severity)"""
+        # Step 1: Initial headache mention
+        test_data_1 = {
+            "user_message": "I have a headache for 3 days",
+            "session_id": "headache_slot_progression",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🎯 HEADACHE SLOTS - Step 1: Initial Headache",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Step 2: Provide location and character
+        conversation_state_2 = response_1.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "It's throbbing on the left side of my head",
+            "session_id": "headache_slot_progression",
+            "conversation_state": conversation_state_2,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🎯 HEADACHE SLOTS - Step 2: Location and Character",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {}
+        
+        # Step 3: Provide severity
+        conversation_state_3 = response_2.get("updated_state", {})
+        test_data_3 = {
+            "user_message": "The pain is about 7 out of 10",
+            "session_id": "headache_slot_progression",
+            "conversation_state": conversation_state_3,
+            "user_id": "test_user"
+        }
+        
+        success_3, response_3 = self.run_test(
+            "🎯 HEADACHE SLOTS - Step 3: Severity",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_3
+        )
+        
+        if success_3:
+            # Check if all slots are being collected systematically
+            updated_state = response_3.get("updated_state", {})
+            headache_state = updated_state.get("headache_interview_state", {})
+            slots = headache_state.get("slots", {})
+            
+            collected_slots = []
+            if any(key in slots for key in ["duration", "confirm_duration"]):
+                collected_slots.append("duration")
+            if any(key in slots for key in ["location", "confirm_location"]):
+                collected_slots.append("location")
+            if any(key in slots for key in ["character", "confirm_character"]):
+                collected_slots.append("character")
+            if any(key in slots for key in ["severity", "severity_scale"]):
+                collected_slots.append("severity")
+            
+            if len(collected_slots) >= 3:
+                print(f"✅ SLOT COLLECTION: {len(collected_slots)} slots collected: {collected_slots}")
+            else:
+                print(f"❌ SLOT COLLECTION: Only {len(collected_slots)} slots collected: {collected_slots}")
+            
+            # Check interview is progressing
+            interview_active = response_3.get("interview_active", False)
+            if interview_active:
+                print("✅ INTERVIEW PROGRESSION: Continuing as expected")
+            else:
+                print("❌ INTERVIEW PROGRESSION: Interview stopped unexpectedly")
+        
+        return success_3, response_3
+    
+    def test_headache_cross_symptom_analysis_integration(self):
+        """REVIEW REQUEST: Test cross-symptom analysis with headache - verify headache conditions appear in diagnoses"""
+        # Simulate completed headache interview
+        conversation_state = {
+            "headache_interview_state": {
+                "slots": {
+                    "confirm_headache": True,
+                    "duration": "3 days",
+                    "location": "left_side",
+                    "character": "throbbing",
+                    "severity_scale": 7,
+                    "onset": "gradual",
+                    "fever": False,
+                    "neck_stiffness": False,
+                    "trauma": False,
+                    "age_group": "adult_18_40",
+                    "collected_symptoms": ["headache", "unilateral_headache", "throbbing_pain"]
+                },
+                "interview_complete": True
+            }
+        }
+        
+        test_data = {
+            "user_message": "What could be causing my headache?",
+            "session_id": "headache_cross_analysis",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 HEADACHE CROSS-SYMPTOM ANALYSIS - Comprehensive Diagnoses",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for comprehensive diagnoses
+            comprehensive_diagnoses = response.get("comprehensive_diagnoses", [])
+            
+            if comprehensive_diagnoses and len(comprehensive_diagnoses) > 0:
+                print(f"✅ COMPREHENSIVE DIAGNOSES: {len(comprehensive_diagnoses)} conditions generated")
+                
+                # Look for headache-specific conditions
+                headache_conditions = []
+                for diagnosis in comprehensive_diagnoses:
+                    name = diagnosis.get("name", "").lower()
+                    if any(term in name for term in ["migraine", "tension", "headache", "cluster", "subarachnoid", "hemorrhage"]):
+                        headache_conditions.append(diagnosis["name"])
+                
+                if headache_conditions:
+                    print(f"✅ HEADACHE CONDITIONS: Found {len(headache_conditions)} headache-specific conditions: {headache_conditions}")
+                else:
+                    print("❌ HEADACHE CONDITIONS: No headache-specific conditions found")
+                    print(f"Available diagnoses: {[d.get('name') for d in comprehensive_diagnoses[:5]]}")
+            else:
+                print("❌ COMPREHENSIVE DIAGNOSES: No diagnoses generated")
+            
+            # Check for no 'collected_symptoms' key missing errors
+            assistant_message = response.get("assistant_message", "")
+            if "collected_symptoms" not in assistant_message or "key missing" not in assistant_message.lower():
+                print("✅ NO COLLECTED_SYMPTOMS ERROR: Cross-symptom analysis working correctly")
+            else:
+                print("❌ COLLECTED_SYMPTOMS ERROR: Key missing error detected")
+        
+        return success, response
+    
+    def test_headache_diagnosis_generation_with_icd10(self):
+        """REVIEW REQUEST: Test headache diagnosis generation with proper reasoning and ICD-10 codes"""
+        # Simulate migraine-like headache
+        conversation_state = {
+            "headache_interview_state": {
+                "slots": {
+                    "confirm_headache": True,
+                    "duration": "6 hours",
+                    "location": "left_side",
+                    "character": "throbbing",
+                    "severity_scale": 8,
+                    "onset": "gradual",
+                    "associated": ["nausea", "photophobia"],
+                    "fever": False,
+                    "neck_stiffness": False,
+                    "trauma": False,
+                    "age_group": "adult_18_40",
+                    "collected_symptoms": ["headache", "unilateral_headache", "throbbing_pain", "nausea", "photophobia"]
+                },
+                "interview_complete": True
+            }
+        }
+        
+        test_data = {
+            "user_message": "What's my diagnosis and what should I do?",
+            "session_id": "headache_diagnosis_test",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 HEADACHE DIAGNOSIS GENERATION - ICD-10 and Reasoning",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            comprehensive_diagnoses = response.get("comprehensive_diagnoses", [])
+            
+            if comprehensive_diagnoses:
+                # Check for migraine diagnosis specifically
+                migraine_found = False
+                tension_headache_found = False
+                
+                for diagnosis in comprehensive_diagnoses:
+                    name = diagnosis.get("name", "").lower()
+                    
+                    # Check for proper diagnosis structure
+                    has_reasoning = "reasoning" in diagnosis
+                    has_icd10 = "icd10" in diagnosis or "icd_10" in diagnosis
+                    has_probability = "probability" in diagnosis
+                    
+                    if "migraine" in name:
+                        migraine_found = True
+                        print(f"✅ MIGRAINE DIAGNOSIS: Found with probability {diagnosis.get('probability', 'N/A')}%")
+                        
+                        if has_reasoning:
+                            print("✅ REASONING: Included in migraine diagnosis")
+                        else:
+                            print("❌ REASONING: Missing from migraine diagnosis")
+                        
+                        if has_icd10:
+                            print("✅ ICD-10: Code included")
+                        else:
+                            print("❌ ICD-10: Code missing")
+                    
+                    elif "tension" in name and "headache" in name:
+                        tension_headache_found = True
+                        print(f"✅ TENSION HEADACHE: Found with probability {diagnosis.get('probability', 'N/A')}%")
+                
+                if not migraine_found and not tension_headache_found:
+                    print("❌ HEADACHE DIAGNOSES: Neither migraine nor tension headache found")
+                    print(f"Available diagnoses: {[d.get('name') for d in comprehensive_diagnoses[:3]]}")
+            
+            # Check triage levels
+            triage_level = response.get("triage_level", "").lower()
+            if triage_level in ["yellow", "green", "orange"]:
+                print(f"✅ TRIAGE LEVEL: Appropriate level assigned: {triage_level.upper()}")
+            else:
+                print(f"❌ TRIAGE LEVEL: Inappropriate or missing: {triage_level}")
+        
+        return success, response
+    
+    def test_comprehensive_sob_interview_with_risk_factors(self):
+        """REVIEW REQUEST: Test full SOB interview flow with risk factor collection"""
+        # Step 1: Initial SOB with risk factors
+        test_data_1 = {
+            "user_message": "I have sudden shortness of breath with chest pain, I had surgery last week",
+            "session_id": "comprehensive_sob_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🎯 COMPREHENSIVE SOB INTERVIEW - Step 1: Initial SOB with Risk Factors",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Step 2: Continue interview progression
+        conversation_state_2 = response_1.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "Yes, the chest pain is sharp and gets worse when I breathe in",
+            "session_id": "comprehensive_sob_test",
+            "conversation_state": conversation_state_2,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🎯 COMPREHENSIVE SOB INTERVIEW - Step 2: Pleuritic Chest Pain",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {}
+        
+        # Step 3: Complete risk factor collection
+        conversation_state_3 = response_2.get("updated_state", {})
+        test_data_3 = {
+            "user_message": "I also smoke and have been sitting for long periods during recovery",
+            "session_id": "comprehensive_sob_test",
+            "conversation_state": conversation_state_3,
+            "user_id": "test_user"
+        }
+        
+        success_3, response_3 = self.run_test(
+            "🎯 COMPREHENSIVE SOB INTERVIEW - Step 3: Additional Risk Factors",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_3
+        )
+        
+        if success_3:
+            # Check SOB interview is active and collecting data
+            interview_active = response_3.get("interview_active", False)
+            interview_type = response_3.get("interview_type")
+            
+            if interview_active and interview_type == "shortness_of_breath":
+                print("✅ SOB INTERVIEW: Active and progressing")
+            else:
+                print(f"❌ SOB INTERVIEW: Not active. Active: {interview_active}, Type: {interview_type}")
+            
+            # Check risk factor collection
+            updated_state = response_3.get("updated_state", {})
+            sob_state = updated_state.get("shortness_of_breath_interview_state", {})
+            slots = sob_state.get("slots", {})
+            
+            risk_factors = slots.get("risk_factors", [])
+            if any(factor in str(risk_factors).lower() for factor in ["surgery", "recent_surgery", "smoking", "immobilization"]):
+                print(f"✅ RISK FACTOR COLLECTION: Working - {len(risk_factors) if isinstance(risk_factors, list) else 'some'} factors collected")
+            else:
+                print(f"❌ RISK FACTOR COLLECTION: Not working - {risk_factors}")
+            
+            # Check for no 500 errors
+            assistant_message = response_3.get("assistant_message", "")
+            if "500" not in assistant_message and "error" not in assistant_message.lower():
+                print("✅ NO 500 ERRORS: Interview progressing without server errors")
+            else:
+                print("❌ 500 ERRORS: Server errors detected in interview")
+            
+            # Check triage escalation for PE risk
+            triage_level = response_3.get("triage_level", "").lower()
+            emergency_detected = response_3.get("emergency_detected", False)
+            
+            if triage_level in ["red", "orange"] or emergency_detected:
+                print(f"✅ TRIAGE ESCALATION: Appropriate escalation for PE risk - {triage_level.upper()}")
+            else:
+                print(f"❌ TRIAGE ESCALATION: No escalation for high PE risk - {triage_level}")
+        
+        return success_3, response_3
+    
+    def test_all_interview_types_integration(self):
+        """REVIEW REQUEST: Test all 4 interview types can complete successfully (fever, chest_pain, shortness_of_breath, headache)"""
+        interview_tests = [
+            {
+                "type": "fever",
+                "message": "I have fever for 2 days with chills",
+                "session": "fever_integration_test"
+            },
+            {
+                "type": "chest_pain", 
+                "message": "I have chest pain that started an hour ago",
+                "session": "chest_pain_integration_test"
+            },
+            {
+                "type": "shortness_of_breath",
+                "message": "I have shortness of breath and difficulty breathing",
+                "session": "sob_integration_test"
+            },
+            {
+                "type": "headache",
+                "message": "I have a severe headache with nausea",
+                "session": "headache_integration_test"
+            }
+        ]
+        
+        results = {}
+        all_success = True
+        
+        for test_case in interview_tests:
+            test_data = {
+                "user_message": test_case["message"],
+                "session_id": test_case["session"],
+                "conversation_state": None,
+                "user_id": "test_user"
+            }
+            
+            success, response = self.run_test(
+                f"🎯 ALL INTERVIEWS - {test_case['type'].upper()} Integration",
+                "POST",
+                "integrated/medical-ai",
+                200,
+                data=test_data
+            )
+            
+            if success:
+                interview_active = response.get("interview_active", False)
+                interview_type = response.get("interview_type")
+                
+                if interview_active and interview_type == test_case["type"]:
+                    print(f"✅ {test_case['type'].upper()}: Successfully triggered and active")
+                    results[test_case["type"]] = "SUCCESS"
+                else:
+                    print(f"❌ {test_case['type'].upper()}: Failed to trigger. Active: {interview_active}, Type: {interview_type}")
+                    results[test_case["type"]] = "FAILED"
+                    all_success = False
+            else:
+                print(f"❌ {test_case['type'].upper()}: API call failed")
+                results[test_case["type"]] = "API_FAILED"
+                all_success = False
+        
+        if all_success:
+            print("✅ ALL INTERVIEW TYPES: Successfully integrated with diagnosis engine")
+        else:
+            print(f"❌ INTERVIEW INTEGRATION: Some failures detected - {results}")
+        
+        return all_success, results
+
     # ========== CRITICAL EMERGENCY DETECTION TESTS (REVIEW REQUEST FOCUS) ==========
     
     def test_critical_thunderclap_headache_emergency_detection(self):
