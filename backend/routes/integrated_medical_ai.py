@@ -463,7 +463,8 @@ class IntegratedMedicalAI:
                 updated_state=conversation_state,
                 next_step="emergency_care",
                 emergency_detected=True,
-                triage_level="red"
+                triage_level="red",
+                comprehensive_diagnoses=general_symptom_analysis.get("emergency_patterns", []) + general_symptom_analysis.get("toxicology_patterns", [])
             )
         
         # Check for structured interview triggers or continuation
