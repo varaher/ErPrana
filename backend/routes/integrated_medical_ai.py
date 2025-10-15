@@ -318,6 +318,13 @@ class IntegratedMedicalAI:
         all_symptoms = self._extract_all_mentioned_symptoms(conversation_state, user_message)
         emergency_result = emergency_detector.detect_emergency(user_message, all_symptoms)
         
+        # NEW: General symptom rule engine for pattern-based emergency detection
+        extracted_symptoms = self._extract_symptoms_from_text(user_message)
+        user_context = self._extract_user_context(conversation_state, user_message)
+        general_symptom_analysis = general_symptom_engine.comprehensive_symptom_analysis(
+            extracted_symptoms, user_context
+        )
+        
         # Check for critical emergency combinations
         message_lower = user_message.lower()
         critical_emergency = False
