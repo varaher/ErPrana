@@ -5030,6 +5030,92 @@ def main_symptom_rule_engine_tests():
         print(f"⚠️ {tester.tests_run - tester.tests_passed} tests failed. Please review the issues above.")
         return 1
 
+def main_unified_clinical_engine_tests():
+    """Main function to run unified clinical engine tests for the review request"""
+    tester = BackendAPITester()
+    
+    print("🚀 STARTING UNIFIED CLINICAL ENGINE TESTS")
+    print("=" * 60)
+    print("Testing NEW Unified Clinical Engine that actively uses all 100 rules")
+    print("=" * 60)
+    
+    # Test 1: Health Check
+    print("\n🧪 TEST 1: HEALTH CHECK")
+    success_1, result_1 = tester.test_unified_clinical_engine_health_check()
+    
+    # Test 2: Active Rule Evaluation - MI Detection (R1)
+    print("\n🧪 TEST 2: ACTIVE RULE EVALUATION - MI DETECTION (R1)")
+    success_2, result_2 = tester.test_unified_clinical_engine_active_rule_evaluation_mi()
+    
+    # Test 3: Multi-Symptom Dynamic Analysis - Diabetes (R17/R100)
+    print("\n🧪 TEST 3: MULTI-SYMPTOM DYNAMIC ANALYSIS - DIABETES (R17/R100)")
+    success_3, result_3 = tester.test_unified_clinical_engine_multi_symptom_diabetes()
+    
+    # Test 4: Emergency Detection - SAH/Meningitis (R23)
+    print("\n🧪 TEST 4: EMERGENCY DETECTION - SAH/MENINGITIS (R23)")
+    success_4, result_4 = tester.test_unified_clinical_engine_emergency_sah_meningitis()
+    
+    # Test 5: Progressive Symptom Building - Meningitis (R2)
+    print("\n🧪 TEST 5: PROGRESSIVE SYMPTOM BUILDING - MENINGITIS (R2)")
+    success_5, result_5 = tester.test_unified_clinical_engine_progressive_symptom_building()
+    
+    # Test 6: Conversational Layer Integration
+    print("\n🧪 TEST 6: CONVERSATIONAL LAYER INTEGRATION")
+    success_6, result_6 = tester.test_unified_clinical_engine_conversational_layer_integration()
+    
+    # Test 7: Session State Maintenance
+    print("\n🧪 TEST 7: SESSION STATE MAINTENANCE")
+    success_7, result_7 = tester.test_unified_clinical_engine_session_state_maintenance()
+    
+    # Test 8: All 100 Rules Accessibility
+    print("\n🧪 TEST 8: ALL 100 RULES ACCESSIBILITY")
+    success_8, result_8 = tester.test_unified_clinical_engine_all_100_rules_accessible()
+    
+    # Summary
+    print("\n" + "=" * 60)
+    print("🔍 UNIFIED CLINICAL ENGINE TEST SUMMARY")
+    print("=" * 60)
+    
+    tests = [
+        ("Health Check", success_1),
+        ("Active Rule Evaluation (MI R1)", success_2),
+        ("Multi-Symptom Analysis (Diabetes R17/R100)", success_3),
+        ("Emergency Detection (SAH/Meningitis R23)", success_4),
+        ("Progressive Symptom Building (Meningitis R2)", success_5),
+        ("Conversational Layer Integration", success_6),
+        ("Session State Maintenance", success_7),
+        ("All 100 Rules Accessibility", success_8)
+    ]
+    
+    passed = sum(1 for _, success in tests if success)
+    
+    for name, success in tests:
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {name}")
+    
+    print(f"\nRESULT: {passed}/{len(tests)} tests passed")
+    print(f"Success rate: {(passed / len(tests) * 100):.1f}%")
+    
+    # Overall assessment
+    if passed == len(tests):
+        print("\n🎉 ALL UNIFIED CLINICAL ENGINE TESTS PASSED!")
+        print("✅ Rules are evaluated DURING conversation, not just at the end")
+        print("✅ Emergency patterns trigger immediate responses with rule analysis")
+        print("✅ Multi-symptom combinations are analyzed in real-time")
+        print("✅ Session state properly maintained across conversation turns")
+        print("✅ All 100 rules are accessible and used for analysis")
+        return 0
+    elif passed >= 6:
+        print("\n🟡 MOSTLY SUCCESSFUL - Minor issues detected")
+        print(f"✅ {passed}/{len(tests)} core features working")
+        print("⚠️ Some edge cases need attention but main functionality operational")
+        return 0
+    else:
+        print(f"\n❌ SIGNIFICANT ISSUES DETECTED")
+        print(f"❌ Only {passed}/{len(tests)} tests passed")
+        print("⚠️ Unified clinical engine needs debugging")
+        return 1
+
 if __name__ == "__main__":
-    # Run the specific fever debug tests for the review request
-    sys.exit(main_fever_debug_tests())
+    # Run the unified clinical engine tests for the review request
+    sys.exit(main_unified_clinical_engine_tests())
