@@ -3966,13 +3966,17 @@ def main_fever_debug_tests():
     print("\n🧪 TEST 3: FEVER INTERVIEW QUESTIONS")
     success_3, result_3 = tester.test_fever_interview_questions_from_json()
     
-    # Test 4: Debug Wrong Question Source
-    print("\n🧪 TEST 4: DEBUG WRONG QUESTION SOURCE")
-    success_4, result_4 = tester.test_debug_wrong_question_source()
+    # Test 4: Exact User Scenario Complete Flow
+    print("\n🧪 TEST 4: EXACT USER SCENARIO COMPLETE FLOW")
+    success_4, result_4 = tester.test_exact_user_scenario_complete_flow()
     
-    # Test 5: Fever Interview Slot Progression
-    print("\n🧪 TEST 5: FEVER INTERVIEW SLOT PROGRESSION")
-    success_5, result_5 = tester.test_fever_interview_slot_progression()
+    # Test 5: Debug Wrong Question Source
+    print("\n🧪 TEST 5: DEBUG WRONG QUESTION SOURCE")
+    success_5, result_5 = tester.test_debug_wrong_question_source()
+    
+    # Test 6: Fever Interview Slot Progression
+    print("\n🧪 TEST 6: FEVER INTERVIEW SLOT PROGRESSION")
+    success_6, result_6 = tester.test_fever_interview_slot_progression()
     
     # Summary
     print("\n" + "=" * 60)
