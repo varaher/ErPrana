@@ -2576,7 +2576,7 @@ class BackendAPITester:
                 print("❌ R1 MI EMERGENCY: No emergency instructions found")
             
             # Check for R1 rule detection in general symptom analysis
-            emergency_patterns = general_analysis.get("emergency_patterns", [])
+            emergency_patterns = general_analysis.get("emergency_patterns", []) if general_analysis else []
             r1_detected = any(pattern.get("rule_id") == "R1" for pattern in emergency_patterns)
             
             if r1_detected:
