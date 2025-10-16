@@ -654,7 +654,7 @@ class IntegratedMedicalAI:
             )
         
         # If not asking for advice, continue conversation
-        return await self._use_advanced_symptom_intelligence(request, conversation_state)
+        return await self._use_advanced_symptom_intelligence(request, conversation_state, None)
     
     async def _use_advanced_symptom_intelligence(self, request: IntegratedMedicalRequest,
                                                conversation_state: Dict[str, Any],
