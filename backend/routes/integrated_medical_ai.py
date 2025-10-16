@@ -338,7 +338,20 @@ class IntegratedMedicalAI:
             "severe abdominal pain": ["severe stomach pain", "severe abdominal pain", "terrible belly pain"],
             "cough": ["cough", "coughing"],
             "wheezing": ["wheezing", "wheeze"],
-            "palpitations": ["palpitations", "heart racing", "heart pounding"]
+            "palpitations": ["palpitations", "heart racing", "heart pounding"],
+            "frequent urination": ["frequent urination", "urinating often", "peeing a lot", "frequent peeing"],
+            "excessive thirst": ["excessive thirst", "very thirsty", "always thirsty", "thirsty all the time"],
+            "weight loss": ["weight loss", "losing weight", "lost weight"],
+            "fatigue": ["fatigue", "tired", "exhausted", "worn out"],
+            "painful urination": ["painful urination", "burning when urinating", "pain when peeing"],
+            "flank pain": ["flank pain", "side pain", "kidney pain"],
+            "joint pain": ["joint pain", "joints hurt", "arthritis pain"],
+            "joint redness": ["joint redness", "red joints", "swollen joints"],
+            "joint warmth": ["joint warmth", "warm joints", "hot joints"],
+            "poor wound healing": ["poor wound healing", "wounds don't heal", "slow healing"],
+            "blood in urine": ["blood in urine", "bloody urine", "red urine", "hematuria"],
+            "coughing blood": ["coughing blood", "blood in sputum", "hemoptysis"],
+            "bladder control": ["can't control bladder", "bladder incontinence", "urinary incontinence"]
         }
         
         for symptom, patterns in symptom_patterns.items():
