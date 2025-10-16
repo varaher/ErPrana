@@ -1633,6 +1633,366 @@ class BackendAPITester:
         
         return all_success, results
 
+    # ========== FEVER INTERVIEW DEBUG TESTS (REVIEW REQUEST) ==========
+    
+    def test_conversational_layer_greetings(self):
+        """REVIEW REQUEST: Test conversational layer with greetings - should get conversational response, not medical engine"""
+        test_cases = [
+            {"input": "hi", "expected_type": "conversational"},
+            {"input": "good morning", "expected_type": "conversational"}
+        ]
+        
+        results = []
+        for test_case in test_cases:
+            test_data = {
+                "user_message": test_case["input"],
+                "session_id": f"conversational_test_{test_case['input'].replace(' ', '_')}",
+                "conversation_state": None,
+                "user_id": "test_user"
+            }
+            
+            success, response = self.run_test(
+                f"🔍 CONVERSATIONAL LAYER - '{test_case['input']}'",
+                "POST",
+                "integrated/medical-ai",
+                200,
+                data=test_data
+            )
+            
+            if success:
+                assistant_message = response.get("assistant_message", "").lower()
+                interview_active = response.get("interview_active", False)
+                
+                # Check if it's a conversational response (contains greeting elements)
+                is_conversational = any(word in assistant_message for word in ["hello", "hi", "arya", "health assistant", "feeling", "good morning"])
+                
+                if is_conversational and not interview_active:
+                    print(f"✅ CONVERSATIONAL: '{test_case['input']}' correctly handled by conversational layer")
+                    results.append(True)
+                else:
+                    print(f"❌ CONVERSATIONAL: '{test_case['input']}' incorrectly routed to medical engine")
+                    print(f"   Response: {assistant_message[:100]}...")
+                    print(f"   Interview Active: {interview_active}")
+                    results.append(False)
+            else:
+                results.append(False)
+        
+        return all(results), {"conversational_tests": len([r for r in results if r]), "total": len(results)}
+    
+    def test_fever_detection_basic(self):
+        """REVIEW REQUEST: Test basic fever detection - should trigger fever interview correctly"""
+        test_cases = [
+            {"input": "I have fever", "description": "Basic fever statement"},
+            {"input": "im having fever since 2 days", "description": "Fever with duration (EXACT USER CASE)"}
+        ]
+        
+        results = []
+        for test_case in test_cases:
+            test_data = {
+                "user_message": test_case["input"],
+                "session_id": f"fever_detection_{test_case['input'][:10].replace(' ', '_')}",
+                "conversation_state": None,
+                "user_id": "test_user"
+            }
+            
+            success, response = self.run_test(
+                f"🔍 FEVER DETECTION - {test_case['description']}",
+                "POST",
+                "integrated/medical-ai",
+                200,
+                data=test_data
+            )
+            
+            if success:
+                interview_active = response.get("interview_active", False)
+                interview_type = response.get("interview_type")
+                assistant_message = response.get("assistant_message", "")
+                
+                if interview_active and interview_type == "fever":
+                    print(f"✅ FEVER DETECTION: '{test_case['input']}' correctly triggered fever interview")
+                    
+                    # Check if it asks proper fever questions, NOT pain questions
+                    is_pain_question = any(word in assistant_message.lower() for word in ["sharp", "dull", "throbbing", "burning", "describe it"])
+                    is_fever_question = any(phrase in assistant_message.lower() for phrase in ["how many days", "days have you had", "temperature", "fever"])
+                    
+                    if is_pain_question:
+                        print(f"❌ WRONG QUESTION TYPE: Asking pain characteristics instead of fever questions")
+                        print(f"   Response: {assistant_message}")
+                        results.append(False)
+                    elif is_fever_question:
+                        print(f"✅ CORRECT QUESTION TYPE: Asking proper fever questions")
+                        results.append(True)
+                    else:
+                        print(f"⚠️ UNCLEAR QUESTION TYPE: Neither clear pain nor fever question")
+                        print(f"   Response: {assistant_message}")
+                        results.append(True)  # Still triggered fever interview correctly
+                else:
+                    print(f"❌ FEVER DETECTION: '{test_case['input']}' failed to trigger fever interview")
+                    print(f"   Interview Active: {interview_active}, Type: {interview_type}")
+                    print(f"   Response: {assistant_message[:100]}...")
+                    results.append(False)
+            else:
+                results.append(False)
+        
+        return all(results), {"fever_detection_tests": len([r for r in results if r]), "total": len(results)}
+    
+    def test_fever_interview_questions_from_json(self):
+        """REVIEW REQUEST: Test fever interview asks proper questions from fever.json, NOT generic pain questions"""
+        # Start fever interview
+        test_data = {
+            "user_message": "im having fever since 2 days",
+            "session_id": "fever_questions_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🔍 FEVER INTERVIEW QUESTIONS - Initial Fever Statement",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if not success:
+            return False, {}
+        
+        # Check the first question asked
+        assistant_message = response.get("assistant_message", "")
+        print(f"First fever interview question: {assistant_message}")
+        
+        # Expected fever questions from fever.json
+        expected_fever_questions = [
+            "how many days have you had the fever",
+            "what was the highest temperature",
+            "did it start suddenly or gradually",
+            "how was it measured",
+            "is the fever constant or does it come and go"
+        ]
+        
+        # Questions that should NOT appear (pain characteristics)
+        wrong_pain_questions = [
+            "can you describe it",
+            "is it sharp, dull, throbbing, or burning",
+            "sharp", "dull", "throbbing", "burning",
+            "what does the pain feel like",
+            "describe the pain"
+        ]
+        
+        # Check for wrong pain questions
+        has_pain_questions = any(phrase in assistant_message.lower() for phrase in wrong_pain_questions)
+        has_fever_questions = any(phrase in assistant_message.lower() for phrase in expected_fever_questions)
+        
+        if has_pain_questions:
+            print(f"❌ CRITICAL ISSUE: Fever interview asking PAIN questions instead of fever questions!")
+            print(f"   Pain phrases found: {[phrase for phrase in wrong_pain_questions if phrase in assistant_message.lower()]}")
+            return False, {"issue": "pain_questions_for_fever", "response": assistant_message}
+        
+        if has_fever_questions:
+            print(f"✅ CORRECT: Fever interview asking proper fever questions")
+            print(f"   Fever phrases found: {[phrase for phrase in expected_fever_questions if phrase in assistant_message.lower()]}")
+            return True, {"correct_fever_questions": True, "response": assistant_message}
+        
+        # Continue the conversation to see next question
+        conversation_state = response.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "2 days",
+            "session_id": "fever_questions_test",
+            "conversation_state": conversation_state,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🔍 FEVER INTERVIEW QUESTIONS - Follow-up Question",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if success_2:
+            assistant_message_2 = response_2.get("assistant_message", "")
+            print(f"Second fever interview question: {assistant_message_2}")
+            
+            has_pain_questions_2 = any(phrase in assistant_message_2.lower() for phrase in wrong_pain_questions)
+            has_fever_questions_2 = any(phrase in assistant_message_2.lower() for phrase in expected_fever_questions)
+            
+            if has_pain_questions_2:
+                print(f"❌ CRITICAL ISSUE: Second question also asking PAIN questions!")
+                return False, {"issue": "pain_questions_for_fever_followup", "response": assistant_message_2}
+            
+            if has_fever_questions_2:
+                print(f"✅ CORRECT: Follow-up question also proper fever question")
+                return True, {"correct_fever_questions": True, "followup_response": assistant_message_2}
+        
+        print(f"⚠️ UNCLEAR: Neither clear pain nor fever questions detected")
+        return True, {"unclear_questions": True, "responses": [assistant_message, assistant_message_2 if success_2 else None]}
+    
+    def test_debug_wrong_question_source(self):
+        """REVIEW REQUEST: Debug WHY ARYA is asking pain characteristics for fever"""
+        # Test the exact failing scenario
+        test_data = {
+            "user_message": "im having fever since 2 days",
+            "session_id": "debug_wrong_questions",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🔍 DEBUG WRONG QUESTIONS - Exact User Scenario",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if not success:
+            return False, {}
+        
+        # Analyze the response in detail
+        interview_active = response.get("interview_active", False)
+        interview_type = response.get("interview_type")
+        assistant_message = response.get("assistant_message", "")
+        updated_state = response.get("updated_state", {})
+        next_step = response.get("next_step", "")
+        
+        print(f"🔍 DEBUGGING ANALYSIS:")
+        print(f"   Interview Active: {interview_active}")
+        print(f"   Interview Type: {interview_type}")
+        print(f"   Next Step: {next_step}")
+        print(f"   Assistant Message: {assistant_message}")
+        
+        # Check if fever interview state exists
+        fever_state = updated_state.get("fever_interview_state", {})
+        if fever_state:
+            print(f"   Fever Interview State: {fever_state}")
+        
+        # Check for any error messages or fallbacks
+        if "error" in assistant_message.lower():
+            print(f"❌ ERROR DETECTED: {assistant_message}")
+            return False, {"error": "error_in_response", "message": assistant_message}
+        
+        # Check if it's falling back to generic pain engine
+        if any(word in assistant_message.lower() for word in ["sharp", "dull", "throbbing", "burning"]):
+            print(f"❌ FALLBACK TO PAIN ENGINE: Fever is being treated as pain symptom")
+            
+            # Check what triggered this
+            if not interview_active:
+                print(f"   Root Cause: Fever interview not activated")
+                return False, {"root_cause": "fever_interview_not_activated"}
+            elif interview_type != "fever":
+                print(f"   Root Cause: Wrong interview type activated: {interview_type}")
+                return False, {"root_cause": "wrong_interview_type", "actual_type": interview_type}
+            else:
+                print(f"   Root Cause: Fever interview active but asking wrong questions")
+                return False, {"root_cause": "fever_interview_wrong_questions"}
+        
+        # Check if proper fever questions are being asked
+        fever_question_patterns = ["days", "temperature", "how long", "fever"]
+        has_fever_patterns = any(pattern in assistant_message.lower() for pattern in fever_question_patterns)
+        
+        if has_fever_patterns:
+            print(f"✅ CORRECT BEHAVIOR: Proper fever questions being asked")
+            return True, {"correct_behavior": True}
+        
+        print(f"⚠️ UNCLEAR: Neither pain nor clear fever questions detected")
+        return True, {"unclear_behavior": True, "needs_investigation": True}
+    
+    def test_fever_interview_slot_progression(self):
+        """REVIEW REQUEST: Test fever interview progresses through proper slots without asking pain questions"""
+        # Step 1: Initial fever statement
+        test_data_1 = {
+            "user_message": "im having fever since 2 days",
+            "session_id": "fever_slot_progression",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🔍 FEVER SLOT PROGRESSION - Step 1: Initial Statement",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Check first response
+        assistant_message_1 = response_1.get("assistant_message", "")
+        has_pain_words_1 = any(word in assistant_message_1.lower() for word in ["sharp", "dull", "throbbing", "burning"])
+        
+        if has_pain_words_1:
+            print(f"❌ STEP 1 FAILURE: First question contains pain characteristics")
+            return False, {"step": 1, "issue": "pain_questions", "response": assistant_message_1}
+        
+        # Step 2: Answer duration (already provided, should ask next question)
+        conversation_state_2 = response_1.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "it started suddenly",
+            "session_id": "fever_slot_progression",
+            "conversation_state": conversation_state_2,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🔍 FEVER SLOT PROGRESSION - Step 2: Onset Information",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {}
+        
+        # Check second response
+        assistant_message_2 = response_2.get("assistant_message", "")
+        has_pain_words_2 = any(word in assistant_message_2.lower() for word in ["sharp", "dull", "throbbing", "burning"])
+        
+        if has_pain_words_2:
+            print(f"❌ STEP 2 FAILURE: Second question contains pain characteristics")
+            return False, {"step": 2, "issue": "pain_questions", "response": assistant_message_2}
+        
+        # Step 3: Provide temperature
+        conversation_state_3 = response_2.get("updated_state", {})
+        test_data_3 = {
+            "user_message": "102 degrees fahrenheit",
+            "session_id": "fever_slot_progression",
+            "conversation_state": conversation_state_3,
+            "user_id": "test_user"
+        }
+        
+        success_3, response_3 = self.run_test(
+            "🔍 FEVER SLOT PROGRESSION - Step 3: Temperature Information",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_3
+        )
+        
+        if success_3:
+            assistant_message_3 = response_3.get("assistant_message", "")
+            has_pain_words_3 = any(word in assistant_message_3.lower() for word in ["sharp", "dull", "throbbing", "burning"])
+            
+            if has_pain_words_3:
+                print(f"❌ STEP 3 FAILURE: Third question contains pain characteristics")
+                return False, {"step": 3, "issue": "pain_questions", "response": assistant_message_3}
+            
+            # Check if fever interview is progressing properly
+            interview_active = response_3.get("interview_active", False)
+            interview_type = response_3.get("interview_type")
+            
+            if interview_active and interview_type == "fever":
+                print(f"✅ FEVER SLOT PROGRESSION: All 3 steps completed without pain questions")
+                return True, {"successful_steps": 3, "interview_active": True}
+            else:
+                print(f"❌ INTERVIEW STATE: Interview not active or wrong type")
+                return False, {"step": 3, "issue": "interview_state", "active": interview_active, "type": interview_type}
+        
+        return False, {"step": 3, "issue": "api_failure"}
+
     # ========== COMPREHENSIVE SYMPTOM RULE ENGINE TESTS (NEW IMPLEMENTATION) ==========
     
     def test_comprehensive_symptom_rule_engine_emergency_mi_pattern(self):
