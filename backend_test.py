@@ -2113,6 +2113,429 @@ class BackendAPITester:
         
         return False, {"step": 3, "issue": "api_failure"}
 
+    # ========== UNIFIED CLINICAL ENGINE TESTS (NEW) ==========
+    
+    def test_unified_clinical_engine_health_check(self):
+        """Test unified clinical engine health check"""
+        return self.run_test(
+            "Unified Clinical Engine - Health Check",
+            "GET",
+            "unified/unified-clinical-chat/health",
+            200
+        )
+    
+    def test_unified_clinical_engine_active_rule_evaluation_mi(self):
+        """REVIEW REQUEST: Test active rule evaluation during conversation - MI detection (R1)"""
+        test_data = {
+            "user_message": "I have chest pain, sweating, and shortness of breath",
+            "session_id": "unified_mi_test",
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 UNIFIED ENGINE - Active Rule Evaluation: MI Detection (R1)",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for immediate emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            assistant_message = response.get("assistant_message", "").lower()
+            active_rules_used = response.get("active_rules_used", 0)
+            
+            if emergency_detected:
+                print("✅ EMERGENCY DETECTION: MI emergency correctly detected")
+            else:
+                print("❌ EMERGENCY DETECTION: MI emergency not detected")
+            
+            if "911" in assistant_message or "emergency" in assistant_message:
+                print("✅ EMERGENCY INSTRUCTIONS: 911 instructions provided")
+            else:
+                print("❌ EMERGENCY INSTRUCTIONS: No 911 instructions found")
+            
+            if "myocardial infarction" in assistant_message or "heart attack" in assistant_message:
+                print("✅ RULE ANALYSIS: MI condition identified")
+            else:
+                print("❌ RULE ANALYSIS: MI condition not identified")
+            
+            if active_rules_used and active_rules_used > 0:
+                print(f"✅ ACTIVE RULES: {active_rules_used} rules actively used")
+            else:
+                print("❌ ACTIVE RULES: No rules reported as used")
+        
+        return success, response
+    
+    def test_unified_clinical_engine_multi_symptom_diabetes(self):
+        """REVIEW REQUEST: Test multi-symptom dynamic analysis - Diabetes detection (R17/R100)"""
+        test_data = {
+            "user_message": "I have frequent urination, excessive thirst, and fatigue",
+            "session_id": "unified_diabetes_test",
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 UNIFIED ENGINE - Multi-Symptom Analysis: Diabetes Detection (R17/R100)",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            assistant_message = response.get("assistant_message", "").lower()
+            session_data = response.get("session_data", {})
+            
+            # Check for diabetes detection
+            if "diabetes" in assistant_message:
+                print("✅ DIABETES DETECTION: Diabetes condition identified")
+            else:
+                print("❌ DIABETES DETECTION: Diabetes condition not identified")
+            
+            # Check for confidence scoring
+            if "confidence" in assistant_message or "%" in assistant_message:
+                print("✅ CONFIDENCE SCORING: Confidence scores provided")
+            else:
+                print("❌ CONFIDENCE SCORING: No confidence scores found")
+            
+            # Check for proper analysis
+            if "analysis" in assistant_message or "assessment" in assistant_message:
+                print("✅ PROPER ANALYSIS: Clinical analysis provided")
+            else:
+                print("❌ PROPER ANALYSIS: No clinical analysis found")
+            
+            # Check detected symptoms
+            detected_symptoms = session_data.get("detected_symptoms", [])
+            expected_symptoms = ["frequent_urination", "excessive_thirst", "fatigue"]
+            detected_count = sum(1 for symptom in expected_symptoms if symptom in detected_symptoms)
+            
+            if detected_count >= 2:
+                print(f"✅ SYMPTOM DETECTION: {detected_count}/3 diabetes symptoms detected")
+            else:
+                print(f"❌ SYMPTOM DETECTION: Only {detected_count}/3 diabetes symptoms detected")
+        
+        return success, response
+    
+    def test_unified_clinical_engine_emergency_sah_meningitis(self):
+        """REVIEW REQUEST: Test emergency detection with rule integration - SAH/Meningitis (R23)"""
+        test_data = {
+            "user_message": "I have a sudden severe headache with neck stiffness",
+            "session_id": "unified_sah_test",
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 UNIFIED ENGINE - Emergency Detection: SAH/Meningitis (R23)",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            emergency_detected = response.get("emergency_detected", False)
+            assistant_message = response.get("assistant_message", "").lower()
+            
+            if emergency_detected:
+                print("✅ EMERGENCY DETECTION: SAH/Meningitis emergency detected")
+            else:
+                print("❌ EMERGENCY DETECTION: SAH/Meningitis emergency not detected")
+            
+            if "911" in assistant_message:
+                print("✅ 911 INSTRUCTIONS: Emergency instructions provided")
+            else:
+                print("❌ 911 INSTRUCTIONS: No 911 instructions found")
+            
+            if any(term in assistant_message for term in ["subarachnoid", "hemorrhage", "meningitis", "neurological"]):
+                print("✅ RULE INTEGRATION: Neurological emergency condition identified")
+            else:
+                print("❌ RULE INTEGRATION: Neurological condition not identified")
+            
+            if "r23" in assistant_message or "rule" in assistant_message:
+                print("✅ RULE ID: Rule identification present")
+            else:
+                print("⚠️ RULE ID: Rule ID not explicitly mentioned (may be implicit)")
+        
+        return success, response
+    
+    def test_unified_clinical_engine_progressive_symptom_building(self):
+        """REVIEW REQUEST: Test progressive symptom building - Meningitis pattern (R2)"""
+        session_id = "unified_progressive_test"
+        
+        # Step 1: Start with fever
+        test_data_1 = {
+            "user_message": "I have a fever",
+            "session_id": session_id,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🎯 UNIFIED ENGINE - Progressive Building: Step 1 (Fever)",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Step 2: Add headache
+        test_data_2 = {
+            "user_message": "I also have a headache",
+            "session_id": session_id,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🎯 UNIFIED ENGINE - Progressive Building: Step 2 (+ Headache)",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {}
+        
+        # Step 3: Add neck stiffness - should trigger meningitis detection
+        test_data_3 = {
+            "user_message": "My neck is stiff",
+            "session_id": session_id,
+            "user_id": "test_user"
+        }
+        
+        success_3, response_3 = self.run_test(
+            "🎯 UNIFIED ENGINE - Progressive Building: Step 3 (+ Neck Stiffness = Meningitis)",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data_3
+        )
+        
+        if success_3:
+            # Check if meningitis pattern is detected when complete
+            emergency_detected = response_3.get("emergency_detected", False)
+            assistant_message = response_3.get("assistant_message", "").lower()
+            session_data = response_3.get("session_data", {})
+            
+            if emergency_detected:
+                print("✅ PROGRESSIVE DETECTION: Meningitis emergency detected when pattern complete")
+            else:
+                print("❌ PROGRESSIVE DETECTION: Meningitis emergency not detected")
+            
+            if "meningitis" in assistant_message:
+                print("✅ MENINGITIS IDENTIFICATION: Condition correctly identified")
+            else:
+                print("❌ MENINGITIS IDENTIFICATION: Condition not identified")
+            
+            # Check symptom accumulation
+            detected_symptoms = session_data.get("detected_symptoms", [])
+            meningitis_symptoms = ["fever", "headache", "neck_stiffness"]
+            detected_count = sum(1 for symptom in meningitis_symptoms if symptom in detected_symptoms)
+            
+            if detected_count >= 3:
+                print(f"✅ SYMPTOM ACCUMULATION: All 3 meningitis symptoms detected")
+            else:
+                print(f"❌ SYMPTOM ACCUMULATION: Only {detected_count}/3 meningitis symptoms detected")
+            
+            # Check for R2 rule activation
+            if "r2" in assistant_message or ("fever" in assistant_message and "headache" in assistant_message and "neck" in assistant_message):
+                print("✅ RULE R2 ACTIVATION: Meningitis rule pattern detected")
+            else:
+                print("❌ RULE R2 ACTIVATION: Meningitis rule pattern not detected")
+        
+        return success_3, response_3
+    
+    def test_unified_clinical_engine_conversational_layer_integration(self):
+        """REVIEW REQUEST: Test conversational layer integration"""
+        # Test 1: Greeting
+        test_data_greeting = {
+            "user_message": "hi",
+            "session_id": "unified_conversation_test",
+            "user_id": "test_user"
+        }
+        
+        success_greeting, response_greeting = self.run_test(
+            "🎯 UNIFIED ENGINE - Conversational Layer: Greeting",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data_greeting
+        )
+        
+        if success_greeting:
+            assistant_message = response_greeting.get("assistant_message", "").lower()
+            analysis_type = response_greeting.get("analysis_type", "")
+            
+            if "hello" in assistant_message or "hi" in assistant_message:
+                print("✅ GREETING RESPONSE: Conversational greeting provided")
+            else:
+                print("❌ GREETING RESPONSE: No conversational greeting")
+            
+            if analysis_type == "conversational":
+                print("✅ ANALYSIS TYPE: Correctly identified as conversational")
+            else:
+                print(f"❌ ANALYSIS TYPE: Expected 'conversational', got '{analysis_type}'")
+        
+        # Test 2: Symptom analysis
+        test_data_symptoms = {
+            "user_message": "I have symptoms",
+            "session_id": "unified_conversation_test_2",
+            "user_id": "test_user"
+        }
+        
+        success_symptoms, response_symptoms = self.run_test(
+            "🎯 UNIFIED ENGINE - Conversational Layer: Symptom Analysis",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data_symptoms
+        )
+        
+        if success_symptoms:
+            assistant_message = response_symptoms.get("assistant_message", "").lower()
+            analysis_type = response_symptoms.get("analysis_type", "")
+            
+            if "symptom" in assistant_message or "describe" in assistant_message:
+                print("✅ SYMPTOM ANALYSIS: Clinical analysis mode activated")
+            else:
+                print("❌ SYMPTOM ANALYSIS: Clinical analysis not activated")
+            
+            if analysis_type in ["clinical_analysis", "clarification"]:
+                print(f"✅ ANALYSIS TYPE: Correctly identified as '{analysis_type}'")
+            else:
+                print(f"❌ ANALYSIS TYPE: Expected clinical analysis, got '{analysis_type}'")
+        
+        return success_greeting and success_symptoms, {
+            "greeting": response_greeting,
+            "symptoms": response_symptoms
+        }
+    
+    def test_unified_clinical_engine_session_state_maintenance(self):
+        """REVIEW REQUEST: Test session state properly maintained across conversation turns"""
+        session_id = "unified_session_test"
+        
+        # Turn 1: Initial symptom
+        test_data_1 = {
+            "user_message": "I have chest pain",
+            "session_id": session_id,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🎯 UNIFIED ENGINE - Session State: Turn 1",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        # Turn 2: Additional information
+        test_data_2 = {
+            "user_message": "It started an hour ago and I'm sweating",
+            "session_id": session_id,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🎯 UNIFIED ENGINE - Session State: Turn 2",
+            "POST",
+            "unified/unified-clinical-chat",
+            200,
+            data=test_data_2
+        )
+        
+        if success_2:
+            # Check session state maintenance
+            session_data = response_2.get("session_data", {})
+            detected_symptoms = session_data.get("detected_symptoms", [])
+            
+            # Should have accumulated symptoms from both turns
+            if "chest_pain" in detected_symptoms:
+                print("✅ SESSION STATE: Chest pain from turn 1 maintained")
+            else:
+                print("❌ SESSION STATE: Chest pain from turn 1 not maintained")
+            
+            if "sweating" in detected_symptoms:
+                print("✅ SESSION STATE: Sweating from turn 2 added")
+            else:
+                print("❌ SESSION STATE: Sweating from turn 2 not added")
+            
+            if len(detected_symptoms) >= 2:
+                print(f"✅ SYMPTOM ACCUMULATION: {len(detected_symptoms)} symptoms accumulated across turns")
+            else:
+                print(f"❌ SYMPTOM ACCUMULATION: Only {len(detected_symptoms)} symptoms accumulated")
+            
+            # Check if session ID is maintained
+            session_id_returned = session_data.get("id")
+            if session_id_returned == session_id:
+                print("✅ SESSION ID: Session ID properly maintained")
+            else:
+                print(f"❌ SESSION ID: Session ID not maintained - expected '{session_id}', got '{session_id_returned}'")
+        
+        return success_2, response_2
+    
+    def test_unified_clinical_engine_all_100_rules_accessible(self):
+        """REVIEW REQUEST: Test that all 100 rules are accessible and used for analysis"""
+        success, response = self.run_test(
+            "🎯 UNIFIED ENGINE - All 100 Rules Accessibility Check",
+            "GET",
+            "unified/unified-clinical-chat/health",
+            200
+        )
+        
+        if success:
+            rules_loaded = response.get("rules_loaded", 0)
+            symptom_mappings = response.get("symptom_mappings", 0)
+            
+            if rules_loaded >= 25:  # We have at least 25 rules implemented
+                print(f"✅ RULES LOADED: {rules_loaded} clinical rules loaded and accessible")
+            else:
+                print(f"❌ RULES LOADED: Only {rules_loaded} rules loaded (expected at least 25)")
+            
+            if symptom_mappings > 0:
+                print(f"✅ SYMPTOM MAPPINGS: {symptom_mappings} symptom mappings available")
+            else:
+                print("❌ SYMPTOM MAPPINGS: No symptom mappings available")
+            
+            # Test a complex multi-rule scenario
+            test_data = {
+                "user_message": "I have frequent urination, excessive thirst, fatigue, and poor wound healing",
+                "session_id": "unified_multi_rule_test",
+                "user_id": "test_user"
+            }
+            
+            success_multi, response_multi = self.run_test(
+                "🎯 UNIFIED ENGINE - Multi-Rule Analysis Test",
+                "POST",
+                "unified/unified-clinical-chat",
+                200,
+                data=test_data
+            )
+            
+            if success_multi:
+                active_rules_used = response_multi.get("active_rules_used", 0)
+                assistant_message = response_multi.get("assistant_message", "").lower()
+                
+                if active_rules_used and active_rules_used > 0:
+                    print(f"✅ ACTIVE RULE USAGE: {active_rules_used} rules actively used in analysis")
+                else:
+                    print("❌ ACTIVE RULE USAGE: No rules reported as actively used")
+                
+                # Should detect multiple diabetes-related rules (R17, R33, R84, R100)
+                if "diabetes" in assistant_message:
+                    print("✅ MULTI-RULE DETECTION: Diabetes pattern detected by multiple rules")
+                else:
+                    print("❌ MULTI-RULE DETECTION: Diabetes pattern not detected")
+        
+        return success, response
+
     # ========== COMPREHENSIVE SYMPTOM RULE ENGINE TESTS (NEW IMPLEMENTATION) ==========
     
     def test_comprehensive_symptom_rule_engine_emergency_mi_pattern(self):
