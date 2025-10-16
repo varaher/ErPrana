@@ -389,9 +389,21 @@ class IntegratedMedicalAI:
         conversation_state = request.conversation_state or {}
         user_message = request.user_message.strip()
         
-        # First check for small talk/greetings (conversational layer)
+        # PRIORITY 1: Check for active structured interviews FIRST
+        # This prevents conversational layer from interfering with ongoing medical interviews
+        interview_type = self.detect_structured_interview_trigger(user_message, conversation_state)
+        
+        if interview_type:
+            print(f"🎯 Active interview detected: {interview_type} - bypassing conversational layer")
+            # Conduct structured interview immediately
+            return await self._conduct_structured_interview(
+                interview_type, request, conversation_state
+            )
+        
+        # PRIORITY 2: Check for small talk/greetings (conversational layer) - only if no active interview
         conversational_response, is_medical_content = conversational_layer.handle_input(user_message)
         if conversational_response and not is_medical_content:
+            print(f"🗣️ Conversational response: {user_message}")
             return IntegratedMedicalResponse(
                 assistant_message=conversational_response,
                 updated_state=conversation_state,
