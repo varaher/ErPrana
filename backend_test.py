@@ -2507,6 +2507,548 @@ class BackendAPITester:
         
         return all_success, results
 
+    # ========== 100-RULE COMPREHENSIVE SYMPTOM ANALYSIS SYSTEM TESTS (REVIEW REQUEST) ==========
+    
+    def test_100_rule_system_verification(self):
+        """REVIEW REQUEST: Verify ARYA has access to ALL 100 clinical rules (R1-R100)"""
+        # Test a simple message to trigger rule loading
+        test_data = {
+            "user_message": "Hello ARYA, I need help with my symptoms",
+            "session_id": "100_rule_verification_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🎯 100-RULE SYSTEM VERIFICATION - Backend Rule Loading Check",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check if backend logs show 100 rules loaded
+            print("✅ 100-RULE SYSTEM: Backend API accessible")
+            print("📋 VERIFICATION: Check backend logs for '✅ Loaded 100 general clinical rules' message")
+            
+            # The actual verification happens in the backend logs when general_symptom_rule_engine loads
+            # We can verify the system is operational by checking the response structure
+            if "assistant_message" in response:
+                print("✅ RULE ENGINE: System operational and responding")
+            else:
+                print("❌ RULE ENGINE: System not responding correctly")
+        
+        return success, response
+    
+    def test_r1_myocardial_infarction_emergency(self):
+        """REVIEW REQUEST: Test R1 (MI) - 'I have chest pain, shortness of breath, and sweating'"""
+        test_data = {
+            "user_message": "I have chest pain, shortness of breath, and sweating",
+            "session_id": "r1_mi_emergency_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🚨 R1 EMERGENCY RULE - Myocardial Infarction Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = (response.get("triage_level") or "").lower()
+            assistant_message = response.get("assistant_message", "").lower()
+            general_analysis = response.get("general_symptom_analysis", {})
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ R1 MI EMERGENCY: Correctly detected as emergency")
+            else:
+                print(f"❌ R1 MI EMERGENCY: Not detected as emergency - triage: {triage_level}")
+            
+            if "911" in assistant_message or "emergency" in assistant_message:
+                print("✅ R1 MI EMERGENCY: Emergency instructions provided")
+            else:
+                print("❌ R1 MI EMERGENCY: No emergency instructions found")
+            
+            # Check for R1 rule detection in general symptom analysis
+            emergency_patterns = general_analysis.get("emergency_patterns", [])
+            r1_detected = any(pattern.get("rule_id") == "R1" for pattern in emergency_patterns)
+            
+            if r1_detected:
+                print("✅ R1 RULE DETECTION: Rule R1 specifically detected in analysis")
+            else:
+                print("❌ R1 RULE DETECTION: Rule R1 not found in emergency patterns")
+                print(f"Available patterns: {[p.get('rule_id') for p in emergency_patterns]}")
+        
+        return success, response
+    
+    def test_r2_meningitis_emergency(self):
+        """REVIEW REQUEST: Test R2 (Meningitis) - 'I have fever, headache, and stiff neck'"""
+        test_data = {
+            "user_message": "I have fever, headache, and stiff neck",
+            "session_id": "r2_meningitis_emergency_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🚨 R2 EMERGENCY RULE - Meningitis Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = (response.get("triage_level") or "").lower()
+            assistant_message = response.get("assistant_message", "").lower()
+            general_analysis = response.get("general_symptom_analysis", {})
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ R2 MENINGITIS EMERGENCY: Correctly detected as emergency")
+            else:
+                print(f"❌ R2 MENINGITIS EMERGENCY: Not detected as emergency - triage: {triage_level}")
+            
+            if "911" in assistant_message or "emergency" in assistant_message:
+                print("✅ R2 MENINGITIS EMERGENCY: Emergency instructions provided")
+            else:
+                print("❌ R2 MENINGITIS EMERGENCY: No emergency instructions found")
+            
+            # Check for R2 rule detection
+            emergency_patterns = general_analysis.get("emergency_patterns", [])
+            r2_detected = any(pattern.get("rule_id") == "R2" for pattern in emergency_patterns)
+            
+            if r2_detected:
+                print("✅ R2 RULE DETECTION: Rule R2 specifically detected in analysis")
+            else:
+                print("❌ R2 RULE DETECTION: Rule R2 not found in emergency patterns")
+        
+        return success, response
+    
+    def test_r35_cauda_equina_emergency(self):
+        """REVIEW REQUEST: Test R35 (Cauda Equina) - 'I have back pain, leg weakness, and can't control my bladder'"""
+        test_data = {
+            "user_message": "I have back pain, leg weakness, and can't control my bladder",
+            "session_id": "r35_cauda_equina_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "🚨 R35 EMERGENCY RULE - Cauda Equina Syndrome Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for emergency detection
+            emergency_detected = response.get("emergency_detected", False)
+            triage_level = (response.get("triage_level") or "").lower()
+            assistant_message = response.get("assistant_message", "").lower()
+            general_analysis = response.get("general_symptom_analysis", {})
+            
+            if emergency_detected or triage_level == "red":
+                print("✅ R35 CAUDA EQUINA EMERGENCY: Correctly detected as emergency")
+            else:
+                print(f"❌ R35 CAUDA EQUINA EMERGENCY: Not detected as emergency - triage: {triage_level}")
+            
+            if "911" in assistant_message or "emergency" in assistant_message:
+                print("✅ R35 CAUDA EQUINA EMERGENCY: Emergency instructions provided")
+            else:
+                print("❌ R35 CAUDA EQUINA EMERGENCY: No emergency instructions found")
+            
+            # Check for R35 rule detection
+            emergency_patterns = general_analysis.get("emergency_patterns", [])
+            r35_detected = any(pattern.get("rule_id") == "R35" for pattern in emergency_patterns)
+            
+            if r35_detected:
+                print("✅ R35 RULE DETECTION: Rule R35 specifically detected in analysis")
+            else:
+                print("❌ R35 RULE DETECTION: Rule R35 not found in emergency patterns")
+        
+        return success, response
+    
+    def test_r17_diabetes_clinical_pattern(self):
+        """REVIEW REQUEST: Test R17 (Diabetes) - 'I have frequent urination, excessive thirst, and fatigue'"""
+        test_data = {
+            "user_message": "I have frequent urination, excessive thirst, and fatigue",
+            "session_id": "r17_diabetes_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 R17 CLINICAL RULE - Diabetes Mellitus Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis", {})
+            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            
+            # Look for diabetes-related patterns
+            diabetes_detected = any(
+                "diabetes" in pattern.get("diagnosis", "").lower() 
+                for pattern in general_patterns
+            )
+            
+            r17_detected = any(pattern.get("rule_id") == "R17" for pattern in general_patterns)
+            
+            if diabetes_detected:
+                print("✅ R17 DIABETES PATTERN: Diabetes pattern detected in clinical analysis")
+            else:
+                print("❌ R17 DIABETES PATTERN: Diabetes pattern not detected")
+            
+            if r17_detected:
+                print("✅ R17 RULE DETECTION: Rule R17 specifically detected")
+            else:
+                print("❌ R17 RULE DETECTION: Rule R17 not found in general patterns")
+                print(f"Available patterns: {[p.get('rule_id') for p in general_patterns]}")
+            
+            # Check urgency level
+            urgency = general_analysis.get("overall_urgency", "")
+            if urgency in ["moderate", "high"]:
+                print(f"✅ R17 URGENCY: Appropriate urgency level: {urgency}")
+            else:
+                print(f"❌ R17 URGENCY: Inappropriate urgency level: {urgency}")
+        
+        return success, response
+    
+    def test_r40_pyelonephritis_clinical_pattern(self):
+        """REVIEW REQUEST: Test R40 (Pyelonephritis) - 'I have painful urination, fever, and flank pain'"""
+        test_data = {
+            "user_message": "I have painful urination, fever, and flank pain",
+            "session_id": "r40_pyelonephritis_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 R40 CLINICAL RULE - Pyelonephritis Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis", {})
+            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            
+            # Look for pyelonephritis or UTI patterns
+            pyelonephritis_detected = any(
+                "pyelonephritis" in pattern.get("diagnosis", "").lower() 
+                for pattern in general_patterns
+            )
+            
+            r40_detected = any(pattern.get("rule_id") == "R40" for pattern in general_patterns)
+            
+            if pyelonephritis_detected:
+                print("✅ R40 PYELONEPHRITIS PATTERN: Pyelonephritis pattern detected")
+            else:
+                print("❌ R40 PYELONEPHRITIS PATTERN: Pyelonephritis pattern not detected")
+            
+            if r40_detected:
+                print("✅ R40 RULE DETECTION: Rule R40 specifically detected")
+            else:
+                print("❌ R40 RULE DETECTION: Rule R40 not found in general patterns")
+            
+            # Check urgency level (should be high for pyelonephritis)
+            urgency = general_analysis.get("overall_urgency", "")
+            if urgency == "high":
+                print(f"✅ R40 URGENCY: Correct high urgency level: {urgency}")
+            else:
+                print(f"❌ R40 URGENCY: Expected high urgency, got: {urgency}")
+        
+        return success, response
+    
+    def test_r61_septic_arthritis_clinical_pattern(self):
+        """REVIEW REQUEST: Test R61 (Septic Arthritis) - 'I have joint pain, joint redness, and warmth'"""
+        test_data = {
+            "user_message": "I have joint pain, joint redness, and warmth",
+            "session_id": "r61_septic_arthritis_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 R61 CLINICAL RULE - Septic Arthritis Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis", {})
+            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            
+            # Look for septic arthritis patterns
+            septic_arthritis_detected = any(
+                "septic arthritis" in pattern.get("diagnosis", "").lower() 
+                for pattern in general_patterns
+            )
+            
+            r61_detected = any(pattern.get("rule_id") == "R61" for pattern in general_patterns)
+            
+            if septic_arthritis_detected:
+                print("✅ R61 SEPTIC ARTHRITIS PATTERN: Septic arthritis pattern detected")
+            else:
+                print("❌ R61 SEPTIC ARTHRITIS PATTERN: Septic arthritis pattern not detected")
+            
+            if r61_detected:
+                print("✅ R61 RULE DETECTION: Rule R61 specifically detected")
+            else:
+                print("❌ R61 RULE DETECTION: Rule R61 not found in general patterns")
+            
+            # Check urgency level (should be high for septic arthritis)
+            urgency = general_analysis.get("overall_urgency", "")
+            if urgency == "high":
+                print(f"✅ R61 URGENCY: Correct high urgency level: {urgency}")
+            else:
+                print(f"❌ R61 URGENCY: Expected high urgency, got: {urgency}")
+        
+        return success, response
+    
+    def test_r84_diabetes_malignancy_clinical_pattern(self):
+        """REVIEW REQUEST: Test R84 (Diabetes/Malignancy) - 'I have poor wound healing, weight loss, and fatigue'"""
+        test_data = {
+            "user_message": "I have poor wound healing, weight loss, and fatigue",
+            "session_id": "r84_diabetes_malignancy_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 R84 CLINICAL RULE - Diabetes/Malignancy Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis", {})
+            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            
+            # Look for diabetes/malignancy patterns
+            diabetes_malignancy_detected = any(
+                any(term in pattern.get("diagnosis", "").lower() for term in ["diabetes", "malignancy"])
+                for pattern in general_patterns
+            )
+            
+            r84_detected = any(pattern.get("rule_id") == "R84" for pattern in general_patterns)
+            
+            if diabetes_malignancy_detected:
+                print("✅ R84 DIABETES/MALIGNANCY PATTERN: Pattern detected")
+            else:
+                print("❌ R84 DIABETES/MALIGNANCY PATTERN: Pattern not detected")
+            
+            if r84_detected:
+                print("✅ R84 RULE DETECTION: Rule R84 specifically detected")
+            else:
+                print("❌ R84 RULE DETECTION: Rule R84 not found in general patterns")
+            
+            # Check urgency level (should be high for malignancy concern)
+            urgency = general_analysis.get("overall_urgency", "")
+            if urgency == "high":
+                print(f"✅ R84 URGENCY: Correct high urgency level: {urgency}")
+            else:
+                print(f"❌ R84 URGENCY: Expected high urgency, got: {urgency}")
+        
+        return success, response
+    
+    def test_r100_diabetes_classic_clinical_pattern(self):
+        """REVIEW REQUEST: Test R100 (Diabetes Classic) - 'I have frequent urination, excessive thirst, weight loss, and fatigue'"""
+        test_data = {
+            "user_message": "I have frequent urination, excessive thirst, weight loss, and fatigue",
+            "session_id": "r100_diabetes_classic_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 R100 CLINICAL RULE - Diabetes Classic Tetrad Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis", {})
+            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            
+            # Look for diabetes patterns
+            diabetes_detected = any(
+                "diabetes" in pattern.get("diagnosis", "").lower() 
+                for pattern in general_patterns
+            )
+            
+            r100_detected = any(pattern.get("rule_id") == "R100" for pattern in general_patterns)
+            
+            if diabetes_detected:
+                print("✅ R100 DIABETES CLASSIC PATTERN: Diabetes pattern detected")
+            else:
+                print("❌ R100 DIABETES CLASSIC PATTERN: Diabetes pattern not detected")
+            
+            if r100_detected:
+                print("✅ R100 RULE DETECTION: Rule R100 specifically detected")
+            else:
+                print("❌ R100 RULE DETECTION: Rule R100 not found in general patterns")
+                print(f"Available patterns: {[p.get('rule_id') for p in general_patterns]}")
+            
+            # Check urgency level (should be high for classic diabetes tetrad)
+            urgency = general_analysis.get("overall_urgency", "")
+            if urgency == "high":
+                print(f"✅ R100 URGENCY: Correct high urgency level: {urgency}")
+            else:
+                print(f"❌ R100 URGENCY: Expected high urgency, got: {urgency}")
+            
+            # Check confidence scoring
+            if r100_detected:
+                r100_pattern = next(p for p in general_patterns if p.get("rule_id") == "R100")
+                confidence = r100_pattern.get("confidence_score", 0)
+                if confidence >= 2.0:  # High confidence for classic tetrad
+                    print(f"✅ R100 CONFIDENCE: High confidence score: {confidence}")
+                else:
+                    print(f"❌ R100 CONFIDENCE: Low confidence score: {confidence}")
+        
+        return success, response
+    
+    def test_r11_lung_cancer_clinical_pattern(self):
+        """REVIEW REQUEST: Test R11 (Lung Cancer) - 'I have cough, coughing blood, and weight loss - I'm a smoker'"""
+        test_data = {
+            "user_message": "I have cough, coughing blood, and weight loss - I'm a smoker",
+            "session_id": "r11_lung_cancer_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 R11 CLINICAL RULE - Lung Cancer Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis", {})
+            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            
+            # Look for lung cancer patterns
+            lung_cancer_detected = any(
+                "lung cancer" in pattern.get("diagnosis", "").lower() 
+                for pattern in general_patterns
+            )
+            
+            r11_detected = any(pattern.get("rule_id") == "R11" for pattern in general_patterns)
+            
+            if lung_cancer_detected:
+                print("✅ R11 LUNG CANCER PATTERN: Lung cancer pattern detected")
+            else:
+                print("❌ R11 LUNG CANCER PATTERN: Lung cancer pattern not detected")
+            
+            if r11_detected:
+                print("✅ R11 RULE DETECTION: Rule R11 specifically detected")
+            else:
+                print("❌ R11 RULE DETECTION: Rule R11 not found in general patterns")
+            
+            # Check urgency level (should be high for lung cancer)
+            urgency = general_analysis.get("overall_urgency", "")
+            if urgency == "high":
+                print(f"✅ R11 URGENCY: Correct high urgency level: {urgency}")
+            else:
+                print(f"❌ R11 URGENCY: Expected high urgency, got: {urgency}")
+            
+            # Check for smoking history context bonus
+            if r11_detected:
+                r11_pattern = next(p for p in general_patterns if p.get("rule_id") == "R11")
+                confidence = r11_pattern.get("confidence_score", 0)
+                if confidence >= 2.0:  # Should be high with smoking history
+                    print(f"✅ R11 SMOKING CONTEXT: High confidence with smoking history: {confidence}")
+                else:
+                    print(f"❌ R11 SMOKING CONTEXT: Low confidence despite smoking history: {confidence}")
+        
+        return success, response
+    
+    def test_r56_renal_cell_carcinoma_clinical_pattern(self):
+        """REVIEW REQUEST: Test R56 (Renal Cell Carcinoma) - 'I have blood in urine, flank pain, and weight loss - I smoke'"""
+        test_data = {
+            "user_message": "I have blood in urine, flank pain, and weight loss - I smoke",
+            "session_id": "r56_renal_cell_carcinoma_test",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success, response = self.run_test(
+            "📋 R56 CLINICAL RULE - Renal Cell Carcinoma Pattern Detection",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Check for clinical pattern detection
+            general_analysis = response.get("general_symptom_analysis", {})
+            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            
+            # Look for renal cell carcinoma patterns
+            renal_cancer_detected = any(
+                any(term in pattern.get("diagnosis", "").lower() for term in ["renal", "kidney", "carcinoma"])
+                for pattern in general_patterns
+            )
+            
+            r56_detected = any(pattern.get("rule_id") == "R56" for pattern in general_patterns)
+            
+            if renal_cancer_detected:
+                print("✅ R56 RENAL CELL CARCINOMA PATTERN: Renal cancer pattern detected")
+            else:
+                print("❌ R56 RENAL CELL CARCINOMA PATTERN: Renal cancer pattern not detected")
+            
+            if r56_detected:
+                print("✅ R56 RULE DETECTION: Rule R56 specifically detected")
+            else:
+                print("❌ R56 RULE DETECTION: Rule R56 not found in general patterns")
+            
+            # Check urgency level (should be high for renal cell carcinoma)
+            urgency = general_analysis.get("overall_urgency", "")
+            if urgency == "high":
+                print(f"✅ R56 URGENCY: Correct high urgency level: {urgency}")
+            else:
+                print(f"❌ R56 URGENCY: Expected high urgency, got: {urgency}")
+            
+            # Check for smoking history context bonus
+            if r56_detected:
+                r56_pattern = next(p for p in general_patterns if p.get("rule_id") == "R56")
+                confidence = r56_pattern.get("confidence_score", 0)
+                if confidence >= 2.0:  # Should be high with smoking history
+                    print(f"✅ R56 SMOKING CONTEXT: High confidence with smoking history: {confidence}")
+                else:
+                    print(f"❌ R56 SMOKING CONTEXT: Low confidence despite smoking history: {confidence}")
+        
+        return success, response
+
     # ========== CRITICAL EMERGENCY DETECTION TESTS (REVIEW REQUEST FOCUS) ==========
     
     def test_critical_thunderclap_headache_emergency_detection(self):
