@@ -1842,6 +1842,112 @@ class BackendAPITester:
         print(f"⚠️ UNCLEAR: Neither clear pain nor fever questions detected")
         return True, {"unclear_questions": True, "responses": [assistant_message]}
     
+    def test_exact_user_scenario_complete_flow(self):
+        """REVIEW REQUEST: Test the EXACT user scenario that was failing"""
+        print("🎯 TESTING EXACT USER SCENARIO: 'im having fever since 2 days'")
+        
+        # Step 1: User says "im having fever since 2 days"
+        test_data_1 = {
+            "user_message": "im having fever since 2 days",
+            "session_id": "exact_user_scenario",
+            "conversation_state": None,
+            "user_id": "test_user"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🎯 EXACT USER SCENARIO - Step 1: 'im having fever since 2 days'",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {"step": 1, "issue": "api_failure"}
+        
+        assistant_message_1 = response_1.get("assistant_message", "")
+        print(f"ARYA Response 1: {assistant_message_1}")
+        
+        # Check if ARYA asks pain questions (the reported issue)
+        pain_questions = ["can you describe it", "is it sharp, dull, throbbing, or burning", "sharp", "dull", "throbbing", "burning"]
+        has_pain_questions = any(phrase in assistant_message_1.lower() for phrase in pain_questions)
+        
+        if has_pain_questions:
+            print(f"❌ CRITICAL ISSUE CONFIRMED: ARYA asking pain questions for fever!")
+            return False, {"step": 1, "issue": "pain_questions_for_fever", "response": assistant_message_1}
+        
+        # Check if ARYA asks proper fever questions
+        fever_questions = ["are you having a fever", "how many days", "fever"]
+        has_fever_questions = any(phrase in assistant_message_1.lower() for phrase in fever_questions)
+        
+        if has_fever_questions:
+            print(f"✅ CORRECT: ARYA asking proper fever questions")
+        else:
+            print(f"⚠️ UNEXPECTED: Neither pain nor fever questions detected")
+            print(f"   Response: {assistant_message_1}")
+        
+        # Step 2: User confirms fever
+        conversation_state_2 = response_1.get("updated_state", {})
+        test_data_2 = {
+            "user_message": "yes",
+            "session_id": "exact_user_scenario",
+            "conversation_state": conversation_state_2,
+            "user_id": "test_user"
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🎯 EXACT USER SCENARIO - Step 2: Confirm fever",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {"step": 2, "issue": "api_failure"}
+        
+        assistant_message_2 = response_2.get("assistant_message", "")
+        print(f"ARYA Response 2: {assistant_message_2}")
+        
+        # Check if second question is also proper
+        has_pain_questions_2 = any(phrase in assistant_message_2.lower() for phrase in pain_questions)
+        
+        if has_pain_questions_2:
+            print(f"❌ CRITICAL ISSUE: Second question also asking pain characteristics!")
+            return False, {"step": 2, "issue": "pain_questions_for_fever", "response": assistant_message_2}
+        
+        # Step 3: Continue with fever interview
+        conversation_state_3 = response_2.get("updated_state", {})
+        test_data_3 = {
+            "user_message": "it started suddenly",
+            "session_id": "exact_user_scenario",
+            "conversation_state": conversation_state_3,
+            "user_id": "test_user"
+        }
+        
+        success_3, response_3 = self.run_test(
+            "🎯 EXACT USER SCENARIO - Step 3: Provide onset information",
+            "POST",
+            "integrated/medical-ai",
+            200,
+            data=test_data_3
+        )
+        
+        if success_3:
+            assistant_message_3 = response_3.get("assistant_message", "")
+            print(f"ARYA Response 3: {assistant_message_3}")
+            
+            has_pain_questions_3 = any(phrase in assistant_message_3.lower() for phrase in pain_questions)
+            
+            if has_pain_questions_3:
+                print(f"❌ CRITICAL ISSUE: Third question asking pain characteristics!")
+                return False, {"step": 3, "issue": "pain_questions_for_fever", "response": assistant_message_3}
+            
+            print(f"✅ SUCCESS: Complete fever interview flow without pain questions")
+            return True, {"complete_flow": True, "no_pain_questions": True}
+        
+        return False, {"step": 3, "issue": "api_failure"}
+
     def test_debug_wrong_question_source(self):
         """REVIEW REQUEST: Debug WHY ARYA is asking pain characteristics for fever"""
         # Test the exact failing scenario
