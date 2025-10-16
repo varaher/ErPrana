@@ -657,7 +657,8 @@ class IntegratedMedicalAI:
         return await self._use_advanced_symptom_intelligence(request, conversation_state)
     
     async def _use_advanced_symptom_intelligence(self, request: IntegratedMedicalRequest,
-                                               conversation_state: Dict[str, Any]) -> IntegratedMedicalResponse:
+                                               conversation_state: Dict[str, Any],
+                                               general_symptom_analysis: Dict[str, Any] = None) -> IntegratedMedicalResponse:
         """Fall back to advanced symptom intelligence system"""
         
         # Use the existing advanced symptom intelligence
