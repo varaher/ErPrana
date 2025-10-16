@@ -2697,7 +2697,7 @@ class BackendAPITester:
         if success:
             # Check for clinical pattern detection
             general_analysis = response.get("general_symptom_analysis", {})
-            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            general_patterns = general_analysis.get("general_clinical_patterns", []) if general_analysis else []
             
             # Look for diabetes-related patterns
             diabetes_detected = any(
@@ -2747,7 +2747,7 @@ class BackendAPITester:
         if success:
             # Check for clinical pattern detection
             general_analysis = response.get("general_symptom_analysis", {})
-            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            general_patterns = general_analysis.get("general_clinical_patterns", []) if general_analysis else []
             
             # Look for pyelonephritis or UTI patterns
             pyelonephritis_detected = any(
@@ -2796,7 +2796,7 @@ class BackendAPITester:
         if success:
             # Check for clinical pattern detection
             general_analysis = response.get("general_symptom_analysis", {})
-            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            general_patterns = general_analysis.get("general_clinical_patterns", []) if general_analysis else []
             
             # Look for septic arthritis patterns
             septic_arthritis_detected = any(
@@ -2845,7 +2845,7 @@ class BackendAPITester:
         if success:
             # Check for clinical pattern detection
             general_analysis = response.get("general_symptom_analysis", {})
-            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            general_patterns = general_analysis.get("general_clinical_patterns", []) if general_analysis else []
             
             # Look for diabetes/malignancy patterns
             diabetes_malignancy_detected = any(
@@ -2894,7 +2894,7 @@ class BackendAPITester:
         if success:
             # Check for clinical pattern detection
             general_analysis = response.get("general_symptom_analysis", {})
-            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            general_patterns = general_analysis.get("general_clinical_patterns", []) if general_analysis else []
             
             # Look for diabetes patterns
             diabetes_detected = any(
@@ -2953,7 +2953,7 @@ class BackendAPITester:
         if success:
             # Check for clinical pattern detection
             general_analysis = response.get("general_symptom_analysis", {})
-            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            general_patterns = general_analysis.get("general_clinical_patterns", []) if general_analysis else []
             
             # Look for lung cancer patterns
             lung_cancer_detected = any(
@@ -3011,7 +3011,7 @@ class BackendAPITester:
         if success:
             # Check for clinical pattern detection
             general_analysis = response.get("general_symptom_analysis", {})
-            general_patterns = general_analysis.get("general_clinical_patterns", [])
+            general_patterns = general_analysis.get("general_clinical_patterns", []) if general_analysis else []
             
             # Look for renal cell carcinoma patterns
             renal_cancer_detected = any(
