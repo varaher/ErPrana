@@ -2719,7 +2719,7 @@ class BackendAPITester:
                 print(f"Available patterns: {[p.get('rule_id') for p in general_patterns]}")
             
             # Check urgency level
-            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else "" if general_analysis else ""
             if urgency in ["moderate", "high"]:
                 print(f"✅ R17 URGENCY: Appropriate urgency level: {urgency}")
             else:
@@ -2768,7 +2768,7 @@ class BackendAPITester:
                 print("❌ R40 RULE DETECTION: Rule R40 not found in general patterns")
             
             # Check urgency level (should be high for pyelonephritis)
-            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else "" if general_analysis else ""
             if urgency == "high":
                 print(f"✅ R40 URGENCY: Correct high urgency level: {urgency}")
             else:
@@ -2817,7 +2817,7 @@ class BackendAPITester:
                 print("❌ R61 RULE DETECTION: Rule R61 not found in general patterns")
             
             # Check urgency level (should be high for septic arthritis)
-            urgency = general_analysis.get("overall_urgency", "")
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
             if urgency == "high":
                 print(f"✅ R61 URGENCY: Correct high urgency level: {urgency}")
             else:
@@ -2866,7 +2866,7 @@ class BackendAPITester:
                 print("❌ R84 RULE DETECTION: Rule R84 not found in general patterns")
             
             # Check urgency level (should be high for malignancy concern)
-            urgency = general_analysis.get("overall_urgency", "")
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
             if urgency == "high":
                 print(f"✅ R84 URGENCY: Correct high urgency level: {urgency}")
             else:
@@ -2916,7 +2916,7 @@ class BackendAPITester:
                 print(f"Available patterns: {[p.get('rule_id') for p in general_patterns]}")
             
             # Check urgency level (should be high for classic diabetes tetrad)
-            urgency = general_analysis.get("overall_urgency", "")
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
             if urgency == "high":
                 print(f"✅ R100 URGENCY: Correct high urgency level: {urgency}")
             else:
@@ -2974,7 +2974,7 @@ class BackendAPITester:
                 print("❌ R11 RULE DETECTION: Rule R11 not found in general patterns")
             
             # Check urgency level (should be high for lung cancer)
-            urgency = general_analysis.get("overall_urgency", "")
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
             if urgency == "high":
                 print(f"✅ R11 URGENCY: Correct high urgency level: {urgency}")
             else:
@@ -3032,7 +3032,7 @@ class BackendAPITester:
                 print("❌ R56 RULE DETECTION: Rule R56 not found in general patterns")
             
             # Check urgency level (should be high for renal cell carcinoma)
-            urgency = general_analysis.get("overall_urgency", "")
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
             if urgency == "high":
                 print(f"✅ R56 URGENCY: Correct high urgency level: {urgency}")
             else:
