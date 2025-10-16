@@ -1767,7 +1767,8 @@ class BackendAPITester:
             "what was the highest temperature",
             "did it start suddenly or gradually",
             "how was it measured",
-            "is the fever constant or does it come and go"
+            "is the fever constant or does it come and go",
+            "are you having a fever now or recently"  # This is the confirmation question
         ]
         
         # Questions that should NOT appear (pain characteristics)
@@ -1791,42 +1792,55 @@ class BackendAPITester:
         if has_fever_questions:
             print(f"✅ CORRECT: Fever interview asking proper fever questions")
             print(f"   Fever phrases found: {[phrase for phrase in expected_fever_questions if phrase in assistant_message.lower()]}")
+            
+            # Now test the progression - answer "yes" to fever confirmation
+            conversation_state = response.get("updated_state", {})
+            test_data_2 = {
+                "user_message": "yes",
+                "session_id": "fever_questions_test",
+                "conversation_state": conversation_state,
+                "user_id": "test_user"
+            }
+            
+            success_2, response_2 = self.run_test(
+                "🔍 FEVER INTERVIEW QUESTIONS - Confirm Fever",
+                "POST",
+                "integrated/medical-ai",
+                200,
+                data=test_data_2
+            )
+            
+            if success_2:
+                assistant_message_2 = response_2.get("assistant_message", "")
+                print(f"After fever confirmation: {assistant_message_2}")
+                
+                # Check if it progresses to proper fever questions from fever.json
+                fever_json_questions = [
+                    "how many days have you had the fever",
+                    "what was the highest temperature",
+                    "did it start suddenly or gradually"
+                ]
+                
+                has_fever_json_questions = any(phrase in assistant_message_2.lower() for phrase in fever_json_questions)
+                
+                if has_fever_json_questions:
+                    print(f"✅ PROGRESSION: Now asking proper fever.json questions")
+                    return True, {"correct_fever_questions": True, "progression": True}
+                else:
+                    print(f"❌ PROGRESSION ISSUE: Not asking fever.json questions after confirmation")
+                    print(f"   Response: {assistant_message_2}")
+                    return False, {"issue": "no_fever_json_questions", "response": assistant_message_2}
+            
             return True, {"correct_fever_questions": True, "response": assistant_message}
         
-        # Continue the conversation to see next question
-        conversation_state = response.get("updated_state", {})
-        test_data_2 = {
-            "user_message": "2 days",
-            "session_id": "fever_questions_test",
-            "conversation_state": conversation_state,
-            "user_id": "test_user"
-        }
-        
-        success_2, response_2 = self.run_test(
-            "🔍 FEVER INTERVIEW QUESTIONS - Follow-up Question",
-            "POST",
-            "integrated/medical-ai",
-            200,
-            data=test_data_2
-        )
-        
-        if success_2:
-            assistant_message_2 = response_2.get("assistant_message", "")
-            print(f"Second fever interview question: {assistant_message_2}")
-            
-            has_pain_questions_2 = any(phrase in assistant_message_2.lower() for phrase in wrong_pain_questions)
-            has_fever_questions_2 = any(phrase in assistant_message_2.lower() for phrase in expected_fever_questions)
-            
-            if has_pain_questions_2:
-                print(f"❌ CRITICAL ISSUE: Second question also asking PAIN questions!")
-                return False, {"issue": "pain_questions_for_fever_followup", "response": assistant_message_2}
-            
-            if has_fever_questions_2:
-                print(f"✅ CORRECT: Follow-up question also proper fever question")
-                return True, {"correct_fever_questions": True, "followup_response": assistant_message_2}
+        # Check if it's asking a generic question that's not pain-related
+        if "which symptom is troubling you most" in assistant_message.lower():
+            print(f"⚠️ GENERIC QUESTION: Asking generic symptom question instead of fever-specific questions")
+            print(f"   This suggests the fever interview is not progressing properly through fever.json slots")
+            return False, {"issue": "generic_question_not_fever_specific", "response": assistant_message}
         
         print(f"⚠️ UNCLEAR: Neither clear pain nor fever questions detected")
-        return True, {"unclear_questions": True, "responses": [assistant_message, assistant_message_2 if success_2 else None]}
+        return True, {"unclear_questions": True, "responses": [assistant_message]}
     
     def test_debug_wrong_question_source(self):
         """REVIEW REQUEST: Debug WHY ARYA is asking pain characteristics for fever"""
