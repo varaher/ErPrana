@@ -3827,6 +3827,67 @@ def run_headache_and_sob_tests():
         print(f"⚠️ {tester.tests_run - tester.tests_passed} tests failed. Please review the issues above.")
         return 1
 
+def main_fever_debug_tests():
+    """Main function to run fever interview debug tests for the review request"""
+    tester = BackendAPITester()
+    
+    print("🔍 STARTING FEVER INTERVIEW DEBUG TESTS")
+    print("=" * 60)
+    
+    # Test 1: Conversational Layer
+    print("\n🧪 TEST 1: CONVERSATIONAL LAYER")
+    success_1, result_1 = tester.test_conversational_layer_greetings()
+    
+    # Test 2: Fever Detection
+    print("\n🧪 TEST 2: FEVER DETECTION")
+    success_2, result_2 = tester.test_fever_detection_basic()
+    
+    # Test 3: Fever Interview Questions
+    print("\n🧪 TEST 3: FEVER INTERVIEW QUESTIONS")
+    success_3, result_3 = tester.test_fever_interview_questions_from_json()
+    
+    # Test 4: Debug Wrong Question Source
+    print("\n🧪 TEST 4: DEBUG WRONG QUESTION SOURCE")
+    success_4, result_4 = tester.test_debug_wrong_question_source()
+    
+    # Test 5: Fever Interview Slot Progression
+    print("\n🧪 TEST 5: FEVER INTERVIEW SLOT PROGRESSION")
+    success_5, result_5 = tester.test_fever_interview_slot_progression()
+    
+    # Summary
+    print("\n" + "=" * 60)
+    print("🔍 FEVER DEBUG TEST SUMMARY")
+    print("=" * 60)
+    
+    tests = [
+        ("Conversational Layer", success_1, result_1),
+        ("Fever Detection", success_2, result_2),
+        ("Fever Interview Questions", success_3, result_3),
+        ("Debug Wrong Questions", success_4, result_4),
+        ("Fever Slot Progression", success_5, result_5)
+    ]
+    
+    passed = 0
+    for name, success, result in tests:
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {name}")
+        if success:
+            passed += 1
+        elif result and isinstance(result, dict):
+            if "issue" in result:
+                print(f"     Issue: {result['issue']}")
+            if "root_cause" in result:
+                print(f"     Root Cause: {result['root_cause']}")
+    
+    print(f"\nRESULT: {passed}/{len(tests)} tests passed")
+    
+    if passed == len(tests):
+        print("🎉 All fever debug tests passed!")
+        return 0
+    else:
+        print(f"⚠️ {len(tests) - passed} tests failed. Critical fever interview issues detected.")
+        return 1
+
 def main_symptom_rule_engine_tests():
     """Main function to run symptom rule engine tests specifically"""
     tester = BackendAPITester()
@@ -3840,5 +3901,5 @@ def main_symptom_rule_engine_tests():
         return 1
 
 if __name__ == "__main__":
-    # Run the specific symptom rule engine tests for the review request
-    sys.exit(main_symptom_rule_engine_tests())
+    # Run the specific fever debug tests for the review request
+    sys.exit(main_fever_debug_tests())
