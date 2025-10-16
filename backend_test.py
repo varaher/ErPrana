@@ -2207,7 +2207,7 @@ class BackendAPITester:
                 print("❌ PROPER ANALYSIS: No clinical analysis found")
             
             # Check detected symptoms
-            detected_symptoms = session_data.get("detected_symptoms", [])
+            detected_symptoms = session_data.get("detected_symptoms", []) if session_data else []
             expected_symptoms = ["frequent_urination", "excessive_thirst", "fatigue"]
             detected_count = sum(1 for symptom in expected_symptoms if symptom in detected_symptoms)
             
