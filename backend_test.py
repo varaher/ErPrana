@@ -2768,7 +2768,7 @@ class BackendAPITester:
                 print("❌ R40 RULE DETECTION: Rule R40 not found in general patterns")
             
             # Check urgency level (should be high for pyelonephritis)
-            urgency = general_analysis.get("overall_urgency", "")
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
             if urgency == "high":
                 print(f"✅ R40 URGENCY: Correct high urgency level: {urgency}")
             else:
