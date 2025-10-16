@@ -2667,7 +2667,7 @@ class BackendAPITester:
                 print("❌ R35 CAUDA EQUINA EMERGENCY: No emergency instructions found")
             
             # Check for R35 rule detection
-            emergency_patterns = general_analysis.get("emergency_patterns", [])
+            emergency_patterns = general_analysis.get("emergency_patterns", []) if general_analysis else []
             r35_detected = any(pattern.get("rule_id") == "R35" for pattern in emergency_patterns)
             
             if r35_detected:
