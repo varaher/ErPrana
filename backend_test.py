@@ -2332,7 +2332,7 @@ class BackendAPITester:
                 print("❌ MENINGITIS IDENTIFICATION: Condition not identified")
             
             # Check symptom accumulation
-            detected_symptoms = session_data.get("detected_symptoms", [])
+            detected_symptoms = session_data.get("detected_symptoms", []) if session_data else []
             meningitis_symptoms = ["fever", "headache", "neck_stiffness"]
             detected_count = sum(1 for symptom in meningitis_symptoms if symptom in detected_symptoms)
             
