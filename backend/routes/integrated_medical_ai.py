@@ -501,7 +501,7 @@ class IntegratedMedicalAI:
             )
         
         # Fall back to advanced symptom intelligence
-        return await self._use_advanced_symptom_intelligence(request, conversation_state)
+        return await self._use_advanced_symptom_intelligence(request, conversation_state, general_symptom_analysis)
     
     async def _conduct_structured_interview(self, interview_type: str, 
                                           request: IntegratedMedicalRequest,
