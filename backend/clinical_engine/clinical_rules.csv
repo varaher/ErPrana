@@ -1,0 +1,101 @@
+Rule_ID,Trigger_Symptoms,Modifiers,Likely_Condition,Urgency_Level
+R1,Chest pain + Shortness of breath + Sweating,Sudden onset + older age,Myocardial Infarction,Emergency
+R2,Fever + Headache + Stiff neck,No rash + rapid onset,Meningitis,Emergency
+R3,Cough + Fever + Purulent sputum,Comorbidities,Pneumonia,High
+R4,Abdominal pain (RLQ) + Nausea + Fever,Migrating pain,Appendicitis,Urgent
+R5,Fatigue + Weight loss + Night sweats,Chronic + lymphadenopathy,Possible malignancy / TB,High
+R6,Palpitations + Chest tightness + Dizziness,History of heart disease,Arrhythmia,Urgent
+R7,Vomiting + Severe abdominal pain,Radiates to back,Pancreatitis,High
+R8,Urinary urgency + Burning urination + Cloudy urine,Female gender,Urinary Tract Infection,Moderate
+R9,Joint pain + Swelling + Morning stiffness,Symmetric joint involvement,Rheumatoid Arthritis,Moderate
+R10,Severe headache + Visual disturbance + Jaw pain,Age > 50,Temporal Arteritis,High
+R11,Cough + Hemoptysis + Weight loss,Chronic smoker,Lung Cancer,High
+R12,Chest pain + Cough + Fever,Persisting symptoms,Pneumonia / Pleurisy,High
+R13,Shortness of breath + Edema + Fatigue,History of heart disease,Heart Failure,Urgent
+R14,Palpitations + Sweating + Tremors,Thyroid history,Hyperthyroidism,Moderate
+R15,Dizziness + Palpitations + Syncope,Postural changes,Arrhythmia or Orthostatic Hypotension,High
+R16,Abdominal bloating + Weight loss + Early satiety,Chronic onset,Possible GI malignancy,High
+R17,Frequent urination + Thirst + Fatigue,Polyuria + polydipsia,Diabetes Mellitus,Moderate
+R18,Vision changes + Headache + Vomiting,New onset raised intracranial pressure,Intracranial hemorrhage / mass,Emergency
+R19,Back pain + Fever + Weight loss,Spine or vertebral involvement,Spinal infection / TB,High
+R20,Joint pain + Rash + Fever,Autoimmune markers,Systemic Lupus / Vasculitis,Moderate
+R21,Palpitations + Chest tightness + Anxiety,Triggered by stress,Non-cardiac palpitations / Panic attack,Mild
+R22,Abdominal pain + Bloody diarrhea + Fever,Overt GI bleeding / infection,Shigella / IBD,High
+R23,Headache + Neck stiffness + Photophobia,Acute onset,Subarachnoid hemorrhage / Meningitis,Emergency
+R24,Chest pain + Radiating to arm + Nausea,Classic anginal features,Acute Coronary Syndrome,Emergency
+R25,Severe abdominal pain + Rigid abdomen + Shock,Peritoneal signs,Perforated viscus / Peritonitis,Emergency
+R26,Nausea + Vomiting + Dizziness + Confusion,Dehydration + electrolyte imbalance,Acute metabolic derangement,High
+R27,Palpitations + Breathlessness + Edema,Underlying cardiac condition,Decompensated heart failure,High
+R28,Severe headache + Visual changes + Hypertension history,Malignant hypertension,Posterior Reversible Encephalopathy Syndrome (PRES),Emergency
+R29,Muscle weakness + Fatigue + Myalgias,Elevated CK,Myositis / Rhabdomyolysis,High
+R30,Abdominal pain + Jaundice + Fever,Infective cholangitis / hepatic cause,Cholangitis,High
+R31,Joint pain + Morning stiffness + Improvement with movement,Chronic feature,Osteoarthritis,Mild/Moderate
+R32,Hair loss + Weight gain + Cold intolerance,Thyroid profile abnormality,Hypothyroidism,Moderate
+R33,Excessive thirst + Frequent urination + Weight loss,Polyuria + polydipsia,Diabetes Mellitus,Moderate
+R34,Seizures + Confusion + Headache,New onset,Brain lesion / Epilepsy,High
+R35,Back pain + Leg weakness + Bladder dysfunction,Neuro signs,Spinal cord compression / Cauda equina syndrome,Emergency
+R36,Unexplained bruising + Bleeding + Fatigue,Blood count abnormality,Possible hematologic disorder (leukemia),High
+R37,Swollen lymph nodes + Weight loss + Night sweats,Chronic,Possible lymphoma,High
+R38,Shortness of breath + Cough + Hemoptysis in smoker,Chronic risk,Possible lung cancer or TB,High
+R39,Chest pain + Sharp + Worse breathing,Pleural involvement,Pleuritis / Pulmonary Embolism,High
+R40,Painful urination + Fever + Flank pain,Upper urinary symptoms,Pyelonephritis,High
+R41,Abdominal pain + Vomiting + Distension,Obstruction signs,Bowel obstruction,High
+R42,Diarrhea + Fever + Blood,Acute onset,Infectious colitis / IBD,High
+R43,Vertigo + Hearing loss + Tinnitus,Inner ear signs,Meniere's disease / Vestibular pathology,Moderate
+R44,Vision changes + Eye pain + Red eye,Photophobia,Optic neuritis / Uveitis,Moderate
+R45,Facial swelling + Rash + Difficulty breathing,Allergic features,Angioedema / Anaphylaxis,Emergency
+R46,Neck pain + Fever + Stiffness,Subacute onset,Infectious spondylitis /Meningitis,High
+R47,Chest tightness + Cough + Wheezing,Respiratory features,Asthma exacerbation / COPD,Moderate/High
+R48,Abdominal pain + Nausea + Dysphagia,Upper GI features,Peptic ulcer / Esophagitis,Moderate
+R49,Urinary retention + Weak stream + Overflow symptoms,Lower urinary tract signs,Benign prostatic hyperplasia or obstruction,Moderate
+R50,Scrotal pain + Swelling + Nausea,Acute onset,Scrotal torsion / Epididymitis,High
+R51,Breast pain + Discharge + Lump,Breast exam findings,Breast pathology / Cancer,High
+R52,Anxiety + Palpitations + Sweating,No organic features,Panic disorder / Anxiety,Moderate
+R53,Chest pain + Palpitations + Dizziness,No structural disease,Supraventricular tachycardia,High
+R54,Muscle cramps + Tingling + Weakness,Electrolyte changes,Hypokalemia / Hypocalcemia,Moderate
+R55,Weight gain + Edema + Fatigue,Chronic presentation,Heart failure / Kidney disease,Moderate
+R56,Hematuria + Flank pain + Weight loss (smoker),Chronic risk,Renal cell carcinoma / Urologic pathology,High
+R57,Nausea + Vomiting + Confusion in alcoholic,History of alcohol use,Alcoholic hepatitis / hepatic failure,High
+R58,Headache + Visual Aura + Photophobia,+ Migraines features,Migraine,Moderate
+R59,Depression + Fatigue + Insomnia,Chronic onset,Mood disorder / Depression,Moderate
+R60,Memory loss + Confusion + Weight loss,Elderly,Alzheimer's disease / Dementia,High
+R61,Joint pain + Redness + Warmth,Acute onset,Septic arthritis,High
+R62,Back pain + Pain radiates to thigh + Numbness,Radiculopathy,Sciatica,Moderate
+R63,Rash + Fever + Malaise,Systemic signs,Drug reaction / Viral exanthem,Moderate
+R64,Itching + Jaundice + Dark urine,Liver involvement,Hepatitis / Cholestasis,High
+R65,Pruritus + Dry skin + Hair loss,Chronic signs,Thyroid disease / Dermatologic cause,Moderate
+R66,Excessive sweating + Weight loss + Palpitations,Thyroid features,Hyperthyroidism,Moderate
+R67,Cold extremities + Fatigue + Weight gain,Metabolic signs,Hypothyroidism,Moderate
+R68,Nasal congestion + Rhinorrhea + Sneezing,Allergic features,Allergic rhinitis / Viral cold,Mild
+R69,Epistaxis + Hypertension history,Chronic risk,Vascular fragility / Hypertensive bleed,High
+R70,Vision changes + Headache + Eye pain,Neurologic + ocular features,Acute glaucoma / optic neuritis,High
+R71,Facial numbness + Weakness + Speech changes,Neuro signs,Stroke / Facial nerve lesion,Emergency
+R72,Neck swelling + Voice change + Dysphagia,Thyroid features,Thyroid cancer / Goiter,Moderate
+R73,Swollen lymph nodes + Rash + Pruritus,Chronic signs,Infectious mononucleosis / lymphoma,Moderate
+R74,Muscle pain + Fever + Rash,Acute onset,Inflammatory myopathy / viral myositis,Moderate
+R75,Joint stiffness + Fatigue + Weight loss,Chronic signs,Rheumatoid / Connective tissue disease,Moderate
+R76,Swelling + Redness + Heat,Local inflammation,Cellulitis / Soft tissue infection,High
+R77,Bleeding + Bruising + Fatigue,Coagulopathy suspicion,Hemophilia / Platelet disorder,High
+R78,Swollen lymph nodes + Weight loss + Fever,Chronic suspicion,Lymphoma / TB,High
+R79,Frequent urination + Nocturia + Fatigue,Chronic sign,Prostate enlargement / Renal disease,Moderate
+R80,Urinary urgency + Pelvic pain + Incontinence,Bladder involvement,Interstitial cystitis / UTI,Moderate
+R81,Hematuria + Weight loss + Older age,Smoking history,Bladder cancer / Urothelial carcinoma,High
+R82,Insomnia + Anxiety + Palpitations,No organic disease,Psychiatric cause / anxiety,Moderate
+R83,Depression + Mood swings + Sleep disturbance,Chronic,Major depressive disorder,Moderate
+R84,Poor wound healing + Weight loss + Fatigue,Metabolic + nutritional signs,Diabetes / Malignancy,High
+R85,Thirst + Dry mouth + Weakness,Dehydration,Volume depletion / renal cause,High
+R86,Sleepiness + Confusion + Weight loss,Night onset,Obstructive sleep apnea / Hypothyroid,Moderate
+R87,Mood swings + Irritability + Hormonal signs,Reproductive age,Thyroid / Hormonal imbalance,Moderate
+R88,Tremors + Palpitations + Sweating,No cardiac disease,Hyperthyroid / Anxiety / Parkinsonism,Moderate
+R89,Vision changes + Weakness + Headache,Neurologic signs,Stroke / Intracranial mass,Emergency
+R90,Seizures + Confusion + Fall,Neurologic event,Epilepsy / Brain lesion,High
+R91,Back pain + Bladder dysfunction + Leg numbness,Red flag for spinal compression,Cauda equina syndrome,Emergency
+R92,Scrotal pain + Urinary symptoms + Fever,Urologic signs,Epididymitis / Orchitis,Moderate
+R93,Facial swelling + Itching + Breathing difficulty,Anaphylaxis signs,Allergic reaction / Angioedema,Emergency
+R94,Joint pain + Redness + Fever + Rheumatic history,Acute onset,Rheumatic fever / Lupus flare,High
+R95,Palpitations + Chest discomfort + Dizziness,Non-ischemic with normal ECG,SVT / benign arrhythmia,Moderate
+R96,Abdominal pain + Vomiting + GI bleed signs,Upper GI features,Peptic ulcer perforation,Emergency
+R97,Swollen lymph nodes + Sore throat + Fever,Oropharyngeal signs,Infectious mononucleosis / EBV,Moderate
+R98,Itching + Jaundice + Weight loss,Chronic hepatobiliary signs,Primary biliary cholangitis / cholestatic disease,High
+R99,Muscle cramps + Weakness + Palpitations,Electrolyte disturbance,Hypokalemia / Hypomagnesemia,Moderate
+R100,Frequent urination + Polydipsia + Weight loss + Fatigue,Classic diabetic triad,Diabetes Mellitus,High
