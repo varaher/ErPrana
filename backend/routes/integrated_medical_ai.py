@@ -389,6 +389,16 @@ class IntegratedMedicalAI:
         conversation_state = request.conversation_state or {}
         user_message = request.user_message.strip()
         
+        # First check for small talk/greetings (conversational layer)
+        conversational_response, is_medical_content = conversational_layer.handle_input(user_message)
+        if conversational_response and not is_medical_content:
+            return IntegratedMedicalResponse(
+                assistant_message=conversational_response,
+                updated_state=conversation_state,
+                next_step="conversation",
+                general_symptom_analysis={"summary": "Conversational response - no medical analysis needed"}
+            )
+        
         # Enhanced emergency detection first (highest priority) 
         all_symptoms = self._extract_all_mentioned_symptoms(conversation_state, user_message)
         emergency_result = emergency_detector.detect_emergency(user_message, all_symptoms)
