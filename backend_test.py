@@ -3987,8 +3987,9 @@ def main_fever_debug_tests():
         ("Conversational Layer", success_1, result_1),
         ("Fever Detection", success_2, result_2),
         ("Fever Interview Questions", success_3, result_3),
-        ("Debug Wrong Questions", success_4, result_4),
-        ("Fever Slot Progression", success_5, result_5)
+        ("Exact User Scenario", success_4, result_4),
+        ("Debug Wrong Questions", success_5, result_5),
+        ("Fever Slot Progression", success_6, result_6)
     ]
     
     passed = 0
