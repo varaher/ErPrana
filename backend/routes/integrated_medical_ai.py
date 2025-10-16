@@ -491,14 +491,7 @@ class IntegratedMedicalAI:
                 comprehensive_diagnoses=general_symptom_analysis.get("emergency_patterns", []) + general_symptom_analysis.get("toxicology_patterns", [])
             )
         
-        # Check for structured interview triggers or continuation
-        interview_type = self.detect_structured_interview_trigger(user_message, conversation_state)
-        
-        if interview_type:
-            # Conduct structured interview
-            return await self._conduct_structured_interview(
-                interview_type, request, conversation_state
-            )
+        # Note: Structured interview check moved to top of method for priority handling
         
         # Check if we should provide comprehensive analysis
         interview_data = self.merge_interview_data(conversation_state)
