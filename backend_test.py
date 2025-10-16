@@ -2454,7 +2454,7 @@ class BackendAPITester:
         if success_2:
             # Check session state maintenance
             session_data = response_2.get("session_data", {})
-            detected_symptoms = session_data.get("detected_symptoms", [])
+            detected_symptoms = session_data.get("detected_symptoms", []) if session_data else []
             
             # Should have accumulated symptoms from both turns
             if "chest_pain" in detected_symptoms:
