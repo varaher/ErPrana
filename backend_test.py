@@ -2473,7 +2473,7 @@ class BackendAPITester:
                 print(f"❌ SYMPTOM ACCUMULATION: Only {len(detected_symptoms)} symptoms accumulated")
             
             # Check if session ID is maintained
-            session_id_returned = session_data.get("id")
+            session_id_returned = session_data.get("id") if session_data else None
             if session_id_returned == session_id:
                 print("✅ SESSION ID: Session ID properly maintained")
             else:
