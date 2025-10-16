@@ -2622,7 +2622,7 @@ class BackendAPITester:
                 print("❌ R2 MENINGITIS EMERGENCY: No emergency instructions found")
             
             # Check for R2 rule detection
-            emergency_patterns = general_analysis.get("emergency_patterns", [])
+            emergency_patterns = general_analysis.get("emergency_patterns", []) if general_analysis else []
             r2_detected = any(pattern.get("rule_id") == "R2" for pattern in emergency_patterns)
             
             if r2_detected:
