@@ -2719,7 +2719,7 @@ class BackendAPITester:
                 print(f"Available patterns: {[p.get('rule_id') for p in general_patterns]}")
             
             # Check urgency level
-            urgency = general_analysis.get("overall_urgency", "")
+            urgency = general_analysis.get("overall_urgency", "") if general_analysis else ""
             if urgency in ["moderate", "high"]:
                 print(f"✅ R17 URGENCY: Appropriate urgency level: {urgency}")
             else:
