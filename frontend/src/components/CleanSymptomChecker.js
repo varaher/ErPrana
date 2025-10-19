@@ -229,8 +229,8 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         console.log('NLU processing failed, using original message:', nluError);
       }
 
-      // Call integrated medical AI API for comprehensive analysis
-      const response = await fetch(`${BACKEND_URL}/api/integrated/medical-ai`, {
+      // Call unified clinical chat API for real-time rule-based analysis
+      const response = await fetch(`${BACKEND_URL}/api/unified/unified-clinical-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
