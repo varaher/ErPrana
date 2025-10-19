@@ -166,22 +166,30 @@ class UnifiedClinicalEngine:
         }
     
     def small_talk(self, text: str) -> Optional[str]:
-        """Handle casual conversation and greetings"""
+        """Handle casual conversation and greetings - but prioritize medical emergencies"""
         t = text.lower().strip()
+        
+        # CRITICAL: Don't treat emergency medical terms as small talk
+        emergency_terms = ['emergency', 'stroke', 'seizure', 'heart attack', 'cant lift', "can't lift", 
+                          'unable to lift', 'paralyzed', 'chest pain', 'jerking', 'fell down', 
+                          'fits', 'convulsion', 'bleeding', 'unconscious']
+        
+        if any(term in t for term in emergency_terms):
+            return None  # Let medical analysis handle this
         
         if re.match(r'^(hi|hello|hey|yo)$', t):
             return "Hello! 😊 I'm ARYA, your health assistant. What symptoms are you experiencing today?"
         
-        if "good morning" in t:
+        if "good morning" in t and not any(term in t for term in ['pain', 'sick', 'fever', 'hurt']):
             return "Good morning! 🌞 How are you feeling today? Any symptoms I can help analyze?"
         
-        if "good evening" in t:
+        if "good evening" in t and not any(term in t for term in ['pain', 'sick', 'fever', 'hurt']):
             return "Good evening! 🌙 How are you feeling? What symptoms can I help you with?"
         
-        if "thank" in t or "thanks" in t:
+        if ("thank" in t or "thanks" in t) and not any(term in t for term in ['but', 'however', 'still']):
             return "You're welcome! 💚 Is there anything else about your symptoms I can help analyze?"
         
-        if "how are you" in t:
+        if "how are you" in t and not any(term in t for term in ['feeling', 'sick', 'pain']):
             return "I'm here and ready to help! How are *you* feeling? Any symptoms to discuss?"
         
         if "bye" in t or "goodbye" in t:
