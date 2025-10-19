@@ -76,6 +76,13 @@ class UnifiedClinicalEngine:
             ClinicalRule("R61", ["joint_pain", "joint_redness", "joint_warmth"], "acute onset", "Septic arthritis", "High", 85),
             ClinicalRule("R84", ["poor_wound_healing", "weight_loss", "fatigue"], "metabolic + nutritional signs", "Diabetes / Malignancy", "High", 80),
             ClinicalRule("R100", ["frequent_urination", "excessive_thirst", "weight_loss", "fatigue"], "classic diabetic triad", "Diabetes Mellitus", "High", 90),
+            
+            # Additional Critical Emergency Rules
+            ClinicalRule("R71", ["arm_weakness", "facial_weakness", "speech_problems"], "acute onset", "Stroke", "Emergency", 95),
+            ClinicalRule("R89", ["weakness", "vision_changes", "headache"], "neurologic signs", "Stroke / Intracranial mass", "Emergency", 90),
+            ClinicalRule("R90", ["seizures", "confusion", "fall"], "neurologic event", "Epilepsy / Brain lesion", "High", 85),
+            ClinicalRule("STROKE1", ["arm_weakness"], "sudden onset", "Possible Stroke", "Emergency", 90),
+            ClinicalRule("SEIZURE1", ["seizures", "jerking", "fell_down"], "witnessed event", "Active Seizure", "Emergency", 95),
         ]
         return rules
     
