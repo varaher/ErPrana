@@ -593,7 +593,7 @@ class UnifiedClinicalEngine:
         t = text.lower()
         
         # Check for stroke patterns
-        if any(term in t for term in ['cant lift', "can't lift", 'unable to lift', 'arm weakness', 'paralyzed']):
+        if any(term in t for term in ['cant lift', "can't lift", 'unable to lift', 'not able to lift', 'arm weakness', 'paralyzed']):
             session.step = "stroke_assessment"
             return "🚨 **POSSIBLE STROKE EMERGENCY** 🚨\n\nUnable to move arm/limb is a serious neurological sign.\n\n**CALL 911 IMMEDIATELY**\n\nWhile waiting:\n• Note the time this started\n• Do NOT give food/water\n• Monitor breathing\n\n⏰ **Time is critical for stroke treatment**"
         
