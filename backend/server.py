@@ -25,6 +25,7 @@ from routes.wearables_sync import router as wearables_router
 from routes.voice_assistant import router as voice_router
 from routes.professional_mode import router as professional_router
 from routes.medication_management import router as medication_router
+from routes.symptom_intelligence_routes import router as symptom_intelligence_layer_router
 
 
 ROOT_DIR = Path(__file__).parent
