@@ -122,6 +122,7 @@ app.include_router(wearables_router, prefix="/api")
 app.include_router(voice_router, prefix="/api")
 app.include_router(professional_router, prefix="/api")
 app.include_router(medication_router, prefix="/api")
+app.include_router(symptom_intelligence_layer_router, prefix="/api/symptom-intelligence-layer")
 
 app.add_middleware(
     CORSMiddleware,
