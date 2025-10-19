@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Hematemesis",
+  "priority": "🟥 Red",
+  "slots": ["volume", "color", "duration", "abdominal_pain", "medical_history", "medications"],
+  "questions": {
+    "volume": "How much blood have you vomited? (small amount, cupful, large amount)",
+    "color": "What color is the blood? (bright red, dark red, coffee-ground appearance)",
+    "duration": "When did this start?",
+    "abdominal_pain": "Do you have abdominal pain?",
+    "medical_history": "Do you have liver disease, ulcers, or history of GI bleeding?",
+    "medications": "Are you taking blood thinners, aspirin, or NSAIDs?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'large' in str(volume).lower() or 'bright red' in str(color).lower()",
+      "level": "🟥 Red",
+      "reason": "Active upper GI bleeding - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(medical_history).lower() and 'liver' in str(medical_history).lower()",
+      "level": "🟥 Red",
+      "reason": "Hematemesis with liver disease - Possible variceal bleeding - Emergency care required"
+    }
+  ]
+}
