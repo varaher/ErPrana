@@ -480,6 +480,12 @@ class UnifiedClinicalEngine:
     
     def _run_general_analysis(self, text: str, session: SessionState, rule_matches: List[Dict]) -> str:
         """General symptom analysis using comprehensive rule evaluation"""
+        # Check if this is a follow-up response to an ongoing conversation
+        if session.step and session.step != "start":
+            # This might be a response to a previous question - route back to appropriate controller
+            if session.engine in ["fever", "headache", "chest_pain", "shortness_of_breath", "abdominal_pain"]:
+                return self.run_symptom_controller(text, session)
+        
         if not rule_matches:
             session.step = "gather_more"
             return "I'd like to understand your symptoms better. Can you describe what you're experiencing in detail? (pain, fatigue, nausea, etc.)"
