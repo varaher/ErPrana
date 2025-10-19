@@ -620,6 +620,36 @@ class UnifiedClinicalEngine:
         
         session.step = "complete"
         return emergency_response
+    
+    def _run_third_person_controller(self, text: str, session: SessionState, rule_matches: List[Dict]) -> str:
+        """Handle medical questions about other people (friend, family, etc.)"""
+        t = text.lower()
+        
+        # Extract who and what symptoms
+        person = "someone"
+        if "friend" in t:
+            person = "your friend"
+        elif "family" in t or "wife" in t or "husband" in t:
+            person = "your family member"
+        elif "child" in t:
+            person = "your child"
+        
+        # Check for emergency symptoms in others
+        if any(term in t for term in ['seizure', 'fit', 'jerking', 'unconscious', 'not breathing']):
+            return f"🚨 **EMERGENCY FOR {person.upper()}** 🚨\n\n**CALL 911 IMMEDIATELY**\n\nFor seizures/unconsciousness:\n• Turn them on side\n• Clear airway\n• Time the episode\n• Stay with them\n• Follow 911 dispatcher instructions"
+        
+        # Extract symptoms about the other person
+        if "fever" in t:
+            return f"For {person} with fever:\n\n**Immediate care:**\n• Monitor temperature every 2-4 hours\n• Give fluids frequently\n• Rest in cool environment\n• Paracetamol/ibuprofen for comfort\n\n**Seek medical care if:**\n• Temperature >103°F (39.4°C)\n• Difficulty breathing\n• Severe headache with neck stiffness\n• Confusion or unusual behavior\n• Vomiting persistently\n\n**Call doctor if fever persists >3 days**"
+        
+        if "headache" in t:
+            if any(term in t for term in ['sudden', 'worst ever', 'severe']):
+                return f"🚨 **URGENT for {person}** 🚨\n\nSudden severe headache needs immediate evaluation.\n\n**Go to ER if headache is:**\n• Sudden and severe ('worst ever')\n• With neck stiffness\n• With fever\n• With vision changes\n• With confusion\n\n**Otherwise:** Rest, hydration, and pain relief may help."
+            else:
+                return f"For {person} with headache:\n\n**Home care:**\n• Rest in quiet, dark room\n• Hydrate well\n• Apply cold/warm compress\n• Over-the-counter pain relief\n\n**Seek care if:**\n• Headache worsens or persists\n• With fever or neck stiffness\n• With vision changes\n• New pattern of severe headaches"
+        
+        # General third-person advice
+        return f"I understand you're concerned about {person}. To provide the best guidance:\n\n**Can you tell me:**\n• What specific symptoms they have?\n• How long have they had them?\n• Any concerning changes?\n\n**General advice:**\n• Encourage them to see a doctor if symptoms are severe or persistent\n• For emergencies: call 911\n• For urgent concerns: visit urgent care or ER\n\nI can provide more specific guidance once I know their symptoms."
 
     async def process_chat_turn(self, text: str, session_id: str) -> Dict[str, Any]:
         """
