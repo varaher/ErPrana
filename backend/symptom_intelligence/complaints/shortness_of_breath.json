@@ -1,0 +1,38 @@
+{
+  "chief_complaint": "Shortness of Breath",
+  "priority": "🟥 Red",
+  "slots": [
+    "onset",
+    "severity",
+    "rest_or_exertion",
+    "chest_pain",
+    "risk_factors",
+    "duration"
+  ],
+  "questions": {
+    "onset": "When did the shortness of breath start? Was it sudden or gradual?",
+    "severity": "On a scale of 1-10, how severe is your breathing difficulty?",
+    "rest_or_exertion": "Does it occur at rest or only with activity?",
+    "chest_pain": "Do you have any chest pain along with the shortness of breath?",
+    "risk_factors": "Do you have any of these: recent surgery, long travel, leg swelling, history of blood clots?",
+    "duration": "How long have you been experiencing this?"
+  },
+  "completion_threshold": 4,
+  "triage_rules": [
+    {
+      "expression": "'sudden' in str(onset).lower() and 'rest' in str(rest_or_exertion).lower() and int(severity) >= 7 and ('yes' in str(risk_factors).lower() or 'surgery' in str(risk_factors).lower())",
+      "level": "🟥 Red",
+      "reason": "Possible Pulmonary Embolism (PE) - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'rest' in str(rest_or_exertion).lower() and int(severity) >= 6",
+      "level": "🟥 Red",
+      "reason": "Severe shortness of breath at rest - Emergency evaluation needed"
+    },
+    {
+      "expression": "int(severity) >= 5 and 'yes' in str(chest_pain).lower()",
+      "level": "🟧 Orange",
+      "reason": "Moderate shortness of breath with chest pain - Urgent evaluation needed"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "chief_complaint": "Altered Mental Status",
+  "priority": "🟥 Red",
+  "slots": [
+    "onset",
+    "level_of_consciousness",
+    "recent_trauma",
+    "medical_history",
+    "medications",
+    "associated_symptoms"
+  ],
+  "questions": {
+    "onset": "When did the confusion or altered mental status start?",
+    "level_of_consciousness": "Is the person alert, confused, drowsy, or unresponsive?",
+    "recent_trauma": "Has there been any recent head injury or trauma?",
+    "medical_history": "Do you have diabetes, seizure disorder, or other medical conditions?",
+    "medications": "What medications are you currently taking?",
+    "associated_symptoms": "Are there any other symptoms like fever, headache, weakness, or difficulty speaking?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'unresponsive' in str(level_of_consciousness).lower() or 'drowsy' in str(level_of_consciousness).lower()",
+      "level": "🟥 Red",
+      "reason": "Decreased level of consciousness - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(recent_trauma).lower() and 'confused' in str(level_of_consciousness).lower()",
+      "level": "🟥 Red",
+      "reason": "Altered mental status after trauma - Possible head injury - Emergency evaluation needed"
+    },
+    {
+      "expression": "'confused' in str(level_of_consciousness).lower() and 'fever' in str(associated_symptoms).lower()",
+      "level": "🟥 Red",
+      "reason": "Confusion with fever - Possible meningitis or encephalitis - Emergency care required"
+    }
+  ]
+}

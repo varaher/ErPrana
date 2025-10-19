@@ -1,0 +1,38 @@
+{
+  "chief_complaint": "Headache",
+  "priority": "🟥 Red",
+  "slots": [
+    "onset",
+    "severity",
+    "location",
+    "character",
+    "associated_symptoms",
+    "duration"
+  ],
+  "questions": {
+    "onset": "When did the headache start? Was it sudden (thunderclap) or gradual?",
+    "severity": "On a scale of 1-10, how severe is the headache? Is it the worst headache of your life?",
+    "location": "Where is the headache located? (front, back, side, all over)",
+    "character": "How would you describe the pain? (throbbing, sharp, dull, pressure)",
+    "associated_symptoms": "Do you have any other symptoms like vision changes, weakness, confusion, stiff neck, fever, or nausea?",
+    "duration": "How long have you had this headache?"
+  },
+  "completion_threshold": 4,
+  "triage_rules": [
+    {
+      "expression": "'sudden' in str(onset).lower() and int(severity) >= 8 and ('worst' in str(severity).lower() or 'thunderclap' in str(onset).lower())",
+      "level": "🟥 Red",
+      "reason": "Thunderclap headache - Possible Subarachnoid Hemorrhage (SAH) - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "('stiff neck' in str(associated_symptoms).lower() or 'confusion' in str(associated_symptoms).lower()) and 'fever' in str(associated_symptoms).lower()",
+      "level": "🟥 Red",
+      "reason": "Headache with meningeal signs - Possible Meningitis - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'weakness' in str(associated_symptoms).lower() or 'vision' in str(associated_symptoms).lower() or 'confusion' in str(associated_symptoms).lower()",
+      "level": "🟧 Orange",
+      "reason": "Headache with neurological symptoms - Urgent evaluation needed"
+    }
+  ]
+}

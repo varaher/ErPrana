@@ -1,0 +1,38 @@
+{
+  "chief_complaint": "Syncope",
+  "priority": "🟥 Red",
+  "slots": [
+    "circumstances",
+    "warning_signs",
+    "duration_unconscious",
+    "recovery",
+    "chest_pain",
+    "palpitations"
+  ],
+  "questions": {
+    "circumstances": "What were you doing when you fainted? (standing, sitting, exercising)",
+    "warning_signs": "Did you have any warning before fainting? (dizziness, nausea, vision changes)",
+    "duration_unconscious": "How long were you unconscious?",
+    "recovery": "Did you recover immediately or feel confused afterward?",
+    "chest_pain": "Did you have chest pain before or after fainting?",
+    "palpitations": "Did you feel your heart racing or skipping beats?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'yes' in str(chest_pain).lower() or 'yes' in str(palpitations).lower()",
+      "level": "🟥 Red",
+      "reason": "Syncope with cardiac symptoms - Possible arrhythmia - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'exercising' in str(circumstances).lower() or 'exercise' in str(circumstances).lower()",
+      "level": "🟥 Red",
+      "reason": "Syncope during exertion - Possible cardiac cause - Emergency evaluation needed"
+    },
+    {
+      "expression": "'confused' in str(recovery).lower() or int(str(duration_unconscious).split()[0] if str(duration_unconscious).split() else '0') > 1",
+      "level": "🟧 Orange",
+      "reason": "Prolonged loss of consciousness or slow recovery - Urgent evaluation needed"
+    }
+  ]
+}

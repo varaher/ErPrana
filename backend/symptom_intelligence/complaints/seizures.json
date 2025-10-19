@@ -1,0 +1,38 @@
+{
+  "chief_complaint": "Seizures",
+  "priority": "🟥 Red",
+  "slots": [
+    "first_seizure",
+    "duration",
+    "type",
+    "post_ictal_state",
+    "head_trauma",
+    "fever"
+  ],
+  "questions": {
+    "first_seizure": "Is this the first seizure ever, or have you had seizures before?",
+    "duration": "How long did the seizure last?",
+    "type": "What type of movements occurred? (shaking, stiffness, staring)",
+    "post_ictal_state": "How is the person now? Alert, confused, or still drowsy?",
+    "head_trauma": "Was there any recent head injury?",
+    "fever": "Is there a fever present?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'first' in str(first_seizure).lower() and 'yes' in str(first_seizure).lower()",
+      "level": "🟥 Red",
+      "reason": "First-time seizure - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "int(str(duration).split()[0] if str(duration).split() else '0') > 5",
+      "level": "🟥 Red",
+      "reason": "Prolonged seizure (>5 minutes) - Status epilepticus - Emergency care required"
+    },
+    {
+      "expression": "'yes' in str(head_trauma).lower()",
+      "level": "🟥 Red",
+      "reason": "Seizure after head trauma - Emergency evaluation needed"
+    }
+  ]
+}

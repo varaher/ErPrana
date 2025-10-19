@@ -1,0 +1,38 @@
+{
+  "chief_complaint": "Fever",
+  "priority": "🟥 Red",
+  "slots": [
+    "duration",
+    "temperature",
+    "pattern",
+    "associated_symptoms",
+    "recent_travel",
+    "immune_status"
+  ],
+  "questions": {
+    "duration": "How long have you had a fever?",
+    "temperature": "What is the highest temperature you've recorded?",
+    "pattern": "Is the fever constant or does it come and go?",
+    "associated_symptoms": "Do you have any other symptoms like headache, stiff neck, rash, confusion, or difficulty breathing?",
+    "recent_travel": "Have you traveled recently or been exposed to anyone who is sick?",
+    "immune_status": "Do you have any conditions that affect your immune system, or are you on immunosuppressive medications?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "float(str(temperature).replace('f','').replace('c','').replace('°','').split()[0]) >= 39.0 and ('stiff neck' in str(associated_symptoms).lower() or 'confusion' in str(associated_symptoms).lower() or 'rash' in str(associated_symptoms).lower())",
+      "level": "🟥 Red",
+      "reason": "Possible Meningitis or Sepsis - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "float(str(temperature).replace('f','').replace('c','').replace('°','').split()[0]) >= 40.0",
+      "level": "🟥 Red",
+      "reason": "Very high fever (>104°F/40°C) - Emergency evaluation needed"
+    },
+    {
+      "expression": "'yes' in str(immune_status).lower() and float(str(temperature).replace('f','').replace('c','').replace('°','').split()[0]) >= 38.5",
+      "level": "🟧 Orange",
+      "reason": "Fever in immunocompromised patient - Urgent evaluation needed"
+    }
+  ]
+}
