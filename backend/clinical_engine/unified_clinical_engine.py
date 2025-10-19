@@ -201,6 +201,10 @@ class UnifiedClinicalEngine:
         """Detect primary symptom intent from user input"""
         t = text.lower()
         
+        # Check if asking about someone else (third person)
+        if any(term in t for term in ['my friend', 'my family', 'my wife', 'my husband', 'my child', 'someone else', 'he is', 'she is', 'they have']):
+            return "third_person_medical"
+        
         # CRITICAL EMERGENCIES FIRST
         if any(term in t for term in ['seizure', 'fit', 'convulsion', 'jerking', 'shaking uncontrollably', 'fell down jerking']):
             return "neurological_emergency"
