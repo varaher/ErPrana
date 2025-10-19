@@ -247,17 +247,17 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
 
       const data = await response.json();
-      console.log('Integrated Medical AI Response:', data);
+      console.log('Unified Clinical Chat Response:', data);
       
       // Update conversation state with backend response
       setConversationState(prev => ({
         ...prev,
-        currentStep: data.next_step,
-        backendState: data.updated_state,
-        urgencyLevel: data.emergency_detected ? 'emergency' : data.triage_level || 'normal',
+        currentStep: data.conversation_complete ? 'complete' : 'ongoing',
+        backendState: data.session_data || {},
+        urgencyLevel: data.emergency_detected ? 'emergency' : 'normal',
         sessionId: prev.sessionId || `session_${Date.now()}`,
-        interviewActive: data.interview_active,
-        interviewType: data.interview_type
+        interviewActive: !data.conversation_complete,
+        interviewType: data.analysis_type
       }));
 
       // Format assistant message based on response type
