@@ -263,6 +263,16 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       // Format assistant message based on response type
       let assistantMessageText = data.assistant_message;
       
+      // Handle emergency detection
+      if (data.emergency_detected) {
+        assistantMessageText = "🚨 " + assistantMessageText;
+      }
+
+      // Add analysis type information if available
+      if (data.active_rules_used && data.active_rules_used > 0) {
+        console.log(`Analysis using ${data.active_rules_used} clinical rules`);
+      }
+      
       // If comprehensive diagnoses are provided, they're already formatted in the response
       // If basic recommendations are provided, format them
       if (data.recommendations && data.recommendations.length > 0) {
