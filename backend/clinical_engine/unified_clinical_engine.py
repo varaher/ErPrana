@@ -587,6 +587,33 @@ class UnifiedClinicalEngine:
             return "Monitor symptoms and seek care if pain worsens."
         
         return "Tell me more about your abdominal pain."
+    
+    def _run_neurological_emergency_controller(self, text: str, session: SessionState, rule_matches: List[Dict]) -> str:
+        """Handle critical neurological emergencies like stroke and seizures"""
+        t = text.lower()
+        
+        # Check for stroke patterns
+        if any(term in t for term in ['cant lift', "can't lift", 'unable to lift', 'arm weakness', 'paralyzed']):
+            session.step = "stroke_assessment"
+            return "🚨 **POSSIBLE STROKE EMERGENCY** 🚨\n\nUnable to move arm/limb is a serious neurological sign.\n\n**CALL 911 IMMEDIATELY**\n\nWhile waiting:\n• Note the time this started\n• Do NOT give food/water\n• Monitor breathing\n\n⏰ **Time is critical for stroke treatment**"
+        
+        # Check for seizure patterns  
+        if any(term in t for term in ['seizure', 'fit', 'jerking', 'convulsion', 'fell down']):
+            session.step = "seizure_assessment"
+            return "🚨 **SEIZURE EMERGENCY** 🚨\n\n**CALL 911 IMMEDIATELY**\n\n**If seizure is ongoing:**\n• Turn person on side\n• Clear airway\n• Time the seizure\n• Do NOT put anything in mouth\n• Stay with them until help arrives\n\n**If seizure stopped:** Still call 911 - they need medical evaluation."
+        
+        session.step = "complete"
+        return "🚨 **NEUROLOGICAL EMERGENCY** - Call 911 immediately for any sudden neurological symptoms."
+    
+    def _run_medical_emergency_controller(self, text: str, session: SessionState, rule_matches: List[Dict]) -> str:
+        """Handle general medical emergencies"""
+        session.step = "emergency_triage"
+        
+        # Check for emergency keywords and provide appropriate response
+        emergency_response = "🚨 **MEDICAL EMERGENCY** 🚨\n\n**CALL 911 IMMEDIATELY**\n\nFor any life-threatening emergency:\n• Difficulty breathing\n• Chest pain\n• Severe bleeding\n• Unconsciousness\n• Seizures\n• Stroke symptoms\n\n**Stay on the line with 911 for instructions**"
+        
+        session.step = "complete"
+        return emergency_response
 
     async def process_chat_turn(self, text: str, session_id: str) -> Dict[str, Any]:
         """
