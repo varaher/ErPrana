@@ -634,6 +634,14 @@ class UnifiedClinicalEngine:
         detected_symptoms = self.extract_symptoms_from_text(text)
         
         if not detected_symptoms and intent == "general_analysis":
+            # Check for vague symptoms that need clarification
+            if any(word in text.lower() for word in ['uneasy', 'unwell', 'sick', 'bad', 'awful', 'terrible', 'low', 'down']):
+                return {
+                    "reply": "I understand you're not feeling well. Can you describe your specific symptoms? (e.g., pain, fever, nausea, difficulty moving, etc.)",
+                    "done": False,
+                    "session": None,
+                    "analysis_type": "symptom_clarification"
+                }
             return {
                 "reply": "I'd like to help analyze your symptoms. Can you describe what you're experiencing? (e.g., pain, fever, cough, nausea, etc.)",
                 "done": False,
