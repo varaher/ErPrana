@@ -133,13 +133,19 @@ class UnifiedClinicalEngine:
             "painful_urination": ["painful urination", "burning when urinating", "painful peeing"],
             "flank_pain": ["flank pain", "side pain", "kidney pain", "back pain"],
             
-            # Musculoskeletal
+            # Musculoskeletal & Neurological
             "joint_pain": ["joint pain", "joints hurt", "arthritis", "aching joints"],
             "joint_redness": ["red joints", "inflamed joints", "swollen joints"],
             "joint_warmth": ["warm joints", "hot joints"],
             "swelling": ["swelling", "swollen", "puffy"],
             "morning_stiffness": ["morning stiffness", "stiff in morning", "joints stiff morning"],
             "back_pain": ["back pain", "backache", "spine pain"],
+            "weakness": ["weakness", "weak", "can't move", "unable to move", "can't lift", "unable to lift", "paralyzed", "paralysis"],
+            "arm_weakness": ["arm weakness", "weak arm", "can't lift arm", "unable to lift arm", "arm paralyzed"],
+            "facial_weakness": ["facial weakness", "face drooping", "facial droop", "crooked smile"],
+            "speech_problems": ["speech problems", "can't speak", "slurred speech", "difficulty speaking"],
+            "seizures": ["seizure", "seizures", "fit", "fits", "convulsion", "jerking", "shaking uncontrollably", "fell down jerking"],
+            "confusion_sudden": ["sudden confusion", "confused suddenly", "disoriented", "not making sense"],
             
             # Endocrine/Metabolic
             "tremors": ["tremors", "shaking", "trembling", "shaky hands"],
