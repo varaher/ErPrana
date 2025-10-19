@@ -516,7 +516,14 @@ class UnifiedClinicalEngine:
             return "Tell me about your headache. Did it come on suddenly or gradually?"
         
         elif session.step == "onset":
-            session.slots['onset'] = text
+            # Better onset detection
+            if any(term in text.lower() for term in ['sudden', 'suddenly', 'all at once', 'quickly']):
+                session.slots['onset'] = 'sudden'
+            elif any(term in text.lower() for term in ['gradual', 'gradually', 'slowly', 'over time']):
+                session.slots['onset'] = 'gradual'
+            else:
+                session.slots['onset'] = text.lower()
+            
             session.step = "severity"
             return "How severe is it on a scale of 1-10? Is this the worst headache you've ever had?"
         
