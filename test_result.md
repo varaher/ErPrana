@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Phase 1: OpenAI GPT-4o Integration and Feedback System - 1) Upgrade LLM integration from gpt-4o-mini to gpt-4o for enhanced medical reasoning, 2) Implement simple thumbs up/down feedback system for ARYA responses, 3) Test infinite conversation flow with improved medical knowledge"
+user_problem_statement: "NEW Symptom Intelligence Layer Implementation: Building a state-driven symptom interview system with slot-filling, dynamic question queues, completion thresholds, and ML data collection. Implementing for top 20 Red-level chief complaints (chest pain, shortness of breath, fever, altered mental status, headache, syncope, seizures, hematemesis, hemoptysis, sudden vision loss, severe abdominal pain, unconsciousness, stroke symptoms, acute weakness, chest tightness, cyanosis, severe bleeding, hypotension, palpitations, anaphylaxis). Goal: Eliminate conversation loops, enhance triage accuracy, and prepare for ML integration."
 
 backend:
   - task: "Backend health check endpoint"
