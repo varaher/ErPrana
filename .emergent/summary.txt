@@ -1,76 +1,97 @@
 <analysis>
-The trajectory documents the evolution of the ErPrana application's core medical AI, ARYA. The initial user request was to fix conversational loops and enhance the AI to collect multiple symptoms before providing numbered, reasoned recommendations. The first attempt involved creating a new advanced API, but user testing revealed persistent loops and context-awareness failures.
+The trajectory details the evolution of ErPrana's ARYA AI, starting from fixing conversational loops to a sophisticated diagnostic system. Initially, the AI engineer refactored the backend for user-defined, JSON-based structured interviews (Fever, Chest Pain, Shortness of Breath, Headache), addressing initial looping issues and implementing slot-filling and rule-based triage.
 
-The user then provided a sophisticated, structured interview architecture, starting with a Fever script. This new paradigm uses a finite state machine, defined in JSON policy files, and a slot-filling mechanism, defined in JSON rule files. This approach eliminates loops by design and ensures a clinically relevant line of questioning.
+A major pivot occurred when the user requested a comprehensive, rule-based engine (100 clinical, 30 toxicology rules). This led to the development of a Unified Clinical Engine that combines small talk, intent detection, session management, and real-time rule evaluation, moving beyond the single-complaint interview structure. Significant debugging ensued to correctly integrate this, fix entity extraction, emergency detection (stroke, seizure), conversation loops, context misunderstanding (third-person queries), and session continuity. The process involved identifying and rectifying that the frontend was calling an outdated API endpoint and that the new rule engine wasn't actively analyzing user inputs as intended.
 
-The AI engineer successfully refactored the entire backend to support this new architecture. This involved creating new core modules:  (the interview engine),  (the diagnostic engine), and  (the main orchestrator).
-
-Following the success of the fever implementation, the engineer integrated similar user-provided scripts for Chest Pain and Shortness of Breath (SOB). Significant debugging was required to make the interview engine complaint-agnostic and to fix entity extraction logic. A bug in the SOB triage calculation was identified but not fully resolved. The work concluded mid-implementation of the fourth script, Headache.
+The latest task involves integrating the US National Library of Medicine (NLM) APIs to further enhance ARYA's authoritative data capabilities, with initial directory and file setup completed.
 </analysis>
 
 <product_requirements>
-The ErPrana application, an Emergency Medicine Assistant with Voice AI, requires a robust, ChatGPT-style symptom checker named ARYA. The core requirement is to evolve ARYA from a simple conversational agent into a clinically structured decision support tool.
+The ErPrana application requires ARYA, a ChatGPT-style symptom checker, to evolve into a clinically structured decision support tool. Core requirements included guided, non-repetitive interviews for chief complaints (fever, chest pain, headache), intelligent slot-filling, and evaluation of clinical red-flag rules for triage (routine, urgent, emergency). ARYA must generate comprehensive summaries with provisional diagnoses, reasoning, and actionable, symptom-specific recommendations. The system was designed to be modular.
 
-The system must conduct guided, non-repetitive interviews for specific chief complaints like fever, chest pain, and headache. It needs to intelligently gather information by filling predefined slots (e.g., duration, severity, associated symptoms). Based on the collected data, it must evaluate a set of clinical red-flag rules to determine a triage level (e.g., routine, urgent, emergency).
-
-Finally, ARYA must generate a comprehensive summary that includes a list of potential provisional diagnoses with reasoning and provide clear, actionable, and symptom-specific recommendations. The entire system is designed to be modular, allowing for the easy addition of new medical interview scripts for different complaints.
+Later, the user explicitly requested a comprehensive rule-based system, moving beyond single-complaint interviews. This new system should incorporate 100 general clinical rules and 30 toxicology rules to enable dynamic multi-symptom analysis, emergency pattern detection, and provide more natural, context-aware conversational responses, including handling third-person queries. The goal is a highly intelligent, non-looping, and clinically accurate diagnostic AI. The latest explicit request is to integrate the US National Library of Medicine (NLM) APIs to enrich ARYA with authoritative medical data.
 </product_requirements>
 
 <key_technical_concepts>
 - **Full-stack Frameworks**: React.js (frontend), FastAPI (Python backend).
-- **Database**: MongoDB for storing conversation state.
-- **AI/ML**: LLM (GPT-4o) for Natural Language Understanding (NLU) and entity extraction within a structured flow.
-- **State-Machine-Driven Interviews**: A custom-built engine using JSON-based configurations ( and ) to guide conversations through a finite set of states, ensuring no loops.
-- **Slot-Filling Mechanism**: Extracts key medical entities from user input to populate a predefined data structure for each complaint.
-- **Rule-Based Triage**: Evaluates collected symptoms against clinical red-flag rules defined in JSON to determine urgency.
+- **Database**: MongoDB for conversation state.
+- **AI/ML**: LLM (GPT-4o) for NLU, entity extraction.
+- **State-Machine-Driven Interviews**: JSON-based configurations for conversation flow.
+- **Slot-Filling Mechanism**: Extracts key medical entities from user input.
+- **Unified Clinical Engine**: A hybrid system combining JSON-based rule storage (100+ clinical/toxicology rules) with Python logic for dynamic symptom pattern matching, intent detection, session management, and conversational flow.
+- **Conversational Layer**: Handles greetings and small talk.
+- **Third-person Medical Handler**: Processes queries about others' symptoms.
+- **US National Library of Medicine (NLM) API Integration**: To fetch authoritative medical information.
 </key_technical_concepts>
 
 <code_architecture>
-The application's architecture was significantly refactored to support a modular, state-driven interview system. The core logic now resides in a new set of interconnected backend modules.
+The application's architecture was significantly refactored to support a modular, state-driven interview system and later a comprehensive rule-based engine.
 
 
 
--   ****: This new directory stores the configuration for each medical interview.
-    -    files: Define the slots to be filled, the questions to ask for each slot, red-flag rules, and summary templates.
-    -    files: Define the finite state machine for each interview, controlling the flow of the conversation (e.g., GREETING -> CORE_HISTORY -> SUMMARY).
+-   ****: Stores JSON configurations for specific medical interviews (fever, chest pain, SOB, headache).
+    -   : Define slots, questions, red-flag rules, summary templates.
+    -   : Define finite state machines for conversational flow.
 
--   ****:
-    -   **Importance**: This is the core engine that runs the interviews. It loads the JSON configurations, manages the conversation state, asks questions for the next unfilled slot based on the policy, extracts entities from user responses, and evaluates red flags.
-    -   **Changes**: Created from scratch to implement the user-provided pseudocode. It was later refactored to be complaint-agnostic, dynamically loading the correct  and  files.
+-   ****: New directory for the comprehensive rule-based system.
+    -   : Stores high-priority emergency rules.
+    -   : Stores toxicology-specific rules.
+    -   : Stores a subset of general clinical rules.
+    -   : Stores the full 100 clinical rules in CSV format, interpreted by .
 
--   ****:
-    -   **Importance**: This is the new primary API endpoint () that the frontend interacts with. It acts as an orchestrator.
-    -   **Changes**: Created to detect the user's chief complaint (e.g., fever, chest pain), initialize the correct interview state, call the  engine to conduct the interview turn, and then pass the final results to the  for diagnosis.
-
--   ****:
-    -   **Importance**: Contains the logic for generating provisional diagnoses and comprehensive recommendations based on the final, filled slots from an interview.
-    -   **Changes**: Created to analyze the structured data from multiple interviews, allowing it to correlate symptoms (e.g., fever + chest pain) for a more accurate diagnosis.
+-   ****: **NEW CORE MODULE.**
+    -   **Importance**: This is the central brain for the new rule-based system. It integrates small talk, intent detection, session state management, runs symptom-specific controllers, and evaluates the comprehensive rule set (R1-R100, T1-T30). It handles dynamic symptom analysis using permutations and combinations of rules.
+    -   **Changes**: Created from scratch based on user's TypeScript pseudocode, adapted to Python. Includes , , , , and  methods for various complaints.
 
 -   ****:
-    -   **Importance**: The main user interface for the ARYA chatbot.
-    -   **Changes**: The API call in the  function was updated to point to the new  endpoint, replacing the previous  endpoint.
+    -   **Importance**: Logic for provisional diagnoses and comprehensive recommendations.
+    -   **Changes**: Headache-specific conditions and symptom mappings were added. Previously, SOB triage logic had a bug (risk factors not elevating urgency), which was addressed.
+
+-   ****:
+    -   **Importance**: Runs the structured interviews based on JSON configurations.
+    -   **Changes**: Refactored for complaint-agnostic operation. Fixed a critical bug in  for 'includes' operations. Added diagnosis generation logic for SOB and Headache complaints.
+
+-   ****:
+    -   **Importance**: Acts as the main API orchestrator, detecting chief complaints and initiating the correct interview or analysis.
+    -   **Changes**: Headache interview trigger logic,  for headache. Enhanced emergency detection (e.g., thunderclap headache). Integrated . Initially was the main endpoint, now primarily routes to .
+
+-   ****: **NEW API ENDPOINT.**
+    -   **Importance**: Provides the new primary API route () that leverages the  for comprehensive symptom analysis and conversational flow.
+    -   **Changes**: Created from scratch to expose the new unified clinical engine's  functionality.
+
+-   ****: **NEW MODULE.**
+    -   **Importance**: Manages small talk and conversational greetings, ensuring a more natural interaction with ARYA.
+    -   **Changes**: Created to handle non-medical inputs (e.g., hi, good morning) before routing to medical engines.
+
+-   ****: **NEW DIRECTORY.**
+    -   **Importance**: Placeholder for integration with US National Library of Medicine APIs.
+    -   **Files Created**: ,  (for API keys/settings),  (for data models),  (for PubMed API specific logic).
+
+-   ****:
+    -   **Importance**: Main FastAPI application entry point, registers all API routes.
+    -   **Changes**: Registered the new  router.
+
+-   ****:
+    -   **Importance**: Main user interface for the ARYA chatbot.
+    -   **Changes**: API call in  was updated multiple times: first to , and most recently to  to leverage the new comprehensive rule engine. Enhanced to display  results. Also fixed  to correctly extract user input.
 </code_architecture>
 
 <pending_tasks>
-- Complete the implementation of the Headache interview script by integrating it into the  and other relevant modules.
-- Debug and fix the incorrect triage calculation for the Shortness of Breath interview, where risk factors are not correctly elevating the urgency level.
-- Conduct comprehensive testing of the newly implemented Headache interview flow.
+- Complete the integration of the US National Library of Medicine (NLM) APIs (including PubMed service) to provide ARYA with authoritative medical information.
 </pending_tasks>
 
 <current_work>
-The engineer is in the middle of integrating the fourth user-provided medical interview script for Headache. The work so far has involved translating the user's TypeScript controller logic into the existing Python framework.
+Immediately before this summary request, the AI engineer was tasked by the user to integrate the US National Library of Medicine (NLM) APIs into the ErPrana application. This integration aims to enhance ARYA's capabilities by leveraging authoritative, evidence-based medical information.
 
-**File Creation:**
--   : Contains the slots, questions, and red-flag rules for the headache interview.
--   : Defines the conversational state machine for the headache interview.
+The current work involves setting up the foundational directory and files for this integration within the backend:
+-   ****: Created to mark the directory as a Python package.
+-   ****: Created to hold configuration settings, potentially for NLM API keys or endpoints.
+-   ****: Created to define Pydantic models for data structures related to NLM API responses or requests.
+-   ****: Created as a dedicated module to encapsulate logic for interacting with the PubMed API, a primary NLM service.
 
-**File Modifications:**
--   ****: Updated to recognize headache as a valid complaint and to include headache-specific entity extraction logic in the  function. The code now parses keywords related to headache onset, severity, and associated symptoms like fever or neck stiffness.
--   ****: The  method was enhanced to include keywords like headache and migraine to initiate the correct interview. The  method was updated to process and combine data from the headache interview with the overall patient state.
-
-The immediate next step was to integrate the headache logic into the diagnostic engine and then begin testing.
+This indicates that the integration is in its initial setup phase, with the next steps involving implementing the actual API calls and data processing within these new modules.
 </current_work>
 
 <optional_next_step>
-Update the  to include headache-related conditions and diagnoses, then restart the backend and test the full headache interview flow.
+Continue the implementation of the NLM API integration by developing the logic within the created files.
 </optional_next_step>

@@ -6,7 +6,7 @@ import json
 def test_pe_red_flag_direct():
     """Test PE red flag by directly providing a conversation state with all required slots"""
     
-    base_url = "https://smart-triage-2.preview.emergentagent.com"
+    base_url = "https://med-diagnosis-1.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 Testing PE Red Flag with Direct Slot Values")

@@ -6,7 +6,7 @@ import json
 def test_complete_sob_flow():
     """Test complete SOB interview flow to trigger PE red flag"""
     
-    base_url = "https://smart-triage-2.preview.emergentagent.com"
+    base_url = "https://med-diagnosis-1.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 Testing Complete SOB Interview Flow for PE Red Flag")
