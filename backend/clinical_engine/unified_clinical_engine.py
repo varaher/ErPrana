@@ -201,9 +201,17 @@ class UnifiedClinicalEngine:
         """Detect primary symptom intent from user input"""
         t = text.lower()
         
-        # Emergency patterns first
+        # CRITICAL EMERGENCIES FIRST
+        if any(term in t for term in ['seizure', 'fit', 'convulsion', 'jerking', 'shaking uncontrollably', 'fell down jerking']):
+            return "neurological_emergency"
+        if any(term in t for term in ['cant lift', "can't lift", 'unable to lift', 'arm weakness', 'paralyzed', 'stroke']):
+            return "neurological_emergency"  
         if any(term in t for term in ['chest pain', 'heart pain', 'crushing pain']):
             return "chest_pain"
+        if any(term in t for term in ['emergency', 'help', 'urgent', '911']):
+            return "medical_emergency"
+        
+        # Standard symptom patterns
         if any(term in t for term in ['fever', 'temperature', 'hot', 'chills']):
             return "fever"
         if any(term in t for term in ['headache', 'head pain', 'migraine']):
