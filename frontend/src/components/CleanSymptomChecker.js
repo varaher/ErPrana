@@ -238,7 +238,6 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         body: JSON.stringify({
           user_message: processedMessage,
           session_id: conversationState.sessionId || `session_${Date.now()}`,
-          conversation_state: conversationState.backendState || null,
           user_id: String(user.id || user.email || 'anonymous')
         }),
       });
