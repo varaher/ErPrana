@@ -358,7 +358,11 @@ class UnifiedClinicalEngine:
             return f"🚨 **MEDICAL EMERGENCY DETECTED** 🚨\n\nBased on your symptoms ({', '.join(session.detected_symptoms)}), this suggests **{top_emergency['condition']}** (Confidence: {top_emergency['confidence']}%).\n\n**Call 911 immediately** - this requires immediate medical attention!"
         
         # Run engine-specific logic
-        if session.engine == "fever":
+        if session.engine == "neurological_emergency":
+            return self._run_neurological_emergency_controller(t, session, rule_matches)
+        elif session.engine == "medical_emergency":
+            return self._run_medical_emergency_controller(t, session, rule_matches)
+        elif session.engine == "fever":
             return self._run_fever_controller(t, session, rule_matches)
         elif session.engine == "chest_pain":
             return self._run_chest_pain_controller(t, session, rule_matches)
