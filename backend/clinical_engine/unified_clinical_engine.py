@@ -703,6 +703,11 @@ class UnifiedClinicalEngine:
         session = self.get_session(session_id, intent)
         session.conversation_history.append(text)
         
+        # Update detected symptoms from current input
+        for symptom in detected_symptoms:
+            if symptom not in session.detected_symptoms:
+                session.detected_symptoms.append(symptom)
+        
         # Step 4: Run symptom analysis with active rule evaluation
         reply = self.run_symptom_controller(text, session)
         
