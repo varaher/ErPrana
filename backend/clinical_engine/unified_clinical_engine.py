@@ -685,9 +685,16 @@ class UnifiedClinicalEngine:
                 "analysis_type": "conversational"
             }
         
-        # Step 2: Detect intent and extract symptoms
+        # Step 2: Detect intent and extract symptoms  
         intent = self.detect_intent(text)
         detected_symptoms = self.extract_symptoms_from_text(text)
+        
+        # If we have an existing session, preserve the engine unless it's a new symptom
+        existing_session = self.sessions.get(session_id)
+        if existing_session and existing_session.step != "start" and existing_session.step != "complete":
+            # Continue with existing engine unless user introduces new symptoms
+            if not any(symptom in text.lower() for symptom in ['fever', 'chest pain', 'headache', 'stomach pain']):
+                intent = existing_session.engine
         
         if not detected_symptoms and intent == "general_analysis":
             # Check for vague symptoms that need clarification
