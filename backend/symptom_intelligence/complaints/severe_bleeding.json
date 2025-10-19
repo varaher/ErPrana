@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Severe Bleeding",
+  "priority": "🟥 Red",
+  "slots": ["location", "amount", "duration", "cause", "medications", "control_measures"],
+  "questions": {
+    "location": "Where is the bleeding from?",
+    "amount": "How much blood has been lost? (soaked through how many towels/bandages)",
+    "duration": "How long has the bleeding continued?",
+    "cause": "What caused the bleeding? (trauma, spontaneous, medical procedure)",
+    "medications": "Are you taking blood thinners or aspirin?",
+    "control_measures": "Have you been able to control the bleeding with pressure?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'no' in str(control_measures).lower() and ('large' in str(amount).lower() or 'soaked' in str(amount).lower())",
+      "level": "🟥 Red",
+      "reason": "Uncontrolled severe bleeding - Immediate Emergency Care Required - Apply direct pressure"
+    },
+    {
+      "expression": "'yes' in str(medications).lower() and 'no' in str(control_measures).lower()",
+      "level": "🟥 Red",
+      "reason": "Uncontrolled bleeding on anticoagulants - Emergency care required"
+    }
+  ]
+}

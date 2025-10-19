@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Hypotension",
+  "priority": "🟥 Red",
+  "slots": ["blood_pressure", "symptoms", "medications", "recent_illness", "dehydration", "medical_history"],
+  "questions": {
+    "blood_pressure": "What is your blood pressure reading?",
+    "symptoms": "Are you experiencing dizziness, weakness, confusion, or cold/clammy skin?",
+    "medications": "What medications are you taking?",
+    "recent_illness": "Have you been sick recently with vomiting, diarrhea, or fever?",
+    "dehydration": "Have you been drinking enough fluids?",
+    "medical_history": "Do you have heart disease, diabetes, or adrenal insufficiency?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "int(str(blood_pressure).split('/')[0]) < 90 and ('confusion' in str(symptoms).lower() or 'cold' in str(symptoms).lower())",
+      "level": "🟥 Red",
+      "reason": "Hypotension with altered mental status - Possible shock - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "int(str(blood_pressure).split('/')[0]) < 80",
+      "level": "🟥 Red",
+      "reason": "Severe hypotension - Emergency evaluation needed"
+    }
+  ]
+}

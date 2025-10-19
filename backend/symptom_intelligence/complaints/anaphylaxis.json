@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Anaphylaxis",
+  "priority": "🟥 Red",
+  "slots": ["trigger", "onset", "breathing_difficulty", "swelling", "rash", "epi_pen_used"],
+  "questions": {
+    "trigger": "What were you exposed to? (food, medication, insect sting)",
+    "onset": "When did symptoms start?",
+    "breathing_difficulty": "Are you having trouble breathing or swallowing?",
+    "swelling": "Is there swelling of the face, lips, tongue, or throat?",
+    "rash": "Do you have hives or widespread rash?",
+    "epi_pen_used": "Have you used an epinephrine auto-injector (EpiPen)?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'yes' in str(breathing_difficulty).lower() or 'yes' in str(swelling).lower()",
+      "level": "🟥 Red",
+      "reason": "Anaphylaxis with airway involvement - Call 911 Immediately - Use EpiPen if available"
+    },
+    {
+      "expression": "'yes' in str(rash).lower() and 'yes' in str(epi_pen_used).lower()",
+      "level": "🟥 Red",
+      "reason": "Anaphylaxis - EpiPen used - Still need Emergency evaluation"
+    }
+  ]
+}

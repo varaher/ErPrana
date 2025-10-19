@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Chest Tightness",
+  "priority": "🟥 Red",
+  "slots": ["onset", "severity", "exertion", "duration", "associated_symptoms", "cardiac_history"],
+  "questions": {
+    "onset": "When did the chest tightness start?",
+    "severity": "How severe is the tightness? (1-10)",
+    "exertion": "Does it occur with activity or at rest?",
+    "duration": "How long does each episode last?",
+    "associated_symptoms": "Do you have shortness of breath, sweating, nausea, or jaw/arm discomfort?",
+    "cardiac_history": "Do you have history of heart disease, high blood pressure, diabetes, or high cholesterol?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'rest' in str(exertion).lower() and int(severity) >= 6 and ('breath' in str(associated_symptoms).lower() or 'sweat' in str(associated_symptoms).lower())",
+      "level": "🟥 Red",
+      "reason": "Chest tightness at rest with cardiac symptoms - Possible ACS - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(cardiac_history).lower() and int(severity) >= 5",
+      "level": "🟥 Red",
+      "reason": "Chest tightness with cardiac history - Emergency evaluation needed"
+    }
+  ]
+}

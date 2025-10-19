@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Cyanosis",
+  "priority": "🟥 Red",
+  "slots": ["location", "onset", "breathing_difficulty", "chest_pain", "medical_history", "oxygen_saturation"],
+  "questions": {
+    "location": "Where is the bluish discoloration? (lips, fingers, all over)",
+    "onset": "When did this start?",
+    "breathing_difficulty": "Are you having trouble breathing?",
+    "chest_pain": "Do you have chest pain?",
+    "medical_history": "Do you have heart or lung disease?",
+    "oxygen_saturation": "If you have a pulse oximeter, what is your oxygen level?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'lips' in str(location).lower() or 'all over' in str(location).lower()",
+      "level": "🟥 Red",
+      "reason": "Central cyanosis - Severe hypoxia - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(breathing_difficulty).lower()",
+      "level": "🟥 Red",
+      "reason": "Cyanosis with breathing difficulty - Emergency care required"
+    }
+  ]
+}

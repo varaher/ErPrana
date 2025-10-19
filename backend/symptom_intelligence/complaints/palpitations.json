@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Palpitations",
+  "priority": "🟥 Red",
+  "slots": ["onset", "frequency", "duration", "associated_symptoms", "cardiac_history", "triggers"],
+  "questions": {
+    "onset": "When did the palpitations start?",
+    "frequency": "How often are you feeling them?",
+    "duration": "How long do the episodes last?",
+    "associated_symptoms": "Do you have chest pain, shortness of breath, dizziness, or fainting?",
+    "cardiac_history": "Do you have heart disease, arrhythmia, or structural heart problems?",
+    "triggers": "What seems to trigger them? (caffeine, exercise, stress)"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "('chest pain' in str(associated_symptoms).lower() or 'faint' in str(associated_symptoms).lower() or 'dizz' in str(associated_symptoms).lower())",
+      "level": "🟥 Red",
+      "reason": "Palpitations with concerning symptoms - Possible arrhythmia - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(cardiac_history).lower() and 'continuous' in str(frequency).lower()",
+      "level": "🟥 Red",
+      "reason": "Continuous palpitations with cardiac history - Emergency evaluation needed"
+    }
+  ]
+}
