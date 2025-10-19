@@ -393,7 +393,14 @@ class UnifiedClinicalEngine:
             return "What was your highest temperature reading? (if you took it)"
         
         elif session.step == "severity":
-            session.slots['temperature'] = text
+            # Extract temperature from response
+            import re
+            temp_match = re.search(r'(\d+(?:\.\d+)?)', text)
+            if temp_match:
+                session.slots['temperature'] = temp_match.group(1)
+            else:
+                session.slots['temperature'] = text
+            
             session.step = "associated_symptoms"
             return "Any other symptoms like cough, sore throat, rash, headache, or neck stiffness?"
         
