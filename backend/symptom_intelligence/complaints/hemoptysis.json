@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Hemoptysis",
+  "priority": "🟥 Red",
+  "slots": ["volume", "duration", "chest_pain", "shortness_of_breath", "smoking_history", "weight_loss"],
+  "questions": {
+    "volume": "How much blood are you coughing up?",
+    "duration": "When did you start coughing up blood?",
+    "chest_pain": "Do you have chest pain?",
+    "shortness_of_breath": "Are you having difficulty breathing?",
+    "smoking_history": "Do you smoke or have a history of smoking?",
+    "weight_loss": "Have you experienced unexplained weight loss?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'large' in str(volume).lower() or 'yes' in str(shortness_of_breath).lower()",
+      "level": "🟥 Red",
+      "reason": "Massive hemoptysis or respiratory distress - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(chest_pain).lower() and 'yes' in str(shortness_of_breath).lower()",
+      "level": "🟥 Red",
+      "reason": "Hemoptysis with chest pain and SOB - Possible PE - Emergency care required"
+    }
+  ]
+}

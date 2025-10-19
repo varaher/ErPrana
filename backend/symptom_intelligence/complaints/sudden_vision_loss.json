@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Sudden Vision Loss",
+  "priority": "🟥 Red",
+  "slots": ["onset", "one_or_both_eyes", "complete_or_partial", "pain", "headache", "trauma"],
+  "questions": {
+    "onset": "When did the vision loss occur?",
+    "one_or_both_eyes": "Is it affecting one eye or both eyes?",
+    "complete_or_partial": "Is the vision completely lost or partially affected?",
+    "pain": "Is there eye pain?",
+    "headache": "Do you have a headache?",
+    "trauma": "Was there any eye or head trauma?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'complete' in str(complete_or_partial).lower() and 'sudden' in str(onset).lower()",
+      "level": "🟥 Red",
+      "reason": "Sudden complete vision loss - Possible retinal detachment or stroke - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(headache).lower() and 'one' in str(one_or_both_eyes).lower()",
+      "level": "🟥 Red",
+      "reason": "Vision loss with headache - Possible temporal arteritis - Emergency evaluation needed"
+    }
+  ]
+}

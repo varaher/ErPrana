@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Severe Abdominal Pain",
+  "priority": "🟥 Red",
+  "slots": ["location", "onset", "severity", "associated_symptoms", "last_bowel_movement", "medical_history"],
+  "questions": {
+    "location": "Where is the pain located? (upper, lower, right, left, all over)",
+    "onset": "When did the pain start? Was it sudden or gradual?",
+    "severity": "On a scale of 1-10, how severe is the pain?",
+    "associated_symptoms": "Do you have vomiting, fever, inability to pass gas, blood in stool?",
+    "last_bowel_movement": "When was your last bowel movement?",
+    "medical_history": "Do you have any history of abdominal surgery, ulcers, or abdominal aortic aneurysm?"
+  },
+  "completion_threshold": 4,
+  "triage_rules": [
+    {
+      "expression": "'sudden' in str(onset).lower() and int(severity) >= 8 and 'aneurysm' in str(medical_history).lower()",
+      "level": "🟥 Red",
+      "reason": "Severe sudden abdominal pain with AAA history - Possible rupture - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "int(severity) >= 8 and ('blood' in str(associated_symptoms).lower() or 'vomit' in str(associated_symptoms).lower())",
+      "level": "🟥 Red",
+      "reason": "Severe abdominal pain with GI bleeding - Emergency evaluation needed"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Acute Weakness",
+  "priority": "🟥 Red",
+  "slots": ["location", "onset", "progression", "symmetry", "sensory_changes", "bowel_bladder"],
+  "questions": {
+    "location": "Where is the weakness? (arms, legs, face, one side)",
+    "onset": "When did the weakness start? Was it sudden?",
+    "progression": "Is the weakness getting worse?",
+    "symmetry": "Is the weakness on one side or both sides?",
+    "sensory_changes": "Do you have numbness or tingling?",
+    "bowel_bladder": "Any loss of bowel or bladder control?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "'sudden' in str(onset).lower() and 'one side' in str(symmetry).lower()",
+      "level": "🟥 Red",
+      "reason": "Sudden unilateral weakness - Possible Stroke - Immediate Emergency Care Required"
+    },
+    {
+      "expression": "'yes' in str(bowel_bladder).lower()",
+      "level": "🟥 Red",
+      "reason": "Weakness with bowel/bladder dysfunction - Possible spinal cord compression - Emergency care required"
+    }
+  ]
+}

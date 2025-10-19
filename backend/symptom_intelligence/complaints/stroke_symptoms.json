@@ -1,0 +1,21 @@
+{
+  "chief_complaint": "Stroke Symptoms",
+  "priority": "🟥 Red",
+  "slots": ["face_drooping", "arm_weakness", "speech_difficulty", "onset_time", "other_symptoms", "medical_history"],
+  "questions": {
+    "face_drooping": "Is one side of the face drooping or numb?",
+    "arm_weakness": "Is one arm weak or numb? Can both arms be raised equally?",
+    "speech_difficulty": "Is speech slurred or hard to understand?",
+    "onset_time": "When did these symptoms start? (exact time is critical)",
+    "other_symptoms": "Are there vision changes, dizziness, severe headache, or confusion?",
+    "medical_history": "History of high blood pressure, atrial fibrillation, or previous stroke?"
+  },
+  "completion_threshold": 3,
+  "triage_rules": [
+    {
+      "expression": "('yes' in str(face_drooping).lower() or 'yes' in str(arm_weakness).lower() or 'yes' in str(speech_difficulty).lower())",
+      "level": "🟥 Red",
+      "reason": "Positive FAST test - Possible Stroke - Call 911 Immediately - Time is Brain"
+    }
+  ]
+}

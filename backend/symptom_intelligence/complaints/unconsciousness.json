@@ -1,0 +1,26 @@
+{
+  "chief_complaint": "Unconsciousness",
+  "priority": "🟥 Red",
+  "slots": ["duration", "circumstances", "trauma", "breathing", "diabetes_history", "witnesses"],
+  "questions": {
+    "duration": "How long has the person been unconscious?",
+    "circumstances": "What happened before they became unconscious?",
+    "trauma": "Was there any head injury or trauma?",
+    "breathing": "Is the person breathing normally?",
+    "diabetes_history": "Does the person have diabetes?",
+    "witnesses": "Did anyone witness what happened?"
+  },
+  "completion_threshold": 2,
+  "triage_rules": [
+    {
+      "expression": "'no' in str(breathing).lower() or 'not' in str(breathing).lower()",
+      "level": "🟥 Red",
+      "reason": "Not breathing - Call 911 immediately - Begin CPR if trained"
+    },
+    {
+      "expression": "'yes' in str(trauma).lower()",
+      "level": "🟥 Red",
+      "reason": "Unconsciousness after trauma - Immediate Emergency Care Required"
+    }
+  ]
+}
