@@ -14,15 +14,23 @@ from datetime import datetime, timezone
 SYMPTOM_SYNONYMS = {
     # 🟥 Chest Pain & Cardiac
     "chest heaviness": "chest pain",
+    "heaviness chest": "chest pain",
+    "heaviness in chest": "chest pain",
     "chest tightness": "chest tightness",
+    "tightness chest": "chest tightness",
     "pressure in chest": "chest pain",
+    "pressure chest": "chest pain",
     "heart pain": "chest pain",
     "pain in chest": "chest pain",
+    "pain chest": "chest pain",
     "chest discomfort": "chest pain",
+    "discomfort chest": "chest pain",
     "chest squeezing": "chest pain",
+    "squeezing chest": "chest pain",
     "pain in heart area": "chest pain",
     "angina": "chest pain",
     "burning in chest": "chest pain",
+    "burning chest": "chest pain",
     "cardiac pain": "chest pain",
     "tight chest": "chest tightness",
     
