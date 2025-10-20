@@ -59,12 +59,12 @@ class ConversationalLayer:
         if empathetic_response:
             return empathetic_response
         
-        # Simple greetings
+        # Simple greetings - use the warmer greeting responses
         if re.match(r'^(hi|hello|hey|hiya|yo)$', text):
-            return "Hello! 😊 I'm ARYA, your health assistant. How are you feeling today?"
+            return random.choice(self.greeting_responses)
         
         if re.match(r'^(good morning|morning)$', text):
-            return "Good morning! 🌞 Hope your day starts well. How are you feeling today?"
+            return "Good morning! I'm ARYA, your Personal Health Assistant. I'm here for you. How are you feeling today?"
         
         if re.match(r'^(good afternoon|afternoon)$', text):
             return "Good afternoon! ☀️ How can I assist with your health today?"
