@@ -238,20 +238,25 @@ class ComplaintDetector:
         """
         text = self.normalize_text(user_input)
         
+        # Remove common filler words for better matching
+        text_cleaned = re.sub(r'\b(im|i\'m|i am|feeling|having|got|have|with|in|my)\b', '', text).strip()
+        text_cleaned = re.sub(r'\s+', ' ', text_cleaned)
+        
         # Step 1: Try exact match in synonyms
-        if text in self.synonyms:
-            complaint = self.synonyms[text]
-            print(f"✅ Exact match: '{text}' → '{complaint}'")
-            return complaint
+        for test_text in [text, text_cleaned]:
+            if test_text in self.synonyms:
+                complaint = self.synonyms[test_text]
+                print(f"✅ Exact match: '{text}' → '{complaint}'")
+                return complaint
         
         # Step 2: Try partial match (contains)
         for synonym, complaint in self.synonyms.items():
-            if synonym in text or text in synonym:
+            if synonym in text or synonym in text_cleaned:
                 print(f"✅ Partial match: '{text}' contains '{synonym}' → '{complaint}'")
                 return complaint
         
         # Step 3: Try fuzzy matching for typos
-        fuzzy_result = self._fuzzy_match(text)
+        fuzzy_result = self._fuzzy_match(text_cleaned if text_cleaned else text)
         if fuzzy_result:
             print(f"✅ Fuzzy match: '{text}' → '{fuzzy_result}'")
             return fuzzy_result
