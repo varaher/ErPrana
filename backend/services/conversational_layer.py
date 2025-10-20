@@ -39,12 +39,20 @@ class ConversationalLayer:
     def get_empathetic_response(self, user_input: str) -> Optional[str]:
         """
         Detect emotional keywords and provide empathetic response
+        Returns None if medical content is present (to avoid blocking medical processing)
         """
         user_input_lower = user_input.lower()
         
-        for emotion, response in self.empathetic_responses.items():
-            if emotion in user_input_lower:
-                return response
+        # Don't intercept if there's clear medical content
+        medical_keywords = ['pain', 'fever', 'bleeding', 'breathing', 'chest', 'head', 
+                           'stomach', 'dizzy', 'nausea', 'vomiting', 'cough']
+        has_medical_content = any(keyword in user_input_lower for keyword in medical_keywords)
+        
+        # Only provide empathetic response for emotional keywords WITHOUT medical content
+        if not has_medical_content:
+            for emotion in ['worried', 'scared', 'confused', 'tired']:
+                if emotion in user_input_lower:
+                    return self.empathetic_responses[emotion]
         
         return None
     
