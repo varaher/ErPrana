@@ -126,6 +126,7 @@ app.include_router(professional_router, prefix="/api")
 app.include_router(medication_router, prefix="/api")
 app.include_router(symptom_intelligence_layer_router, prefix="/api/symptom-intelligence-layer")
 app.include_router(hybrid_clinical_router, prefix="/api/hybrid")
+app.include_router(triage_feedback_router, prefix="/api/triage-feedback")
 
 app.add_middleware(
     CORSMiddleware,
