@@ -251,30 +251,30 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
 
       const data = await response.json();
-      console.log('Unified Clinical Chat Response:', data);
+      console.log('Hybrid Clinical System Response:', data);
       
       // Update conversation state with backend response
       setConversationState(prev => ({
         ...prev,
-        currentStep: data.conversation_complete ? 'complete' : 'ongoing',
-        backendState: data.session_data || {},
-        urgencyLevel: data.emergency_detected ? 'emergency' : 'normal',
-        sessionId: prev.sessionId || `session_${Date.now()}`,
-        interviewActive: !data.conversation_complete,
-        interviewType: data.analysis_type
+        currentStep: data.next_step === 'assessment_complete' ? 'complete' : 'ongoing',
+        backendState: data.collected_slots || {},
+        urgencyLevel: data.next_step === 'emergency' ? 'emergency' : 'normal',
+        sessionId: data.session_id || prev.sessionId || `session_${Date.now()}`,
+        interviewActive: data.next_step === 'slot_filling',
+        pendingSlots: data.pending_slots || []
       }));
 
       // Format assistant message based on response type
-      let assistantMessageText = data.assistant_message;
+      let assistantMessageText = data.response;
       
       // Handle emergency detection
-      if (data.emergency_detected) {
+      if (data.next_step === 'emergency' || (data.triage_level && data.triage_level.includes('🟥 Red'))) {
         assistantMessageText = "🚨 " + assistantMessageText;
       }
 
       // Add analysis type information if available
-      if (data.active_rules_used && data.active_rules_used > 0) {
-        console.log(`Analysis using ${data.active_rules_used} clinical rules`);
+      if (data.general_analysis && data.general_analysis.rules_triggered > 0) {
+        console.log(`Analysis using ${data.general_analysis.rules_triggered} clinical rules`);
       }
       
       // If comprehensive diagnoses are provided, they're already formatted in the response
