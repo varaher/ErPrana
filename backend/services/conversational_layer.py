@@ -68,10 +68,10 @@ class ConversationalLayer:
             return "Good morning! I'm ARYA, your Personal Health Assistant. I'm here for you. How are you feeling today?"
         
         if re.match(r'^(good afternoon|afternoon)$', text):
-            return "Good afternoon! ☀️ How can I assist with your health today?"
+            return "Good afternoon! I'm ARYA, your Personal Health Assistant. I'm here to help. What's on your mind?"
         
         if re.match(r'^(good evening|evening)$', text):
-            return "Good evening! 🌙 I'm here to check on your health. What's bothering you?"
+            return "Good evening! I'm ARYA, your Personal Health Assistant. I'm here for you. How can I help you today?"
         
         if re.match(r'^(good night|night)$', text):
             return "Good night! 🌙 Sleep well and take care of your health. Feel free to reach out anytime!"
