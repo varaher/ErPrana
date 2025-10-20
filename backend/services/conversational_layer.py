@@ -35,6 +35,18 @@ class ConversationalLayer:
             "tired": "Being tired and not feeling well can be tough. Let's see what might be going on."
         }
     
+    def get_empathetic_response(self, user_input: str) -> Optional[str]:
+        """
+        Detect emotional keywords and provide empathetic response
+        """
+        user_input_lower = user_input.lower()
+        
+        for emotion, response in self.empathetic_responses.items():
+            if emotion in user_input_lower:
+                return response
+        
+        return None
+    
     def check_small_talk(self, user_input: str) -> Optional[str]:
         """
         Check if user input is small talk/greeting and return appropriate response
