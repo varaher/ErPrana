@@ -251,8 +251,9 @@ class ComplaintDetector:
         """
         text = self.normalize_text(user_input)
         
-        # Remove common filler words for better matching
-        text_cleaned = re.sub(r'\b(im|i\'m|i am|feeling|having|got|have|with|in|my)\b', '', text).strip()
+        # Remove common filler words and emotional context for better matching
+        text_cleaned = re.sub(r'\b(im|i\'m|i am|feeling|having|got|have|with|in|my|about|the|a|an)\b', '', text).strip()
+        text_cleaned = re.sub(r'\b(worried|scared|concerned|afraid|anxious)\s+(about)?\b', '', text_cleaned).strip()
         text_cleaned = re.sub(r'\s+', ' ', text_cleaned)
         
         # Step 1: Try exact match in synonyms
