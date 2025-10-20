@@ -96,7 +96,7 @@ class HybridClinicalSystem:
         Main orchestration logic for hybrid system
         """
         # Step 1: Check for conversational input (greetings, small talk)
-        conversational_response = self.conversational_layer.handle_small_talk(user_input)
+        conversational_response = self.conversational_layer.check_small_talk(user_input)
         if conversational_response:
             return {
                 "response": conversational_response,
