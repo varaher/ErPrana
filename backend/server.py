@@ -27,6 +27,7 @@ from routes.professional_mode import router as professional_router
 from routes.medication_management import router as medication_router
 from routes.symptom_intelligence_routes import router as symptom_intelligence_layer_router
 from routes.hybrid_clinical_system import router as hybrid_clinical_router
+from routes.triage_feedback import router as triage_feedback_router
 
 
 ROOT_DIR = Path(__file__).parent
