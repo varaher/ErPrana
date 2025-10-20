@@ -47,6 +47,11 @@ SYMPTOM_SYNONYMS = {
     "body heat": "fever",
     "hot and cold shivering": "fever",
     "temperature": "fever",
+    "102 f fever": "fever",
+    "102 fever": "fever",
+    "104 fever": "fever",
+    "f fever": "fever",
+    "fvr": "fever",  # common typo
 
     # 🟥 Headache
     "head pain": "headache",
