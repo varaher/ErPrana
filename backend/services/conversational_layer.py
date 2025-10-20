@@ -141,7 +141,7 @@ class ConversationalLayer:
         
         if not is_medical:
             # Check for vague symptoms that need clarification
-            if any(word in text.lower() for word in ['uneasy', 'unwell', 'sick', 'bad', 'awful', 'terrible']):
+            if any(word in user_input.lower() for word in ['uneasy', 'unwell', 'sick', 'bad', 'awful', 'terrible']):
                 return ("I understand you're not feeling well. Can you describe your specific symptoms? (e.g., pain, fever, nausea, difficulty moving, etc.)", False)
             # Not clear small talk or medical - ask for clarification
             return ("I'd love to help! Can you tell me a bit more about what's concerning you health-wise today? 🏥", False)
