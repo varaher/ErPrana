@@ -63,31 +63,20 @@ class HybridClinicalSystem:
         self.available_complaints = get_available_complaints()
     
     def detect_chief_complaint(self, user_input: str) -> Optional[str]:
-        """Detect if user input matches a chief complaint"""
-        user_input_lower = user_input.lower()
+        """
+        Detect if user input matches a chief complaint
+        Uses enhanced complaint detection with synonym mapping and fuzzy matching
+        """
+        detected_complaint = complaint_detector.detect_complaint(user_input)
         
-        # Direct complaint matching
-        for complaint in self.available_complaints:
-            if complaint in user_input_lower:
-                return complaint
+        # Verify detected complaint is available in our system
+        if detected_complaint and detected_complaint in self.available_complaints:
+            return detected_complaint
         
-        # Synonym mapping for common variations
-        complaint_synonyms = {
-            "chest pain": ["heart pain", "cardiac pain", "chest discomfort"],
-            "shortness of breath": ["trouble breathing", "difficulty breathing", "can't breathe", "breathing problem"],
-            "fever": ["temperature", "hot", "burning up", "chills"],
-            "headache": ["head pain", "migraine", "head hurts"],
-            "altered mental status": ["confused", "confusion", "disoriented"],
-            "syncope": ["fainted", "passed out", "blacked out"],
-            "seizures": ["convulsions", "fits", "shaking"],
-            "stroke symptoms": ["face drooping", "arm weakness", "speech slurred"],
-            "palpitations": ["heart racing", "irregular heartbeat"],
-            "severe abdominal pain": ["stomach pain", "belly pain", "abdominal pain"]
-        }
-        
-        for complaint, synonyms in complaint_synonyms.items():
-            for synonym in synonyms:
-                if synonym in user_input_lower:
+        # If detected but not available, try to find close match
+        if detected_complaint:
+            for complaint in self.available_complaints:
+                if detected_complaint in complaint or complaint in detected_complaint:
                     return complaint
         
         return None
