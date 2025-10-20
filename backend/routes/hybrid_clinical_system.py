@@ -119,10 +119,17 @@ class HybridClinicalSystem:
         if chief_complaint:
             # Check if this complaint has structured interview
             if chief_complaint in self.available_complaints:
+                from symptom_intelligence.symptom_intelligence import get_next_question
                 new_session = create_session(chief_complaint, user_id)
                 if new_session:
+                    # Get first question immediately
+                    next_q = get_next_question(new_session["session_id"])
+                    first_question = next_q["question"] if next_q else "Can you tell me more about your symptoms?"
+                    
+                    response_text = f"I understand you're experiencing {chief_complaint}. Let me ask you some important questions to better assess your situation.\n\n{first_question}"
+                    
                     return {
-                        "response": f"I understand you're experiencing {chief_complaint}. Let me ask you some important questions to better assess your situation.",
+                        "response": response_text,
                         "session_id": new_session["session_id"],
                         "next_step": "slot_filling",
                         "needs_followup": True,
