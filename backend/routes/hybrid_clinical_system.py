@@ -128,16 +128,26 @@ class HybridClinicalSystem:
                     }
         
         # Step 4: Fall back to unified clinical engine (100-rule system)
-        unified_result = self.unified_engine.process_chat_turn(user_input, user_id, session_id)
-        
-        return {
-            "response": unified_result.get("response", "I'm here to help. Can you describe your symptoms?"),
-            "session_id": unified_result.get("session_id", session_id),
-            "next_step": unified_result.get("next_step", "conversation_continue"),
-            "triage_level": unified_result.get("triage_level"),
-            "general_analysis": unified_result.get("general_symptom_analysis"),
-            "needs_followup": True
-        }
+        try:
+            unified_result = self.unified_engine.process_chat_turn(user_input, session_id or f"session_{user_id}")
+            
+            return {
+                "response": unified_result.get("response", "I'm here to help. Can you describe your symptoms?"),
+                "session_id": unified_result.get("session_id", session_id),
+                "next_step": unified_result.get("next_step", "conversation_continue"),
+                "triage_level": unified_result.get("triage_level"),
+                "general_analysis": unified_result.get("general_symptom_analysis"),
+                "needs_followup": True
+            }
+        except Exception as e:
+            print(f"Error in unified clinical engine: {e}")
+            # Fallback response
+            return {
+                "response": "I understand you're experiencing symptoms. Can you describe your main concern in more detail? For example, do you have chest pain, fever, headache, or shortness of breath?",
+                "session_id": session_id,
+                "next_step": "conversation_continue",
+                "needs_followup": True
+            }
     
     def _continue_structured_interview(self, session: Dict[str, Any], user_input: str) -> Dict[str, Any]:
         """Continue with structured symptom intelligence interview"""
