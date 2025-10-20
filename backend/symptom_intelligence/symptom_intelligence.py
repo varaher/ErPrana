@@ -162,10 +162,14 @@ def evaluate_triage_rule(rule: Dict[str, Any], collected: Dict[str, Any]) -> boo
     try:
         expression = rule.get("expression", "False")
         # Safe evaluation with collected slots as context
+        print(f"🔍 Evaluating rule: {expression[:100]}...")
+        print(f"   With data: {collected}")
         result = eval(expression, {"__builtins__": {}}, collected)
+        print(f"   Result: {result}")
         return bool(result)
     except Exception as e:
-        print(f"⚠️ Error evaluating rule: {e}")
+        print(f"⚠️ Error evaluating rule '{expression[:50]}...': {e}")
+        print(f"   Collected data: {collected}")
         return False
 
 def check_completion_and_triage(session_id: str) -> Dict[str, Any]:
