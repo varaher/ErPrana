@@ -54,6 +54,11 @@ class ConversationalLayer:
         """
         text = user_input.lower().strip()
         
+        # First check for emotional content that needs empathy
+        empathetic_response = self.get_empathetic_response(user_input)
+        if empathetic_response:
+            return empathetic_response
+        
         # Simple greetings
         if re.match(r'^(hi|hello|hey|hiya|yo)$', text):
             return "Hello! 😊 I'm ARYA, your health assistant. How are you feeling today?"
