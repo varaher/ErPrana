@@ -19,6 +19,21 @@ class ConversationalLayer:
             "Great! 🌟 It's always good to check in on your health. Any particular concerns or questions?",
             "Excellent! 💚 Preventive health care is so important. What would you like to discuss?"
         ]
+        
+        self.acknowledgments = [
+            "I understand. I'm here to help you.",
+            "Thank you for sharing that with me.",
+            "I hear you. Let's work through this together.",
+            "That's helpful to know. I'm listening."
+        ]
+        
+        self.empathetic_responses = {
+            "worried": "I can understand why you might feel worried. Let's talk about what's going on.",
+            "scared": "It's okay to feel scared. I'm here to help you understand what's happening.",
+            "pain": "I'm sorry you're experiencing pain. Let me help you figure out the best next steps.",
+            "confused": "I can help clarify things for you. Let's take it step by step.",
+            "tired": "Being tired and not feeling well can be tough. Let's see what might be going on."
+        }
     
     def check_small_talk(self, user_input: str) -> Optional[str]:
         """
