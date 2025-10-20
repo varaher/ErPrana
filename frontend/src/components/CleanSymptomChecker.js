@@ -314,7 +314,7 @@ const CleanSymptomChecker = ({ user, onBack }) => {
 
       // Add assistant response with message ID for feedback
       const assistantMessageId = Date.now() + 1;
-      const urgencyLevel = data.emergency_detected ? 'emergency' : 'normal';
+      const urgencyLevel = (data.next_step === 'emergency' || (data.triage_level && data.triage_level.includes('🟥 Red'))) ? 'emergency' : 'normal';
       const assistantMessage = addMessage('assistant', assistantMessageText, urgencyLevel, assistantMessageId);
       
       // Store the user message context for feedback
