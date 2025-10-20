@@ -9,9 +9,9 @@ class ConversationalLayer:
     
     def __init__(self):
         self.greeting_responses = [
-            "Hello! 😊 I'm ARYA, your health assistant. How are you feeling today?",
-            "Hi there! 🌟 I'm here to help with your health concerns. What's on your mind?",
-            "Hey! 👋 I'm ARYA, your medical assistant. How can I help you today?"
+            "Hello! I'm ARYA, your Personal Health Assistant. I'm here to listen and help with any health concerns you have. What's on your mind today?",
+            "Hi! I'm ARYA, your Personal Health Assistant. Think of me as someone you can talk to about your health. How are you feeling?",
+            "Hey there! I'm ARYA, your Personal Health Assistant. I'm here for you. What would you like to talk about today?"
         ]
         
         self.good_responses = [
