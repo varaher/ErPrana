@@ -102,7 +102,22 @@ class HybridClinicalSystem:
         if session_id:
             active_session = get_session(session_id)
             if active_session and not active_session.get("completed", False):
-                # Continue with structured interview
+                # Check if user is mentioning NEW chief complaint mid-conversation
+                current_complaint = active_session.get("chief_complaint", "")
+                new_complaint = adaptive_interview.detect_new_chief_complaint_in_conversation(
+                    user_input, current_complaint
+                )
+                
+                if new_complaint:
+                    # User mentioned a high-priority NEW symptom - acknowledge and ask which to focus on
+                    return {
+                        "response": f"I understand you're now experiencing {new_complaint} along with {current_complaint}. This is concerning. Since {new_complaint} is a high-priority symptom, would you like me to focus on that first? Or should we continue with {current_complaint}?",
+                        "session_id": session_id,
+                        "next_step": "clarification_needed",
+                        "needs_followup": True
+                    }
+                
+                # Continue with structured interview (with adaptive symptom capture)
                 return self._continue_structured_interview(active_session, user_input)
         
         # Step 3: Detect chief complaint and start structured interview if available
