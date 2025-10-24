@@ -20,6 +20,7 @@ from symptom_intelligence.symptom_intelligence import (
 from clinical_engine.unified_clinical_engine import UnifiedClinicalEngine
 from services.conversational_layer import ConversationalLayer
 from services.complaint_detection import complaint_detector
+from services.adaptive_interview import adaptive_interview
 
 router = APIRouter()
 
