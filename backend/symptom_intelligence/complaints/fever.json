@@ -20,19 +20,19 @@
   "completion_threshold": 3,
   "triage_rules": [
     {
-      "expression": "float(str(temperature).replace('f','').replace('c','').replace('°','').split()[0]) >= 39.0 and ('stiff neck' in str(associated_symptoms).lower() or 'confusion' in str(associated_symptoms).lower() or 'rash' in str(associated_symptoms).lower())",
+      "expression": "('stiff neck' in str(associated_symptoms).lower() or 'confusion' in str(associated_symptoms).lower() or 'rash' in str(associated_symptoms).lower())",
       "level": "🟥 Red",
       "reason": "Possible Meningitis or Sepsis - Immediate Emergency Care Required"
     },
     {
-      "expression": "float(str(temperature).replace('f','').replace('c','').replace('°','').split()[0]) >= 40.0",
-      "level": "🟥 Red",
-      "reason": "Very high fever (>104°F/40°C) - Emergency evaluation needed"
-    },
-    {
-      "expression": "'yes' in str(immune_status).lower() and float(str(temperature).replace('f','').replace('c','').replace('°','').split()[0]) >= 38.5",
+      "expression": "'yes' in str(immune_status).lower()",
       "level": "🟧 Orange",
       "reason": "Fever in immunocompromised patient - Urgent evaluation needed"
+    },
+    {
+      "expression": "'breath' in str(associated_symptoms).lower() or 'cough' in str(associated_symptoms).lower()",
+      "level": "🟨 Yellow",
+      "reason": "Fever with respiratory symptoms - Medical evaluation recommended"
     }
   ]
 }
