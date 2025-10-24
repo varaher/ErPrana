@@ -166,7 +166,7 @@ class HybridClinicalSystem:
             }
     
     def _continue_structured_interview(self, session: Dict[str, Any], user_input: str) -> Dict[str, Any]:
-        """Continue with structured symptom intelligence interview"""
+        """Continue with structured symptom intelligence interview (with adaptive symptom capture)"""
         session_id = session["session_id"]
         pending_slots = session.get("pending_slots", [])
         
@@ -182,9 +182,16 @@ class HybridClinicalSystem:
                 "needs_followup": False
             }
         
+        # Extract additional symptoms mentioned in free-form response
+        additional_symptoms = adaptive_interview.extract_additional_symptoms(user_input)
+        
         # Process the response for current slot
         current_slot = pending_slots[0]
-        result = process_user_response(session_id, current_slot, user_input)
+        
+        # Enhance the value if additional symptoms are mentioned
+        enhanced_value = adaptive_interview.enhance_slot_value(current_slot, user_input, additional_symptoms)
+        
+        result = process_user_response(session_id, current_slot, enhanced_value)
         
         if result.get("completed"):
             # Interview completed
@@ -198,8 +205,18 @@ class HybridClinicalSystem:
                 "needs_followup": False
             }
         else:
-            # Ask next question
+            # Ask next question (with acknowledgment of additional symptoms if any)
             next_question = result.get("next_question", "Can you tell me more?")
+            
+            # Add clarification if multiple symptoms mentioned
+            if additional_symptoms:
+                clarification = adaptive_interview.generate_clarifying_question(
+                    additional_symptoms, 
+                    session.get("chief_complaint", "")
+                )
+                if clarification:
+                    next_question = clarification + next_question
+            
             return {
                 "response": next_question,
                 "session_id": session_id,
