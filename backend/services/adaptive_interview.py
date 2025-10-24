@@ -110,10 +110,10 @@ class AdaptiveInterviewManager:
         """
         Generate a clarifying question when multiple symptoms are mentioned
         """
-        if len(symptoms) > 2:
-            return f"I understand you're experiencing {', '.join(symptoms[:3])} along with {current_complaint}. Let me focus on the {current_complaint} first. Can you describe its severity?"
-        elif len(symptoms) > 0:
-            return f"I noted you also mentioned {symptoms[0]}. I'll keep that in mind. "
+        if len(symptoms) >= 2:
+            return f"I noted you also mentioned {', '.join(symptoms)}. I'll include that in my assessment. "
+        elif len(symptoms) == 1:
+            return f"I noted you also mentioned {symptoms[0]}. "
         
         return ""
 
