@@ -245,17 +245,41 @@ class HybridClinicalSystem:
             }
     
     def _continue_structured_interview(self, session: Dict[str, Any], user_input: str) -> Dict[str, Any]:
-        """Continue with structured symptom intelligence interview (with SMART adaptive extraction)"""
+        """Continue with structured symptom intelligence interview (with EXPECTED SLOT logic)"""
         session_id = session["session_id"]
         chief_complaint = session.get("chief_complaint", "")
         collected_slots = session.get("collected_slots", {})
         pending_slots = session.get("pending_slots", [])
         
-        # STEP 1: Extract ALL possible slots from user's current input
-        # Pass context of what slot we're asking for
+        # Initialize asked_slots if not present
+        if "asked_slots" not in session:
+            session["asked_slots"] = set()
+        
+        # STEP 1: Check if we're waiting for a specific expected slot answer
+        consumed, slot_data = handle_expected_slot(session, user_input)
+        if consumed:
+            if slot_data:
+                # Merge the answered slot
+                collected_slots.update(slot_data)
+                print(f"✅ Expected slot answered: {slot_data}")
+            else:
+                print(f"⚠️  Expected slot not properly answered, retrying or moving on")
+            
+            # Update session in DB
+            from symptom_intelligence.symptom_intelligence import sessions
+            sessions.update_one(
+                {"session_id": session_id},
+                {"$set": {
+                    "collected_slots": collected_slots,
+                    "expected_slot": session.get("expected_slot"),
+                    "asked_slots": list(session.get("asked_slots", set()))
+                }}
+            )
+        
+        # STEP 2: Extract ALL possible slots from user's current input (comprehensive messages)
         current_asking_slot = pending_slots[0] if pending_slots else None
         extracted_slots = extract_slots_from_text(user_input, context_slot=current_asking_slot)
-        print(f"📝 Extracted slots from '{user_input}' (asking for '{current_asking_slot}'): {extracted_slots}")
+        print(f"📝 Extracted slots from '{user_input}': {extracted_slots}")
         
         # STEP 2: Merge extracted slots into collected slots
         collected_slots = merge_slots(collected_slots, extracted_slots)
