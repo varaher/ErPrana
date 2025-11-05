@@ -13,22 +13,27 @@
   "completion_threshold": 4,
   "triage_rules": [
     {
-      "expression": "'sudden' in str(onset).lower() and ('yes' in str(radiation).lower() or 'arm' in str(radiation).lower() or 'jaw' in str(radiation).lower()) and int(severity) >= 7 and ('breath' in str(associated_symptoms).lower() or 'sweat' in str(associated_symptoms).lower())",
+      "expression": "'sudden' in str(onset).lower() and ('yes' in str(radiation).lower() or 'arm' in str(radiation).lower() or 'jaw' in str(radiation).lower()) and ('breath' in str(associated_symptoms).lower() or 'sweat' in str(associated_symptoms).lower())",
       "level": "🟥 Red",
       "reason": "Possible Acute Coronary Syndrome (ACS) - Immediate Emergency Care Required"
     },
     {
-      "expression": "int(severity) >= 7 and ('yes' in str(radiation).lower() or 'arm' in str(radiation).lower())",
+      "expression": "'sudden' in str(onset).lower() and ('yes' in str(radiation).lower() or 'arm' in str(radiation).lower())",
+      "level": "🟥 Red",
+      "reason": "Sudden chest pain with radiation - Possible cardiac event - Emergency evaluation needed"
+    },
+    {
+      "expression": "str(severity) and int(severity) >= 7 and ('yes' in str(radiation).lower() or 'arm' in str(radiation).lower())",
       "level": "🟥 Red",
       "reason": "Severe chest pain with radiation - Emergency evaluation needed"
     },
     {
-      "expression": "int(severity) >= 5 and ('breath' in str(associated_symptoms).lower() or 'dizz' in str(associated_symptoms).lower())",
+      "expression": "('breath' in str(associated_symptoms).lower() or 'sweat' in str(associated_symptoms).lower()) and ('yes' in str(radiation).lower() or 'arm' in str(radiation).lower())",
       "level": "🟧 Orange",
-      "reason": "Moderate to severe chest pain with concerning symptoms - Urgent evaluation needed"
+      "reason": "Chest pain with cardiac symptoms - Urgent evaluation needed"
     },
     {
-      "expression": "int(severity) >= 4",
+      "expression": "str(severity) and int(severity) >= 5",
       "level": "🟨 Yellow",
       "reason": "Moderate chest pain - Medical evaluation recommended"
     }
