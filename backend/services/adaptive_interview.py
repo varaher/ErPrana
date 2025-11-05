@@ -67,6 +67,10 @@ def extract_duration(text: str) -> str:
 
 def extract_temp(text: str) -> Tuple[float, str]:
     """Extract temperature from text"""
+    # Don't extract if it's clearly severity (e.g., standalone number 1-10)
+    if re.match(r'^\s*\d{1}\s*$', text):  # Single digit alone = likely severity
+        return 0.0, ""
+    
     for pat, unit in TEMPERATURE_PATTERNS:
         if m := re.search(pat, text):
             val = float(m.group(1))
@@ -75,6 +79,9 @@ def extract_temp(text: str) -> Tuple[float, str]:
                 unit = "F"
             elif not unit and 35 <= val <= 42:
                 unit = "C"
+            elif not unit and val <= 10:
+                # Likely severity, not temperature
+                return 0.0, ""
             return val, unit
     return 0.0, ""
 
