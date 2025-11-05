@@ -73,11 +73,22 @@ class HybridClinicalSystem:
         """
         Detect if user input matches a chief complaint
         Uses enhanced complaint detection with synonym mapping and fuzzy matching
-        Prioritizes complaints that are available in our structured interview system
+        Prioritizes HIGH-URGENCY complaints (chest pain, stroke, etc.)
         """
         user_input_lower = user_input.lower()
         
-        # First, directly check if any available complaint is mentioned
+        # PRIORITY 1: Check for HIGH-URGENCY complaints first (Red-level)
+        high_priority = [
+            "chest pain", "chest tightness", "stroke symptoms", "unconsciousness",
+            "seizures", "hematemesis", "severe bleeding", "anaphylaxis"
+        ]
+        for complaint in high_priority:
+            if complaint in user_input_lower or any(word in user_input_lower for word in complaint.split()):
+                if complaint in self.available_complaints:
+                    print(f"🚨 HIGH PRIORITY: '{complaint}' detected")
+                    return complaint
+        
+        # PRIORITY 2: Check other available complaints
         for complaint in self.available_complaints:
             if complaint in user_input_lower:
                 print(f"✅ Direct match: '{complaint}' found in input")
