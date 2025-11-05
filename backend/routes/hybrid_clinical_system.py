@@ -339,61 +339,105 @@ class HybridClinicalSystem:
                 "needs_followup": False
             }
         
-        # STEP 6: Ask next question from pending slots
-        next_slot = pending_slots[0]
-        
-        # Check if current user input already answered this slot
-        if next_slot in extracted_slots:
-            # User just provided this answer! Move to next slot
-            print(f"⚠️  User already provided '{next_slot}', moving to next")
-            collected_slots[next_slot] = extracted_slots[next_slot]
-            pending_slots = pending_slots[1:]
+        # STEP 6: Try CSV rules evaluation (if enough info)
+        if RULES and len(collected_slots) >= 2:
+            # Build feature map for rules
+            features = {
+                "chief_complaint": chief_complaint,
+                "symptoms": [chief_complaint],
+                "associated_symptoms": collected_slots.get("associated_symptoms", ""),
+                "onset": collected_slots.get("onset"),
+                "radiation": collected_slots.get("radiation"),
+                "severity": collected_slots.get("severity"),
+                "duration": collected_slots.get("duration"),
+                "pattern": collected_slots.get("pattern"),
+                "temperature": collected_slots.get("temperature"),
+            }
             
-            # Re-check completion
-            if not pending_slots or decision_ready(chief_complaint, collected_slots):
-                from symptom_intelligence.symptom_intelligence import sessions, check_completion_and_triage
+            matches = RULES.evaluate(features)
+            if matches and matches[0]["score"] >= 0.66:
+                # High confidence match from rules
+                print(f"🎯 Rules match: {matches[0]['likely_condition']} (score: {matches[0]['score']})")
+                
+                top = matches[0]
+                urgency_map = {
+                    "Red": "🟥 Red",
+                    "Orange": "🟧 Orange",
+                    "Yellow": "🟨 Yellow",
+                    "Green": "🟩 Green"
+                }
+                triage_level = urgency_map.get(top["urgency"], "🟨 Yellow")
+                
+                from symptom_intelligence.symptom_intelligence import sessions
                 sessions.update_one(
                     {"session_id": session_id},
-                    {"$set": {"collected_slots": collected_slots, "pending_slots": []}}
+                    {"$set": {
+                        "collected_slots": collected_slots,
+                        "completed": True,
+                        "triage_level": triage_level
+                    }}
                 )
-                triage_result = check_completion_and_triage(session_id)
                 
                 return {
                     "response": self._generate_triage_response({
-                        "triage_level": triage_result.get("triage_level"),
-                        "triage_reason": triage_result.get("reason"),
+                        "triage_level": triage_level,
+                        "triage_reason": f"{top['likely_condition']} (confidence: {top['score']:.0%})",
                         "collected_data": collected_slots
                     }),
                     "session_id": session_id,
                     "next_step": "assessment_complete",
-                    "triage_level": triage_result.get("triage_level"),
+                    "triage_level": triage_level,
                     "collected_slots": collected_slots,
-                    "pending_slots": [],
                     "needs_followup": False
                 }
         
-        # Update session with current state
-        from symptom_intelligence.symptom_intelligence import sessions, get_next_question
+        # STEP 7: Ask next best question (no loops - use next_best_question)
+        next_result = next_best_question(session)
+        if next_result:
+            question_text, slot_name = next_result
+            
+            # Set expected slot
+            session["expected_slot"] = slot_name
+            
+            # Update session
+            from symptom_intelligence.symptom_intelligence import sessions
+            sessions.update_one(
+                {"session_id": session_id},
+                {"$set": {
+                    "collected_slots": collected_slots,
+                    "expected_slot": slot_name,
+                    "asked_slots": list(session.get("asked_slots", set()))
+                }}
+            )
+            
+            return {
+                "response": question_text,
+                "session_id": session_id,
+                "next_step": "slot_filling",
+                "collected_slots": collected_slots,
+                "needs_followup": True
+            }
+        
+        # STEP 8: No more questions, force completion
+        from symptom_intelligence.symptom_intelligence import sessions, check_completion_and_triage
         sessions.update_one(
             {"session_id": session_id},
-            {"$set": {"collected_slots": collected_slots, "pending_slots": pending_slots}}
+            {"$set": {"collected_slots": collected_slots, "pending_slots": [], "completed": True}}
         )
-        
-        next_q = get_next_question(session_id)
-        next_question = next_q["question"] if next_q else "Can you tell me more?"
-        
-        # Acknowledge if multiple things were extracted
-        if len(extracted_slots) > 1:
-            ack = f"I noted: {', '.join(f'{k}' for k in extracted_slots.keys() if k != 'raw_text')}. "
-            next_question = ack + next_question
+        triage_result = check_completion_and_triage(session_id)
         
         return {
-            "response": next_question,
+            "response": self._generate_triage_response({
+                "triage_level": triage_result.get("triage_level"),
+                "triage_reason": triage_result.get("reason"),
+                "collected_data": collected_slots
+            }),
             "session_id": session_id,
-            "next_step": "slot_filling",
+            "next_step": "assessment_complete",
+            "triage_level": triage_result.get("triage_level"),
             "collected_slots": collected_slots,
-            "pending_slots": pending_slots,
-            "needs_followup": True
+            "pending_slots": [],
+            "needs_followup": False
         }
     
     def _generate_triage_response(self, result: Dict[str, Any]) -> str:
