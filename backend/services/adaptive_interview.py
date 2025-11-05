@@ -137,6 +137,120 @@ def extract_radiation(text: str) -> str:
 #  COMBINED EXTRACTION PIPE
 # ------------------------------------------------------------
 
+def handle_expected_slot(session: Dict[str, Any], user_text: str) -> tuple[bool, Optional[Dict[str, Any]]]:
+    """
+    Returns (consumed, slot_data) where:
+    - consumed: True if we successfully parsed the expected slot
+    - slot_data: {slot_name: value} or None
+    """
+    from services.extractors import extract_severity, extract_yes_no, extract_onset, extract_pattern
+    
+    expected = session.get("expected_slot")
+    if not expected:
+        return False, None
+    
+    asked_slots = session.get("asked_slots", set())
+    
+    # Severity slots (with context flag so bare numbers work)
+    if "severity" in expected:
+        severity = extract_severity(user_text, context_expects_severity=True)
+        if severity:
+            asked_slots.add(expected)
+            session["asked_slots"] = asked_slots
+            session["expected_slot"] = None
+            return True, {expected: str(severity)}
+        
+        # Didn't find valid severity - one retry
+        retry_count = session.get(f"_{expected}_retry", 0)
+        if retry_count == 0:
+            session[f"_{expected}_retry"] = 1
+            return True, None  # Will ask again
+        else:
+            # Give up, move on
+            asked_slots.add(expected)
+            session["asked_slots"] = asked_slots
+            session["expected_slot"] = None
+            return True, None
+    
+    # Yes/No questions (radiation, risk factors, etc.)
+    if expected in ["chest_pain", "risk_factors", "immune_status"]:
+        answer = extract_yes_no(user_text)
+        if answer is not None:
+            asked_slots.add(expected)
+            session["asked_slots"] = asked_slots
+            session["expected_slot"] = None
+            return True, {expected: "yes" if answer else "no"}
+    
+    # Onset
+    if expected == "onset":
+        onset = extract_onset(user_text)
+        if onset:
+            asked_slots.add(expected)
+            session["asked_slots"] = asked_slots
+            session["expected_slot"] = None
+            return True, {expected: onset}
+    
+    # Pattern
+    if expected == "pattern":
+        pattern = extract_pattern(user_text)
+        if pattern:
+            asked_slots.add(expected)
+            session["asked_slots"] = asked_slots
+            session["expected_slot"] = None
+            return True, {expected: pattern}
+    
+    # Default: take raw text for other slots
+    if user_text.strip():
+        asked_slots.add(expected)
+        session["asked_slots"] = asked_slots
+        session["expected_slot"] = None
+        return True, {expected: user_text.strip()}
+    
+    return False, None
+
+def next_best_question(session: Dict[str, Any]) -> Optional[tuple[str, str]]:
+    """
+    Pick the next question only for slots not yet asked/filled.
+    Returns (question_text, slot_name) or None
+    """
+    chief_complaint = session.get("chief_complaint", "")
+    collected_slots = session.get("collected_slots", {})
+    asked_slots = session.get("asked_slots", set())
+    
+    # Shortness of Breath flow
+    if chief_complaint == "shortness of breath":
+        if "severity" not in collected_slots and "severity" not in asked_slots:
+            return ("On a scale of 1-10, how severe is your breathing difficulty?", "severity")
+        if "onset" not in collected_slots and "onset" not in asked_slots:
+            return ("Did your breathing difficulty start suddenly or gradually?", "onset")
+        if "rest_or_exertion" not in collected_slots and "rest_or_exertion" not in asked_slots:
+            return ("Does it occur at rest or only with activity?", "rest_or_exertion")
+        if "chest_pain" not in collected_slots and "chest_pain" not in asked_slots:
+            return ("Do you have any chest pain along with the shortness of breath?", "chest_pain")
+    
+    # Chest Pain flow
+    elif chief_complaint == "chest pain":
+        if "onset" not in collected_slots and "onset" not in asked_slots:
+            return ("When did the chest pain start? Was it sudden or gradual?", "onset")
+        if "severity" not in collected_slots and "severity" not in asked_slots:
+            return ("On a scale of 1-10, how severe is the pain?", "severity")
+        if "radiation" not in collected_slots and "radiation" not in asked_slots:
+            return ("Does the pain spread to your arm, jaw, neck, or back?", "radiation")
+        if "associated_symptoms" not in collected_slots and "associated_symptoms" not in asked_slots:
+            return ("Are you experiencing shortness of breath, sweating, nausea, or dizziness?", "associated_symptoms")
+    
+    # Fever flow
+    elif chief_complaint == "fever":
+        if "duration" not in collected_slots and "duration" not in asked_slots:
+            return ("How long have you had a fever?", "duration")
+        if "pattern" not in collected_slots and "pattern" not in asked_slots:
+            return ("Is the fever constant or does it come and go?", "pattern")
+        if "associated_symptoms" not in collected_slots and "associated_symptoms" not in asked_slots:
+            return ("Do you have any other symptoms like headache, stiff neck, rash, confusion, or difficulty breathing?", "associated_symptoms")
+    
+    # Default: no more questions
+    return None
+
 def extract_slots_from_text(text: str, context_slot: str = None) -> Dict[str, Any]:
     """
     Main extraction function - parses user text and extracts all possible slots
