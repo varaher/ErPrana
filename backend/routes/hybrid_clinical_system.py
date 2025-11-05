@@ -249,8 +249,10 @@ class HybridClinicalSystem:
         pending_slots = session.get("pending_slots", [])
         
         # STEP 1: Extract ALL possible slots from user's current input
-        extracted_slots = extract_slots_from_text(user_input)
-        print(f"📝 Extracted slots from '{user_input}': {extracted_slots}")
+        # Pass context of what slot we're asking for
+        current_asking_slot = pending_slots[0] if pending_slots else None
+        extracted_slots = extract_slots_from_text(user_input, context_slot=current_asking_slot)
+        print(f"📝 Extracted slots from '{user_input}' (asking for '{current_asking_slot}'): {extracted_slots}")
         
         # STEP 2: Merge extracted slots into collected slots
         collected_slots = merge_slots(collected_slots, extracted_slots)
