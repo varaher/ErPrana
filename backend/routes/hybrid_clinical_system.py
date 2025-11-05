@@ -172,65 +172,100 @@ class HybridClinicalSystem:
             }
     
     def _continue_structured_interview(self, session: Dict[str, Any], user_input: str) -> Dict[str, Any]:
-        """Continue with structured symptom intelligence interview (with adaptive symptom capture)"""
+        """Continue with structured symptom intelligence interview (with SMART adaptive extraction)"""
         session_id = session["session_id"]
+        chief_complaint = session.get("chief_complaint", "")
+        collected_slots = session.get("collected_slots", {})
         pending_slots = session.get("pending_slots", [])
         
+        # STEP 1: Extract ALL possible slots from user's current input
+        extracted_slots = extract_slots_from_text(user_input)
+        print(f"📝 Extracted slots from '{user_input}': {extracted_slots}")
+        
+        # STEP 2: Merge extracted slots into collected slots
+        collected_slots = merge_slots(collected_slots, extracted_slots)
+        
+        # STEP 3: Update pending slots (remove ones that are now filled)
+        pending_slots = auto_fill_pending_slots(pending_slots, collected_slots)
+        
+        # STEP 4: Check if we have enough info for early completion (70% threshold)
+        if decision_ready(chief_complaint, collected_slots):
+            print(f"✅ Early completion triggered! Collected: {collected_slots}")
+            
+            # Update session in database
+            from symptom_intelligence.symptom_intelligence import sessions, check_completion_and_triage
+            sessions.update_one(
+                {"session_id": session_id},
+                {"$set": {"collected_slots": collected_slots, "pending_slots": []}}
+            )
+            
+            # Force triage evaluation
+            triage_result = check_completion_and_triage(session_id)
+            
+            return {
+                "response": self._generate_triage_response({
+                    "triage_level": triage_result.get("triage_level"),
+                    "triage_reason": triage_result.get("reason"),
+                    "collected_data": collected_slots
+                }),
+                "session_id": session_id,
+                "next_step": "assessment_complete",
+                "triage_level": triage_result.get("triage_level"),
+                "collected_slots": collected_slots,
+                "pending_slots": [],
+                "needs_followup": False
+            }
+        
+        # STEP 5: If no pending slots but not enough for completion, interview done anyway
         if not pending_slots:
-            # Interview complete, return triage
+            print(f"ℹ️  No more pending slots, completing interview")
+            from symptom_intelligence.symptom_intelligence import sessions, check_completion_and_triage
+            sessions.update_one(
+                {"session_id": session_id},
+                {"$set": {"collected_slots": collected_slots, "pending_slots": []}}
+            )
+            triage_result = check_completion_and_triage(session_id)
+            
             return {
-                "response": self._generate_triage_response(session),
+                "response": self._generate_triage_response({
+                    "triage_level": triage_result.get("triage_level"),
+                    "triage_reason": triage_result.get("reason"),
+                    "collected_data": collected_slots
+                }),
                 "session_id": session_id,
                 "next_step": "assessment_complete",
-                "triage_level": session.get("triage_level"),
-                "collected_slots": session.get("collected_slots", {}),
+                "triage_level": triage_result.get("triage_level"),
+                "collected_slots": collected_slots,
                 "pending_slots": [],
                 "needs_followup": False
             }
         
-        # Extract additional symptoms mentioned in free-form response
-        additional_symptoms = adaptive_interview.extract_additional_symptoms(user_input)
+        # STEP 6: Ask next question from pending slots
+        next_slot = pending_slots[0]
         
-        # Process the response for current slot
-        current_slot = pending_slots[0]
+        # Update session with current state
+        from symptom_intelligence.symptom_intelligence import sessions, get_next_question
+        sessions.update_one(
+            {"session_id": session_id},
+            {"$set": {"collected_slots": collected_slots, "pending_slots": pending_slots}}
+        )
         
-        # Enhance the value if additional symptoms are mentioned
-        enhanced_value = adaptive_interview.enhance_slot_value(current_slot, user_input, additional_symptoms)
+        next_q = get_next_question(session_id)
+        next_question = next_q["question"] if next_q else "Can you tell me more?"
         
-        result = process_user_response(session_id, current_slot, enhanced_value)
+        # Acknowledge if multiple things were extracted
+        if len(extracted_slots) > 1:
+            ack = f"I noted: {', '.join(f'{k}={v}' for k, v in extracted_slots.items() if k != 'raw_text')}. "
+            next_question = ack + next_question
         
-        if result.get("completed"):
-            # Interview completed
-            return {
-                "response": self._generate_triage_response(result),
-                "session_id": session_id,
-                "next_step": "assessment_complete",
-                "triage_level": result.get("triage_level"),
-                "collected_slots": result.get("collected_data", {}),
-                "pending_slots": [],
-                "needs_followup": False
-            }
-        else:
-            # Ask next question (with acknowledgment of additional symptoms if any)
-            next_question = result.get("next_question", "Can you tell me more?")
-            
-            # Add clarification if multiple symptoms mentioned
-            if additional_symptoms:
-                clarification = adaptive_interview.generate_clarifying_question(
-                    additional_symptoms, 
-                    session.get("chief_complaint", "")
-                )
-                if clarification:
-                    next_question = clarification + next_question
-            
-            return {
-                "response": next_question,
-                "session_id": session_id,
-                "next_step": "slot_filling",
-                "collected_slots": session.get("collected_slots", {}),
-                "pending_slots": [result.get("next_slot")],
-                "needs_followup": True
-            }
+        return {
+            "response": next_question,
+            "session_id": session_id,
+            "next_step": "slot_filling",
+            "collected_slots": collected_slots,
+            "pending_slots": pending_slots,
+            "needs_followup": True
+        }
     
     def _generate_triage_response(self, result: Dict[str, Any]) -> str:
         """Generate appropriate response based on triage level"""
