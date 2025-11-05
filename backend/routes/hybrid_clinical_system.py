@@ -25,8 +25,11 @@ from services.adaptive_interview import (
     extract_slots_from_text,
     merge_slots,
     decision_ready,
-    auto_fill_pending_slots
+    auto_fill_pending_slots,
+    handle_expected_slot,
+    next_best_question
 )
+from clinical_engine.evaluate_rules import RULES
 
 router = APIRouter()
 
