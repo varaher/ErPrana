@@ -137,11 +137,22 @@ def extract_radiation(text: str) -> str:
 #  COMBINED EXTRACTION PIPE
 # ------------------------------------------------------------
 
-def extract_slots_from_text(text: str) -> Dict[str, Any]:
+def extract_slots_from_text(text: str, context_slot: str = None) -> Dict[str, Any]:
     """
     Main extraction function - parses user text and extracts all possible slots
+    context_slot: If provided, prioritize extracting this specific slot
     """
     text_lower = text.lower()
+    
+    # If asking for specific slot and text is simple, use it directly
+    if context_slot and text_lower.strip() and len(text_lower.split()) <= 3:
+        # Simple response to specific question
+        if context_slot == "severity" and re.match(r'^\d{1,2}$', text_lower.strip()):
+            return {"severity": text_lower.strip(), "raw_text": text_lower}
+        elif context_slot == "duration" and extract_duration(text_lower):
+            return {"duration": extract_duration(text_lower), "raw_text": text_lower}
+        elif context_slot == "pattern" and extract_pattern(text_lower):
+            return {"pattern": extract_pattern(text_lower), "raw_text": text_lower}
     
     duration = extract_duration(text_lower)
     temp, unit = extract_temp(text_lower)
