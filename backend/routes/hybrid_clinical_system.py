@@ -20,7 +20,13 @@ from symptom_intelligence.symptom_intelligence import (
 from clinical_engine.unified_clinical_engine import UnifiedClinicalEngine
 from services.conversational_layer import ConversationalLayer
 from services.complaint_detection import complaint_detector
-from services.adaptive_interview import adaptive_interview
+from services.adaptive_interview import (
+    adaptive_interview,
+    extract_slots_from_text,
+    merge_slots,
+    decision_ready,
+    auto_fill_pending_slots
+)
 
 router = APIRouter()
 
