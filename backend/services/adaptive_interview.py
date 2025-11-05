@@ -253,41 +253,50 @@ def next_best_question(session: Dict[str, Any]) -> Optional[tuple[str, str]]:
 
 def extract_slots_from_text(text: str, context_slot: str = None) -> Dict[str, Any]:
     """
-    Main extraction function - parses user text and extracts all possible slots
-    context_slot: If provided, prioritize extracting this specific slot
+    Main extraction function - uses STRICT extractors (no ambiguous number parsing)
+    context_slot: If provided, enables context-aware extraction
     """
+    from services.extractors import (
+        extract_temperature, extract_severity, extract_duration,
+        extract_onset, extract_pattern, extract_radiation
+    )
+    
     text_lower = text.lower()
     
-    # If asking for specific slot and text is simple, use it directly
-    if context_slot and text_lower.strip() and len(text_lower.split()) <= 3:
-        # Simple response to specific question
-        if context_slot == "severity" and re.match(r'^\d{1,2}$', text_lower.strip()):
-            return {"severity": text_lower.strip(), "raw_text": text_lower}
-        elif context_slot == "duration" and extract_duration(text_lower):
-            return {"duration": extract_duration(text_lower), "raw_text": text_lower}
-        elif context_slot == "pattern" and extract_pattern(text_lower):
-            return {"pattern": extract_pattern(text_lower), "raw_text": text_lower}
+    # Use strict extractors
+    temp_result = extract_temperature(text)
+    duration_result = extract_duration(text)
+    onset_result = extract_onset(text)
+    pattern_result = extract_pattern(text)
+    radiation_result = extract_radiation(text)
     
-    duration = extract_duration(text_lower)
-    temp, unit = extract_temp(text_lower)
-    pattern = extract_pattern(text_lower)
-    severity = extract_severity(text_lower)
+    # Severity only with context or explicit markers
+    severity_result = extract_severity(text, context_expects_severity=(context_slot == "severity"))
+    
+    # Associated symptoms (keep existing logic)
     assoc = extract_assoc(text_lower)
     risks = extract_risk_factors(text_lower)
-    onset = extract_onset(text_lower)
-    radiation = extract_radiation(text_lower)
     
-    extracted = {
-        "duration": duration,
-        "temperature": f"{temp} {unit}".strip() if temp else "",
-        "pattern": pattern,
-        "severity": severity,
-        "associated_symptoms": ", ".join(assoc) if assoc else "",
-        "risk_factors": ", ".join(risks) if risks else "",
-        "onset": onset,
-        "radiation": radiation,
-        "raw_text": text_lower
-    }
+    extracted = {}
+    
+    if duration_result:
+        extracted["duration"] = duration_result
+    if temp_result:
+        extracted["temperature"] = temp_result["raw"]
+    if pattern_result:
+        extracted["pattern"] = pattern_result
+    if severity_result:
+        extracted["severity"] = str(severity_result)
+    if assoc:
+        extracted["associated_symptoms"] = ", ".join(assoc)
+    if risks:
+        extracted["risk_factors"] = ", ".join(risks)
+    if onset_result:
+        extracted["onset"] = onset_result
+    if radiation_result:
+        extracted["radiation"] = radiation_result
+    
+    extracted["raw_text"] = text_lower
     
     # Remove empty values
     return {k: v for k, v in extracted.items() if v}
