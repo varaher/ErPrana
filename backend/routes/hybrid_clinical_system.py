@@ -73,7 +73,17 @@ class HybridClinicalSystem:
         """
         Detect if user input matches a chief complaint
         Uses enhanced complaint detection with synonym mapping and fuzzy matching
+        Prioritizes complaints that are available in our structured interview system
         """
+        user_input_lower = user_input.lower()
+        
+        # First, directly check if any available complaint is mentioned
+        for complaint in self.available_complaints:
+            if complaint in user_input_lower:
+                print(f"✅ Direct match: '{complaint}' found in input")
+                return complaint
+        
+        # Then use the general complaint detector
         detected_complaint = complaint_detector.detect_complaint(user_input)
         
         # Verify detected complaint is available in our system
@@ -84,6 +94,7 @@ class HybridClinicalSystem:
         if detected_complaint:
             for complaint in self.available_complaints:
                 if detected_complaint in complaint or complaint in detected_complaint:
+                    print(f"✅ Mapped '{detected_complaint}' → '{complaint}'")
                     return complaint
         
         return None
