@@ -263,11 +263,18 @@ class ComplaintDetector:
                 print(f"✅ Exact match: '{text}' → '{complaint}'")
                 return complaint
         
-        # Step 2: Try partial match (contains)
+        # Step 2: Try partial match (contains) - prioritize longer matches
+        matches = []
         for synonym, complaint in self.synonyms.items():
             if synonym in text or synonym in text_cleaned:
-                print(f"✅ Partial match: '{text}' contains '{synonym}' → '{complaint}'")
-                return complaint
+                matches.append((len(synonym), synonym, complaint))
+        
+        if matches:
+            # Return the longest match (more specific)
+            matches.sort(reverse=True)
+            _, synonym, complaint = matches[0]
+            print(f"✅ Partial match: '{text}' contains '{synonym}' → '{complaint}'")
+            return complaint
         
         # Step 3: Try fuzzy matching for typos
         fuzzy_result = self._fuzzy_match(text_cleaned if text_cleaned else text)
