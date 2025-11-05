@@ -313,6 +313,36 @@ class HybridClinicalSystem:
         # STEP 6: Ask next question from pending slots
         next_slot = pending_slots[0]
         
+        # Check if current user input already answered this slot
+        if next_slot in extracted_slots:
+            # User just provided this answer! Move to next slot
+            print(f"⚠️  User already provided '{next_slot}', moving to next")
+            collected_slots[next_slot] = extracted_slots[next_slot]
+            pending_slots = pending_slots[1:]
+            
+            # Re-check completion
+            if not pending_slots or decision_ready(chief_complaint, collected_slots):
+                from symptom_intelligence.symptom_intelligence import sessions, check_completion_and_triage
+                sessions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"collected_slots": collected_slots, "pending_slots": []}}
+                )
+                triage_result = check_completion_and_triage(session_id)
+                
+                return {
+                    "response": self._generate_triage_response({
+                        "triage_level": triage_result.get("triage_level"),
+                        "triage_reason": triage_result.get("reason"),
+                        "collected_data": collected_slots
+                    }),
+                    "session_id": session_id,
+                    "next_step": "assessment_complete",
+                    "triage_level": triage_result.get("triage_level"),
+                    "collected_slots": collected_slots,
+                    "pending_slots": [],
+                    "needs_followup": False
+                }
+        
         # Update session with current state
         from symptom_intelligence.symptom_intelligence import sessions, get_next_question
         sessions.update_one(
@@ -325,7 +355,7 @@ class HybridClinicalSystem:
         
         # Acknowledge if multiple things were extracted
         if len(extracted_slots) > 1:
-            ack = f"I noted: {', '.join(f'{k}={v}' for k, v in extracted_slots.items() if k != 'raw_text')}. "
+            ack = f"I noted: {', '.join(f'{k}' for k in extracted_slots.keys() if k != 'raw_text')}. "
             next_question = ack + next_question
         
         return {
