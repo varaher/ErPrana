@@ -131,21 +131,69 @@ class HybridClinicalSystem:
         if chief_complaint:
             # Check if this complaint has structured interview
             if chief_complaint in self.available_complaints:
-                from symptom_intelligence.symptom_intelligence import get_next_question
+                from symptom_intelligence.symptom_intelligence import get_next_question, sessions
                 new_session = create_session(chief_complaint, user_id)
                 if new_session:
-                    # Get first question immediately
-                    next_q = get_next_question(new_session["session_id"])
+                    session_id = new_session["session_id"]
+                    
+                    # SMART START: Extract slots from initial message
+                    extracted_slots = extract_slots_from_text(user_input)
+                    print(f"🚀 Initial extraction from '{user_input}': {extracted_slots}")
+                    
+                    if extracted_slots:
+                        # Merge into new session
+                        collected_slots = merge_slots({}, extracted_slots)
+                        pending_slots = auto_fill_pending_slots(
+                            new_session.get("pending_slots", []),
+                            collected_slots
+                        )
+                        
+                        # Update session with extracted info
+                        sessions.update_one(
+                            {"session_id": session_id},
+                            {"$set": {
+                                "collected_slots": collected_slots,
+                                "pending_slots": pending_slots
+                            }}
+                        )
+                        
+                        # Check if we already have enough for early completion
+                        if decision_ready(chief_complaint, collected_slots):
+                            print(f"🎯 Early completion on first message!")
+                            from symptom_intelligence.symptom_intelligence import check_completion_and_triage
+                            triage_result = check_completion_and_triage(session_id)
+                            
+                            return {
+                                "response": self._generate_triage_response({
+                                    "triage_level": triage_result.get("triage_level"),
+                                    "triage_reason": triage_result.get("reason"),
+                                    "collected_data": collected_slots
+                                }),
+                                "session_id": session_id,
+                                "next_step": "assessment_complete",
+                                "triage_level": triage_result.get("triage_level"),
+                                "collected_slots": collected_slots,
+                                "pending_slots": [],
+                                "needs_followup": False
+                            }
+                    
+                    # Get first question
+                    next_q = get_next_question(session_id)
                     first_question = next_q["question"] if next_q else "Can you tell me more about your symptoms?"
                     
-                    response_text = f"I understand you're experiencing {chief_complaint}. Let me ask you some important questions to better assess your situation.\n\n{first_question}"
+                    # Acknowledge what was captured
+                    ack = ""
+                    if extracted_slots:
+                        ack = f"I noted: {', '.join(f'{k}' for k in extracted_slots.keys() if k != 'raw_text')}. "
+                    
+                    response_text = f"I understand you're experiencing {chief_complaint}. {ack}Let me ask a few more questions.\n\n{first_question}"
                     
                     return {
                         "response": response_text,
-                        "session_id": new_session["session_id"],
+                        "session_id": session_id,
                         "next_step": "slot_filling",
                         "needs_followup": True,
-                        "collected_slots": {},
+                        "collected_slots": collected_slots if extracted_slots else {},
                         "pending_slots": new_session.get("pending_slots", [])
                     }
         
