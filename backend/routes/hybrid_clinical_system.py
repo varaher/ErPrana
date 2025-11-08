@@ -169,7 +169,7 @@ class HybridClinicalSystem:
         
         return None
     
-    def process_turn(self, user_input: str, user_id: str, session_id: Optional[str] = None) -> Dict[str, Any]:
+    async def process_turn(self, user_input: str, user_id: str, session_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Main orchestration logic for hybrid system
         """
