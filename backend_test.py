@@ -1651,8 +1651,8 @@ class BackendAPITester:
         )
         
         if success:
-            triage_level = response.get("triage_level", "").lower()
-            response_text = response.get("response", "").lower()
+            triage_level = (response.get("triage_level") or "").lower()
+            response_text = (response.get("response") or "").lower()
             
             # Check for RED/Emergency triage (not Yellow)
             if "red" in triage_level or "emergency" in triage_level:
