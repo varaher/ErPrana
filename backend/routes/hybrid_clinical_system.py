@@ -62,8 +62,8 @@ URGENCY_UI = {
         "description": "This condition should be evaluated by a healthcare professional, but it's not immediately urgent."
     },
     "Mild": {
-        "badge": "\ud83d\udfe9 Green",
-        "cta": "\u2705 ROUTINE: Monitor your symptoms and consult your healthcare provider if they worsen.",
+        "badge": "GREEN",
+        "cta": "ROUTINE: Monitor your symptoms and consult your healthcare provider if they worsen.",
         "description": "Self-care measures may be appropriate with routine follow-up."
     },
     # Legacy emoji-based keys (for backwards compatibility)
