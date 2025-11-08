@@ -42,8 +42,8 @@ conversational_layer = ConversationalLayer()
 # ==========================================================
 URGENCY_UI = {
     "Emergency": {
-        "badge": "\ud83d\udfe5 Red",
-        "cta": "\ud83d\udea8 EMERGENCY: Call 911 or go to the nearest Emergency Department immediately.",
+        "badge": "RED",
+        "cta": "EMERGENCY: Call 911 or go to the nearest Emergency Department immediately.",
         "description": "This is a potentially life-threatening situation that requires immediate medical attention."
     },
     "High": {
