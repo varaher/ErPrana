@@ -159,7 +159,8 @@ class HybridClinicalSystem:
             "seizures", "hematemesis", "severe bleeding", "anaphylaxis"
         ]
         for complaint in high_priority:
-            if complaint in user_input_lower or any(word in user_input_lower for word in complaint.split()):
+            # Only match the full complaint phrase, not individual words
+            if complaint in user_input_lower:
                 if complaint in self.available_complaints:
                     print(f"🚨 HIGH PRIORITY: '{complaint}' detected")
                     return complaint
