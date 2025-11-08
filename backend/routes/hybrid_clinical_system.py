@@ -573,12 +573,16 @@ class HybridClinicalSystem:
         triage_level = result.get("triage_level", "🟨 Yellow")
         reason = result.get("triage_reason", "")
         
+        # Ensure triage_level is not None
+        if not triage_level:
+            triage_level = "🟨 Yellow"
+        
         # Find matching UI config (handle both "Red" and "🟥 Red" formats)
         ui_config = URGENCY_UI.get(triage_level)
         if not ui_config:
             # Try to extract text urgency (e.g., "Red" from "🟥 Red")
             for key in ["Emergency", "Red", "High", "Urgent", "Moderate", "Yellow", "Mild", "Green"]:
-                if key.lower() in triage_level.lower():
+                if key.lower() in str(triage_level).lower():
                     ui_config = URGENCY_UI.get(key, URGENCY_UI["Moderate"])
                     break
         
