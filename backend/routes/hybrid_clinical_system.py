@@ -575,7 +575,7 @@ class HybridClinicalSystem:
         
         # Ensure triage_level is not None
         if not triage_level:
-            triage_level = "🟨 Yellow"
+            triage_level = "YELLOW"
         
         # Find matching UI config (handle both "Red" and "🟥 Red" formats)
         ui_config = URGENCY_UI.get(triage_level)
