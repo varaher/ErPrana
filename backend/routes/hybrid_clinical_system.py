@@ -517,6 +517,54 @@ class HybridClinicalSystem:
 hybrid_system = HybridClinicalSystem()
 
 # ==========================================================
+# \ud83d\udee0\ufe0f SESSION MANAGEMENT HELPERS
+# ==========================================================
+
+def _hard_reset_for_switch(session: Dict[str, Any], new_cc: str) -> Dict[str, Any]:
+    """
+    Complete session reset when switching chief complaints
+    Clears all stale state to prevent loop issues
+    """
+    session["chief_complaint"] = new_cc
+    session["collected_slots"] = {}
+    session["asked_slots"] = set()
+    session["expected_slot"] = None
+    session["pending_question"] = None
+    session["completed"] = False
+    session.pop("context_switch_offer", None)
+    session.pop("expected_confirmation", None)
+    session["last_user_input"] = ""
+    
+    print(f"\ud83d\udd04 Hard reset completed for switch to: {new_cc}")
+    return session
+
+def mark_completed(session: Dict[str, Any], reason: str = "triage_delivered"):
+    """Mark session as completed with reason"""
+    session["completed"] = True
+    session["completed_reason"] = reason
+    session["completed_at"] = datetime.now().isoformat()
+    print(f"\u2705 Session marked as completed: {reason}")
+
+def archive_session(session: Dict[str, Any]):
+    """Archive completed session (for future reference)"""
+    from symptom_intelligence.symptom_intelligence import sessions
+    sessions.update_one(
+        {"session_id": session.get("session_id")},
+        {"$set": {
+            "archived": True,
+            "archived_at": datetime.now().isoformat()
+        }}
+    )
+    print(f"\ud83d\uddc4\ufe0f Session archived: {session.get('session_id')}")
+
+def create_new_session_for_user(user_id: str, chief_complaint: str) -> Dict[str, Any]:
+    """Create a fresh session for a new complaint"""
+    from symptom_intelligence.symptom_intelligence import create_session
+    new_session = create_session(chief_complaint, user_id)
+    print(f"\ud83c\udd95 New session created: {new_session.get('session_id')} for {chief_complaint}")
+    return new_session
+
+# ==========================================================
 # 🚀 API Endpoints
 # ==========================================================
 
