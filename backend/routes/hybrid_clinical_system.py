@@ -88,22 +88,22 @@ URGENCY_UI = {
         "description": "Self-care measures may be appropriate with routine follow-up."
     },
     # Emoji-based keys from complaint files
-    "Red Red": {
+    "🟥 Red": {
         "badge": "RED",
         "cta": "EMERGENCY: Call 911 or go to the nearest Emergency Department immediately.",
         "description": "This is a potentially life-threatening situation that requires immediate medical attention."
     },
-    "Orange Orange": {
+    "🟧 Orange": {
         "badge": "ORANGE", 
         "cta": "URGENT: Seek medical care within the next few hours.",
         "description": "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
     },
-    "Yellow Yellow": {
+    "🟨 Yellow": {
         "badge": "YELLOW",
         "cta": "NON-URGENT: Schedule an appointment with your healthcare provider.",
         "description": "This condition should be evaluated by a healthcare professional, but it's not immediately urgent."
     },
-    "Green Green": {
+    "🟩 Green": {
         "badge": "GREEN",
         "cta": "ROUTINE: Monitor your symptoms and consult your healthcare provider if they worsen.",
         "description": "Self-care measures may be appropriate with routine follow-up."
