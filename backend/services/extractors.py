@@ -1,162 +1,176 @@
 # /app/backend/services/extractors.py
 """
-Strict slot extractors - no ambiguous number parsing
+Strict extraction functions for temperature, severity, and other clinical data
+Avoids ambiguous number parsing
 """
 
 import re
 from typing import Optional, Dict, Any
 
-# Temperature ONLY with explicit units
-TEMP_RE = re.compile(
-    r'(?P<val>\d{2,3})\s*(?:°\s*)?(?P<unit>[fFcC]|fahrenheit|celsius)\b'
-)
-
-# Severity: explicit 1-10 or descriptive words
-SEVERITY_RE = re.compile(r'\b(10|[1-9])\b')
-SEVERITY_WORDS = {
-    'mild': 3,
-    'moderate': 5,
-    'severe': 8,
-    'worst': 10,
-    'unbearable': 10,
-    'excruciating': 10
-}
-
-# Duration patterns
-DURATION_RE = [
-    (re.compile(r'(\d+)\s*(?:day|days)'), 'days'),
-    (re.compile(r'(\d+)\s*(?:week|weeks)'), 'weeks'),
-    (re.compile(r'(\d+)\s*(?:hour|hours|hrs?)'), 'hours'),
-    (re.compile(r'(\d+)\s*(?:month|months)'), 'months'),
-]
+# Temperature requires EXPLICIT unit (F, C, deg)
+TEMP_RE = re.compile(r'(?P<val>\d{2,3}(?:\.\d)?)\s*(?:°?\s*(?P<unit>[fFcC])|\bdeg(?:ree)?s?\s*(?P<unit2>[fFcC])?)', re.I)
 
 def extract_temperature(text: str) -> Optional[Dict[str, Any]]:
     """
-    Extract temperature ONLY if a unit is present.
-    Returns {'value_f': float, 'raw': '101 F'} or None
-    Bare numbers are NEVER temperatures.
+    Extract temperature ONLY if explicit unit is provided (F, C, degree, deg)
+    Returns {"value_f": float, "value_c": float, "raw": str} or None
     """
     m = TEMP_RE.search(text)
     if not m:
         return None
-
-    val = float(m.group('val'))
-    unit = m.group('unit').lower()
     
-    if unit in ('c', 'celsius'):
-        # Convert to Fahrenheit
-        val_f = (val * 9 / 5) + 32.0
-        raw = f"{val}°C"
+    val = float(m.group("val"))
+    unit = (m.group("unit") or m.group("unit2") or "").lower()
+    
+    # Determine if Celsius or Fahrenheit
+    if 'c' in unit:
+        value_c = val
+        value_f = val * 9/5 + 32.0
     else:
-        val_f = val
-        raw = f"{val}°F"
+        # Default to Fahrenheit or if 'f' in unit
+        value_f = val
+        value_c = (val - 32) * 5/9
     
-    return {"value_f": round(val_f, 1), "raw": raw}
+    # Sanity check
+    if not (92 <= value_f <= 110):
+        return None
+    
+    return {
+        "value_f": round(value_f, 1),
+        "value_c": round(value_c, 1),
+        "raw": f"{value_f}°F ({value_c}°C)"
+    }
 
 def extract_severity(text: str, context_expects_severity: bool = False) -> Optional[int]:
     """
-    Extract severity score (1-10 scale).
-    Only extracts bare numbers if context_expects_severity=True
+    Extract severity rating (1-10 scale)
+    Only extracts if:
+    - Pattern like "7/10" or "7 out of 10" is found
+    - context_expects_severity=True and bare number 1-10 is found
     """
-    text_lower = text.lower()
+    # Pattern: "7/10" or "7 out of 10"
+    explicit = re.search(r'(\d{1,2})\s*(?:/|out of)\s*10', text, re.I)
+    if explicit:
+        val = int(explicit.group(1))
+        if 1 <= val <= 10:
+            return val
     
-    # Check for descriptive words first
-    for word, score in SEVERITY_WORDS.items():
-        if word in text_lower:
-            return score
-    
-    # Check for explicit scale notation
-    if '/10' in text or 'out of 10' in text_lower:
-        m = re.search(r'(\d+)\s*/\s*10', text)
-        if m:
-            return int(m.group(1))
-    
-    # Only check for bare numbers if we're expecting severity
+    # Contextual: If we JUST asked for severity, bare number is OK
     if context_expects_severity:
-        m = SEVERITY_RE.search(text)
-        if m:
-            return int(m.group(1))
+        # Look for standalone digit 1-10
+        bare = re.search(r'\b([1-9]|10)\b', text)
+        if bare:
+            val = int(bare.group(1))
+            if 1 <= val <= 10:
+                return val
+    
+    # Text-based severity
+    text_lower = text.lower()
+    if 'mild' in text_lower:
+        return 3
+    if 'moderate' in text_lower:
+        return 6
+    if 'severe' in text_lower or 'worst' in text_lower:
+        return 9
+    
+    return None
+
+def extract_yes_no(text: str) -> Optional[bool]:
+    """
+    Extract yes/no answer
+    Returns True for yes, False for no, None if unclear
+    """
+    text_lower = text.lower().strip()
+    
+    yes_words = ['yes', 'y', 'yeah', 'yup', 'sure', 'ok', 'okay', 'correct', 'right', 'affirmative']
+    no_words = ['no', 'n', 'nope', 'nah', 'not', 'negative']
+    
+    if any(w == text_lower or text_lower.startswith(w + ' ') for w in yes_words):
+        return True
+    if any(w == text_lower or text_lower.startswith(w + ' ') for w in no_words):
+        return False
     
     return None
 
 def extract_duration(text: str) -> Optional[str]:
-    """Extract duration with unit"""
-    text_lower = text.lower()
+    """
+    Extract duration (e.g., "2 days", "3 weeks")
+    """
+    patterns = [
+        (r'(\d+)\s*(day|days)', 'days'),
+        (r'(\d+)\s*(week|weeks)', 'weeks'),
+        (r'(\d+)\s*(month|months)', 'months'),
+        (r'(\d+)\s*(hour|hours|hrs?)', 'hours'),
+    ]
     
-    # Special cases
-    if 'yesterday' in text_lower:
-        return '1 day'
-    if 'today' in text_lower or 'this morning' in text_lower:
-        return 'hours'
-    
-    # Pattern matching
-    for pattern, unit in DURATION_RE:
-        m = pattern.search(text_lower)
+    for pat, unit in patterns:
+        m = re.search(pat, text, re.I)
         if m:
-            val = m.group(1)
+            val = int(m.group(1))
             return f"{val} {unit}"
+    
+    # Relative time
+    if 'yesterday' in text.lower():
+        return '1 day'
+    if 'today' in text.lower() or 'this morning' in text.lower():
+        return 'hours'
     
     return None
 
 def extract_onset(text: str) -> Optional[str]:
-    """Extract onset (sudden vs gradual)"""
+    """
+    Extract onset (sudden vs gradual)
+    """
     text_lower = text.lower()
     
     if any(word in text_lower for word in ['sudden', 'suddenly', 'all of a sudden', 'instant']):
         return 'sudden'
-    elif any(word in text_lower for word in ['gradual', 'gradually', 'slow', 'slowly', 'progressive']):
+    if any(word in text_lower for word in ['gradual', 'gradually', 'slow', 'slowly']):
         return 'gradual'
     
     return None
 
 def extract_pattern(text: str) -> Optional[str]:
-    """Extract symptom pattern"""
+    """
+    Extract symptom pattern (constant vs intermittent)
+    """
     text_lower = text.lower()
     
+    # Intermittent patterns
     if any(phrase in text_lower for phrase in ['comes and goes', 'come and go', 'on and off', 'intermittent']):
         return 'intermittent'
-    elif any(word in text_lower for word in ['constant', 'continuous', 'ongoing', 'persistent']):
+    
+    # Constant patterns
+    if any(word in text_lower for word in ['constant', 'continuous', 'ongoing', 'all the time', 'persistent']):
         return 'constant'
     
     return None
 
 def extract_radiation(text: str) -> Optional[str]:
-    """Extract pain radiation locations"""
+    """
+    Extract pain radiation
+    """
     text_lower = text.lower()
     
     locations = []
-    if 'arm' in text_lower:
-        if 'left arm' in text_lower:
+    if 'arm' in text_lower or 'shoulder' in text_lower:
+        if 'left' in text_lower:
             locations.append('left arm')
-        elif 'right arm' in text_lower:
+        elif 'right' in text_lower:
             locations.append('right arm')
         else:
             locations.append('arm')
     
     if 'jaw' in text_lower:
         locations.append('jaw')
-    if 'neck' in text_lower:
-        locations.append('neck')
-    if 'back' in text_lower:
-        locations.append('back')
-    if 'shoulder' in text_lower:
-        locations.append('shoulder')
+    
+    if 'neck' in text_lower or 'back' in text_lower:
+        locations.append('neck/back')
     
     if locations:
-        return f"yes, to {', '.join(locations)}"
+        return 'yes, to ' + ', '.join(locations)
     
-    if any(word in text_lower for word in ['no radiation', 'not radiating', "doesn't radiate"]):
+    if any(word in text_lower for word in ['no', 'not', "doesn't", 'does not']):
         return 'no'
-    
-    return None
-
-def extract_yes_no(text: str) -> Optional[bool]:
-    """Extract yes/no from text"""
-    text_lower = text.lower().strip()
-    
-    if text_lower in ['yes', 'y', 'yeah', 'yep', 'correct', 'true', 'affirmative']:
-        return True
-    if text_lower in ['no', 'n', 'nope', 'not', 'false', 'negative']:
-        return False
     
     return None

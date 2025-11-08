@@ -38,6 +38,7 @@ SYMPTOM_SYNONYMS = {
     "breathlessness": "shortness of breath",
     "difficulty breathing": "shortness of breath",
     "cannot breathe": "shortness of breath",
+    "can't breathe": "shortness of breath",
     "trouble breathing": "shortness of breath",
     "gasping for air": "shortness of breath",
     "wheezing": "shortness of breath",
@@ -45,6 +46,8 @@ SYMPTOM_SYNONYMS = {
     "breathing problem": "shortness of breath",
     "breath tightness": "shortness of breath",
     "suffocation": "shortness of breath",
+    "breathless": "shortness of breath",
+    "sob": "shortness of breath",
 
     # 🟥 Fever
     "high temperature": "fever",
@@ -70,17 +73,24 @@ SYMPTOM_SYNONYMS = {
     "temple pain": "headache",
     "pain in head and neck": "headache",
 
-    # 🟥 Abdominal Pain
-    "stomach pain": "severe abdominal pain",
-    "belly pain": "severe abdominal pain",
-    "tummy ache": "severe abdominal pain",
-    "pain in stomach": "severe abdominal pain",
-    "lower abdomen pain": "severe abdominal pain",
-    "upper stomach pain": "severe abdominal pain",
-    "cramps": "severe abdominal pain",
-    "gas pain": "severe abdominal pain",
-    "epigastric pain": "severe abdominal pain",
-    "abdominal pain": "severe abdominal pain",
+    # 🟥 Abdominal Pain - ENHANCED
+    "stomach pain": "abdominal_pain",
+    "belly pain": "abdominal_pain",
+    "tummy ache": "abdominal_pain",
+    "tummy pain": "abdominal_pain",
+    "pain in stomach": "abdominal_pain",
+    "lower abdomen pain": "abdominal_pain",
+    "lower belly pain": "abdominal_pain",
+    "upper stomach pain": "abdominal_pain",
+    "cramps": "abdominal_pain",
+    "gas pain": "abdominal_pain",
+    "epigastric pain": "abdominal_pain",
+    "abdominal pain": "abdominal_pain",
+    "abdominal": "abdominal_pain",
+    "abdomen pain": "abdominal_pain",
+    "right lower abdominal pain": "abdominal_pain",
+    "rlq pain": "abdominal_pain",
+    "appendix pain": "abdominal_pain",
 
     # 🟥 Altered Mental Status
     "confusion": "altered mental status",
@@ -295,7 +305,7 @@ class ComplaintDetector:
         print(f"⚠️  Unknown complaint: '{text}'")
         return None
     
-    def _fuzzy_match(self, text: str, threshold: int = 80) -> Optional[str]:
+    def _fuzzy_match(self, text: str, threshold: int = 75) -> Optional[str]:
         """
         Fuzzy string matching for handling typos
         Uses rapidfuzz for efficient matching
@@ -340,7 +350,7 @@ class ComplaintDetector:
                     detected_complaints.append(complaint)
             else:
                 # Try fuzzy match on token
-                fuzzy = self._fuzzy_match(token, threshold=75)
+                fuzzy = self._fuzzy_match(token, threshold=70)
                 if fuzzy and fuzzy not in detected_complaints:
                     detected_complaints.append(fuzzy)
         
@@ -367,7 +377,7 @@ class ComplaintDetector:
             "syncope": 85,
             "hemoptysis": 85,
             "sudden vision loss": 85,
-            "severe abdominal pain": 85,
+            "abdominal_pain": 85,
             "weakness acute": 80,
             "cyanosis": 90,
             "hypotension": 85,
