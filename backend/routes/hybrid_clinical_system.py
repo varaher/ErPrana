@@ -658,7 +658,7 @@ async def hybrid_clinical_chat(request: HybridChatRequest):
     Integrates symptom intelligence layer with unified clinical engine
     """
     try:
-        result = hybrid_system.process_turn(
+        result = await hybrid_system.process_turn(
             request.user_input,
             request.user_id,
             request.session_id
