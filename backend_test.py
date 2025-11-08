@@ -1633,6 +1633,431 @@ class BackendAPITester:
         
         return all_success, results
 
+    # ========== CRITICAL HYBRID CLINICAL SYSTEM TESTS (REVIEW REQUEST) ==========
+    
+    def test_mi_triage_mapping_critical(self):
+        """CRITICAL TEST: MI triage should show 🔴 Red (Emergency) NOT 🟡 Yellow"""
+        test_data = {
+            "user_id": "test_user",
+            "user_input": "I have sudden chest pain radiating to my left arm with sweating and shortness of breath"
+        }
+        
+        success, response = self.run_test(
+            "🚨 CRITICAL: MI Triage Mapping Test",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            triage_level = response.get("triage_level", "").lower()
+            response_text = response.get("response", "").lower()
+            
+            # Check for RED/Emergency triage (not Yellow)
+            if "red" in triage_level or "emergency" in triage_level:
+                print("✅ CRITICAL SUCCESS: MI correctly shows RED/Emergency triage")
+            else:
+                print(f"❌ CRITICAL FAILURE: MI shows {triage_level} instead of RED/Emergency")
+            
+            # Check for emergency instructions
+            if "911" in response_text or "emergency" in response_text:
+                print("✅ EMERGENCY INSTRUCTIONS: 911/Emergency instructions present")
+            else:
+                print("❌ EMERGENCY INSTRUCTIONS: Missing 911/Emergency instructions")
+            
+            # Check for MI/ACS in reason
+            if "myocardial infarction" in response_text or "acute coronary syndrome" in response_text:
+                print("✅ MI DETECTION: Myocardial Infarction/ACS detected as reason")
+            else:
+                print("❌ MI DETECTION: MI/ACS not detected in response")
+        
+        return success, response
+    
+    def test_session_context_switching_after_triage(self):
+        """CRITICAL TEST: Context switching after triage completion"""
+        # Step 1: Complete a chest pain triage
+        test_data_1 = {
+            "user_id": "context_switch_user",
+            "user_input": "I have chest pain for 2 hours, it's severe and crushing"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🔄 CONTEXT SWITCH - Step 1: Initial Chest Pain",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        session_id = response_1.get("session_id")
+        
+        # Step 2: Say thanks (should get polite acknowledgment)
+        test_data_2 = {
+            "user_id": "context_switch_user",
+            "user_input": "thanks",
+            "session_id": session_id
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🔄 CONTEXT SWITCH - Step 2: Thanks Response",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {}
+        
+        # Step 3: New complaint (abdominal pain)
+        test_data_3 = {
+            "user_id": "context_switch_user",
+            "user_input": "I have abdominal pain in the right lower side",
+            "session_id": session_id
+        }
+        
+        success_3, response_3 = self.run_test(
+            "🔄 CONTEXT SWITCH - Step 3: New Abdominal Pain",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_3
+        )
+        
+        if success_3:
+            new_session_id = response_3.get("session_id")
+            response_text = response_3.get("response", "").lower()
+            
+            # Check for new session creation
+            if new_session_id and new_session_id != session_id:
+                print("✅ NEW SESSION: New session_id created for abdominal pain")
+            else:
+                print(f"❌ NEW SESSION: Same session_id used - {new_session_id} vs {session_id}")
+            
+            # Check for abdominal pain questions (not chest pain)
+            if "abdominal" in response_text or "stomach" in response_text or "belly" in response_text:
+                print("✅ CONTEXT SWITCH: Questions about abdominal pain (not chest pain)")
+            else:
+                print("❌ CONTEXT SWITCH: Not asking about abdominal pain")
+            
+            # Should NOT ask chest pain questions
+            if "chest" not in response_text and "cardiac" not in response_text:
+                print("✅ NO CHEST QUESTIONS: Not asking chest pain questions")
+            else:
+                print("❌ CHEST QUESTIONS: Still asking chest pain questions")
+        
+        return success_3, response_3
+    
+    def test_abdominal_pain_detection_variations(self):
+        """CRITICAL TEST: Abdominal pain detection with various terms"""
+        test_variations = [
+            "stomach pain",
+            "belly pain", 
+            "tummy pain",
+            "abdominal pain",
+            "sharp pain in my abdomen"
+        ]
+        
+        results = {}
+        all_success = True
+        
+        for variation in test_variations:
+            test_data = {
+                "user_id": f"abdominal_test_{variation.replace(' ', '_')}",
+                "user_input": variation
+            }
+            
+            success, response = self.run_test(
+                f"🔍 ABDOMINAL DETECTION - '{variation}'",
+                "POST",
+                "hybrid/chat",
+                200,
+                data=test_data
+            )
+            
+            if success:
+                response_text = response.get("response", "").lower()
+                next_step = response.get("next_step", "")
+                
+                # Check if severe_abdominal_pain complaint is detected
+                if "abdominal" in response_text or "stomach" in response_text:
+                    print(f"✅ DETECTED: '{variation}' → abdominal pain interview")
+                    results[variation] = "SUCCESS"
+                else:
+                    print(f"❌ NOT DETECTED: '{variation}' → no abdominal pain interview")
+                    results[variation] = "FAILED"
+                    all_success = False
+            else:
+                results[variation] = "API_FAILED"
+                all_success = False
+        
+        if all_success:
+            print("✅ ALL ABDOMINAL VARIATIONS: Successfully detected")
+        else:
+            print(f"❌ ABDOMINAL DETECTION FAILURES: {results}")
+        
+        return all_success, results
+    
+    def test_temperature_extraction_no_bare_numbers(self):
+        """CRITICAL TEST: Temperature extraction should require units, not confuse with severity"""
+        # Test A: Proper temperature with units
+        test_data_a = {
+            "user_id": "temp_test_user_a",
+            "user_input": "my fever is 102F"
+        }
+        
+        success_a, response_a = self.run_test(
+            "🌡️ TEMPERATURE - Test A: 102F (with unit)",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_a
+        )
+        
+        # Test B: Bare number in severity context
+        test_data_b = {
+            "user_id": "temp_test_user_b", 
+            "user_input": "what's your severity? 7"
+        }
+        
+        success_b, response_b = self.run_test(
+            "🌡️ TEMPERATURE - Test B: '7' (severity context)",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_b
+        )
+        
+        # Test C: Another temperature format
+        test_data_c = {
+            "user_id": "temp_test_user_c",
+            "user_input": "102 degree fahrenheit"
+        }
+        
+        success_c, response_c = self.run_test(
+            "🌡️ TEMPERATURE - Test C: '102 degree fahrenheit'",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_c
+        )
+        
+        results = {}
+        
+        if success_a:
+            # Should extract temperature correctly
+            collected_slots = response_a.get("collected_slots", {})
+            if "temperature" in collected_slots:
+                print("✅ TEMPERATURE A: 102F correctly extracted as temperature")
+                results["102F"] = "SUCCESS"
+            else:
+                print("❌ TEMPERATURE A: 102F not extracted as temperature")
+                results["102F"] = "FAILED"
+        
+        if success_b:
+            # Should extract as severity, NOT temperature
+            collected_slots = response_b.get("collected_slots", {})
+            if "severity" in collected_slots and "temperature" not in collected_slots:
+                print("✅ SEVERITY B: '7' correctly extracted as severity (not temperature)")
+                results["severity_7"] = "SUCCESS"
+            else:
+                print("❌ SEVERITY B: '7' incorrectly extracted as temperature")
+                results["severity_7"] = "FAILED"
+        
+        if success_c:
+            # Should extract temperature correctly
+            collected_slots = response_c.get("collected_slots", {})
+            if "temperature" in collected_slots:
+                print("✅ TEMPERATURE C: '102 degree fahrenheit' correctly extracted")
+                results["102_degree"] = "SUCCESS"
+            else:
+                print("❌ TEMPERATURE C: '102 degree fahrenheit' not extracted")
+                results["102_degree"] = "FAILED"
+        
+        return success_a and success_b and success_c, results
+    
+    def test_question_loop_prevention(self):
+        """CRITICAL TEST: Prevent repetitive questions using asked_slots tracking"""
+        # Start chest pain interview
+        test_data_1 = {
+            "user_id": "loop_prevention_user",
+            "user_input": "I have chest pain"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🔄 LOOP PREVENTION - Step 1: Initial Chest Pain",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        session_id = response_1.get("session_id")
+        first_question = response_1.get("response", "")
+        
+        # Answer severity question
+        test_data_2 = {
+            "user_id": "loop_prevention_user",
+            "user_input": "7",
+            "session_id": session_id
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🔄 LOOP PREVENTION - Step 2: Answer Severity (7)",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {}
+        
+        second_question = response_2.get("response", "")
+        
+        # Answer another question
+        test_data_3 = {
+            "user_id": "loop_prevention_user",
+            "user_input": "it started suddenly",
+            "session_id": session_id
+        }
+        
+        success_3, response_3 = self.run_test(
+            "🔄 LOOP PREVENTION - Step 3: Answer Onset",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_3
+        )
+        
+        if success_3:
+            third_question = response_3.get("response", "")
+            
+            # Check that questions are different (no repetition)
+            questions = [first_question.lower(), second_question.lower(), third_question.lower()]
+            
+            # Remove common words for comparison
+            unique_questions = []
+            for q in questions:
+                # Extract key question words
+                key_words = set(word for word in q.split() if len(word) > 3)
+                unique_questions.append(key_words)
+            
+            # Check for repetition
+            has_repetition = False
+            for i in range(len(unique_questions)):
+                for j in range(i+1, len(unique_questions)):
+                    overlap = len(unique_questions[i] & unique_questions[j])
+                    if overlap > 3:  # Significant overlap indicates repetition
+                        has_repetition = True
+                        break
+            
+            if not has_repetition:
+                print("✅ NO REPETITION: Questions are different, no loops detected")
+            else:
+                print("❌ REPETITION DETECTED: Same questions being asked")
+                print(f"Q1: {first_question[:100]}...")
+                print(f"Q2: {second_question[:100]}...")
+                print(f"Q3: {third_question[:100]}...")
+        
+        return success_3, response_3
+    
+    def test_mid_conversation_context_switch(self):
+        """CRITICAL TEST: Mid-conversation context switch with user confirmation"""
+        # Start fever interview
+        test_data_1 = {
+            "user_id": "mid_switch_user",
+            "user_input": "I have fever for 2 days"
+        }
+        
+        success_1, response_1 = self.run_test(
+            "🔀 MID-SWITCH - Step 1: Start Fever Interview",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_1
+        )
+        
+        if not success_1:
+            return False, {}
+        
+        session_id = response_1.get("session_id")
+        
+        # Mid-way mention abdominal pain
+        test_data_2 = {
+            "user_id": "mid_switch_user",
+            "user_input": "I also have sharp abdominal pain",
+            "session_id": session_id
+        }
+        
+        success_2, response_2 = self.run_test(
+            "🔀 MID-SWITCH - Step 2: Mention Abdominal Pain",
+            "POST",
+            "hybrid/chat",
+            200,
+            data=test_data_2
+        )
+        
+        if not success_2:
+            return False, {}
+        
+        response_text_2 = response_2.get("response", "").lower()
+        
+        # Check if system offers to switch focus
+        if "switch" in response_text_2 and "abdominal" in response_text_2:
+            print("✅ SWITCH OFFER: System offers to switch focus to abdominal pain")
+            
+            # User says yes to switch
+            test_data_3 = {
+                "user_id": "mid_switch_user",
+                "user_input": "yes",
+                "session_id": session_id
+            }
+            
+            success_3, response_3 = self.run_test(
+                "🔀 MID-SWITCH - Step 3: User Confirms Switch",
+                "POST",
+                "hybrid/chat",
+                200,
+                data=test_data_3
+            )
+            
+            if success_3:
+                response_text_3 = response_3.get("response", "").lower()
+                
+                # Should now ask abdominal pain questions
+                if "abdominal" in response_text_3 or "stomach" in response_text_3:
+                    print("✅ SWITCH COMPLETE: Now asking abdominal pain questions")
+                else:
+                    print("❌ SWITCH FAILED: Not asking abdominal pain questions")
+                
+                # Should NOT ask fever questions
+                if "fever" not in response_text_3 and "temperature" not in response_text_3:
+                    print("✅ FEVER STOPPED: No longer asking fever questions")
+                else:
+                    print("❌ FEVER CONTINUES: Still asking fever questions")
+            
+            return success_3, response_3
+        else:
+            print("❌ NO SWITCH OFFER: System did not offer to switch focus")
+            return False, {}
+    
+    def test_hybrid_health_endpoint(self):
+        """Test hybrid clinical system health endpoint"""
+        return self.run_test(
+            "🏥 HYBRID HEALTH CHECK",
+            "GET",
+            "hybrid/health",
+            200
+        )
+    
     # ========== FEVER INTERVIEW DEBUG TESTS (REVIEW REQUEST) ==========
     
     def test_conversational_layer_greetings(self):
