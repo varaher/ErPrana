@@ -57,8 +57,8 @@ URGENCY_UI = {
         "description": "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
     },
     "Moderate": {
-        "badge": "\ud83d\udfe8 Yellow",
-        "cta": "\ud83d\udccb NON-URGENT: Schedule an appointment with your healthcare provider.",
+        "badge": "YELLOW",
+        "cta": "NON-URGENT: Schedule an appointment with your healthcare provider.",
         "description": "This condition should be evaluated by a healthcare professional, but it's not immediately urgent."
     },
     "Mild": {
