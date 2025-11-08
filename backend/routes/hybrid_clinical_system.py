@@ -184,21 +184,96 @@ class HybridClinicalSystem:
         # Step 2: Check if there's an active symptom intelligence session
         if session_id:
             active_session = get_session(session_id)
-            if active_session and not active_session.get("completed", False):
-                # Check if user is mentioning NEW chief complaint mid-conversation
-                current_complaint = active_session.get("chief_complaint", "")
-                new_complaint = adaptive_interview.detect_new_chief_complaint_in_conversation(
-                    user_input, current_complaint
-                )
-                
-                if new_complaint:
-                    # User mentioned a high-priority NEW symptom - acknowledge and ask which to focus on
+            if active_session:
+                # Check if session is completed
+                if active_session.get("completed", False):
+                    print(f"🎯 Session already completed, checking for new complaint...")
+                    
+                    # Check if user is starting a NEW complaint
+                    new_complaint = self.detect_chief_complaint(user_input)
+                    if new_complaint:
+                        # Archive old session and start fresh
+                        archive_session(active_session)
+                        new_session = create_new_session_for_user(user_id, new_complaint)
+                        
+                        if new_session:
+                            return {
+                                "response": f"Starting a new assessment for {new_complaint.replace('_', ' ')}. Tell me more about it.",
+                                "session_id": new_session["session_id"],
+                                "next_step": "slot_filling",
+                                "needs_followup": True,
+                                "collected_slots": {},
+                                "pending_slots": new_session.get("pending_slots", [])
+                            }
+                    
+                    # No new complaint - polite acknowledgment
                     return {
-                        "response": f"I understand you're now experiencing {new_complaint} along with {current_complaint}. This is concerning. Since {new_complaint} is a high-priority symptom, would you like me to focus on that first? Or should we continue with {current_complaint}?",
+                        "response": "I'm here if you need anything else. Do you have any other health concerns?",
                         "session_id": session_id,
-                        "next_step": "clarification_needed",
+                        "next_step": "conversation_continue",
                         "needs_followup": True
                     }
+                
+                # Session is active - check for context switch
+                current_complaint = active_session.get("chief_complaint", "")
+                new_complaint = self.detect_chief_complaint(user_input)
+                
+                # If new complaint detected and DIFFERENT from current
+                if new_complaint and new_complaint != current_complaint:
+                    # Check if this is a switch offer response
+                    if active_session.get("expected_confirmation") == "switch_cc":
+                        if user_input.lower() in ("yes", "y", "ok", "okay", "sure", "please do"):
+                            # User confirmed switch
+                            offered_complaint = active_session.pop("context_switch_offer", new_complaint)
+                            active_session = _hard_reset_for_switch(active_session, offered_complaint)
+                            
+                            # Update session in DB
+                            from symptom_intelligence.symptom_intelligence import sessions
+                            sessions.update_one(
+                                {"session_id": session_id},
+                                {"$set": active_session}
+                            )
+                            
+                            return {
+                                "response": f"Switched focus to {offered_complaint.replace('_', ' ')}. When did it start?",
+                                "session_id": session_id,
+                                "next_step": "slot_filling",
+                                "needs_followup": True
+                            }
+                        else:
+                            # User declined switch
+                            active_session.pop("context_switch_offer", None)
+                            active_session.pop("expected_confirmation", None)
+                            
+                            from symptom_intelligence.symptom_intelligence import sessions
+                            sessions.update_one(
+                                {"session_id": session_id},
+                                {"$set": active_session}
+                            )
+                            
+                            return {
+                                "response": f"Understood. Let's continue with {current_complaint.replace('_', ' ')}.",
+                                "session_id": session_id,
+                                "next_step": "slot_filling",
+                                "needs_followup": True
+                            }
+                    else:
+                        # Offer to switch
+                        active_session["context_switch_offer"] = new_complaint
+                        active_session["expected_confirmation"] = "switch_cc"
+                        
+                        from symptom_intelligence.symptom_intelligence import sessions
+                        sessions.update_one(
+                            {"session_id": session_id},
+                            {"$set": active_session}
+                        )
+                        
+                        return {
+                            "response": f"I noticed you mentioned {new_complaint.replace('_', ' ')}. Do you want me to switch focus to that instead of {current_complaint.replace('_', ' ')}?",
+                            "session_id": session_id,
+                            "next_step": "clarification_needed",
+                            "needs_followup": True
+                        }
                 
                 # Continue with structured interview (with adaptive symptom capture)
                 return self._continue_structured_interview(active_session, user_input)
