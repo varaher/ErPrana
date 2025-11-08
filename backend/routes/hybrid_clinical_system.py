@@ -38,6 +38,58 @@ unified_engine = UnifiedClinicalEngine()
 conversational_layer = ConversationalLayer()
 
 # ==========================================================
+# \ud83c\udfa8 URGENCY UI MAPPING (for consistent triage display)
+# ==========================================================
+URGENCY_UI = {
+    "Emergency": {
+        "badge": "\ud83d\udfe5 Red",
+        "cta": "\ud83d\udea8 EMERGENCY: Call 911 or go to the nearest Emergency Department immediately.",
+        "description": "This is a potentially life-threatening situation that requires immediate medical attention."
+    },
+    "High": {
+        "badge": "\ud83d\udfe7 Orange",
+        "cta": "\u26a0\ufe0f URGENT: Seek medical care within the next few hours.",
+        "description": "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
+    },
+    "Urgent": {
+        "badge": "\ud83d\udfe7 Orange",
+        "cta": "\u26a0\ufe0f URGENT: Seek medical care within the next few hours.",
+        "description": "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
+    },
+    "Moderate": {
+        "badge": "\ud83d\udfe8 Yellow",
+        "cta": "\ud83d\udccb NON-URGENT: Schedule an appointment with your healthcare provider.",
+        "description": "This condition should be evaluated by a healthcare professional, but it's not immediately urgent."
+    },
+    "Mild": {
+        "badge": "\ud83d\udfe9 Green",
+        "cta": "\u2705 ROUTINE: Monitor your symptoms and consult your healthcare provider if they worsen.",
+        "description": "Self-care measures may be appropriate with routine follow-up."
+    },
+    # Legacy emoji-based keys (for backwards compatibility)
+    "\ud83d\udfe5 Red": {
+        "badge": "\ud83d\udfe5 Red",
+        "cta": "\ud83d\udea8 EMERGENCY: Call 911 or go to the nearest Emergency Department immediately.",
+        "description": "This is a potentially life-threatening situation that requires immediate medical attention."
+    },
+    "\ud83d\udfe7 Orange": {
+        "badge": "\ud83d\udfe7 Orange",
+        "cta": "\u26a0\ufe0f URGENT: Seek medical care within the next few hours.",
+        "description": "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
+    },
+    "\ud83d\udfe8 Yellow": {
+        "badge": "\ud83d\udfe8 Yellow",
+        "cta": "\ud83d\udccb NON-URGENT: Schedule an appointment with your healthcare provider.",
+        "description": "This condition should be evaluated by a healthcare professional, but it's not immediately urgent."
+    },
+    "\ud83d\udfe9 Green": {
+        "badge": "\ud83d\udfe9 Green",
+        "cta": "\u2705 ROUTINE: Monitor your symptoms and consult your healthcare provider if they worsen.",
+        "description": "Self-care measures may be appropriate with routine follow-up."
+    }
+}
+
+# ==========================================================
 # 📋 Request/Response Models
 # ==========================================================
 class HybridChatRequest(BaseModel):
