@@ -6,7 +6,7 @@ import json
 def test_sob_followup_scenario():
     """Test SOB scenario with follow-up to see if triage escalation happens during interview"""
     
-    base_url = "https://med-diagnosis-1.preview.emergentagent.com"
+    base_url = "https://symptom-intel.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 Testing SOB PE Risk Factor Triage Escalation During Interview")
