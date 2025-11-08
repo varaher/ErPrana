@@ -570,7 +570,7 @@ class HybridClinicalSystem:
     
     def _generate_triage_response(self, result: Dict[str, Any]) -> str:
         """Generate appropriate response based on triage level"""
-        triage_level = result.get("triage_level", "🟨 Yellow")
+        triage_level = result.get("triage_level", "YELLOW")
         reason = result.get("triage_reason", "")
         
         # Ensure triage_level is not None
