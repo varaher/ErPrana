@@ -412,13 +412,10 @@ class HybridClinicalSystem:
                 print(f"🎯 Rules match: {matches[0]['likely_condition']} (score: {matches[0]['score']})")
                 
                 top = matches[0]
-                urgency_map = {
-                    "Red": "🟥 Red",
-                    "Orange": "🟧 Orange",
-                    "Yellow": "🟨 Yellow",
-                    "Green": "🟩 Green"
-                }
-                triage_level = urgency_map.get(top["urgency"], "🟨 Yellow")
+                # Map urgency to UI badge using URGENCY_UI
+                urgency_key = top["urgency"]  # "Emergency", "High", "Urgent", "Moderate", etc.
+                ui_config = URGENCY_UI.get(urgency_key, URGENCY_UI["Moderate"])
+                triage_level = ui_config["badge"]
                 
                 from symptom_intelligence.symptom_intelligence import sessions
                 sessions.update_one(
@@ -432,7 +429,7 @@ class HybridClinicalSystem:
                 
                 return {
                     "response": self._generate_triage_response({
-                        "triage_level": triage_level,
+                        "triage_level": urgency_key,  # Pass raw urgency key (will be mapped in _generate_triage_response)
                         "triage_reason": f"{top['likely_condition']} (confidence: {top['score']:.0%})",
                         "collected_data": collected_slots
                     }),
