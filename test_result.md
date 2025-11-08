@@ -521,6 +521,18 @@ frontend:
         agent: "testing"
         comment: "🎯 NEW UNIFIED CLINICAL ENGINE TESTING COMPLETED - PERFECT SUCCESS! ✅ ALL 8/8 CRITICAL TESTS PASSED (100% SUCCESS RATE): 1) ✅ ACTIVE RULE EVALUATION: MI detection (R1) working perfectly - 'chest pain, sweating, shortness of breath' immediately triggers emergency with 95% confidence and 911 instructions 2) ✅ MULTI-SYMPTOM DYNAMIC ANALYSIS: Diabetes detection (R17/R100) working - 'frequent urination, excessive thirst, fatigue' correctly identified with confidence scoring and proper analysis 3) ✅ EMERGENCY DETECTION: SAH/Meningitis (R23) working - 'sudden severe headache with neck stiffness' triggers neurological emergency with 911 instructions 4) ✅ PROGRESSIVE SYMPTOM BUILDING: Meningitis pattern (R2) detected as symptoms accumulate across conversation turns 5) ✅ CONVERSATIONAL LAYER: Greetings vs symptom analysis properly differentiated 6) ✅ SESSION STATE MAINTENANCE: Symptoms accumulated across turns, session IDs maintained 7) ✅ ALL RULES ACCESSIBLE: 30 clinical rules loaded with 51 symptom mappings, actively used in analysis 8) ✅ REAL-TIME ANALYSIS: Rules evaluated DURING conversation, not just at end. EVIDENCE: Emergency patterns trigger immediate responses, multi-symptom combinations analyzed in real-time, session state properly maintained, all rules accessible and used. The unified clinical engine truly uses rules actively in conversation flow versus just having them available."
 
+  - task: "CRITICAL BUG FIXES: Triage Mapping, Context Switching, and Loop Prevention"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes/hybrid_clinical_system.py, /app/backend/services/complaint_detection.py, /app/backend/services/extractors.py, /app/backend/services/adaptive_interview.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "🚨 CRITICAL FIXES IMPLEMENTED: 1) ✅ URGENCY_UI MAPPING: Fixed life-threatening triage error - Myocardial Infarction (R1) now correctly shows 🔴 Red/Emergency instead of 🟡 Yellow. Implemented centralized URGENCY_UI mapping system that properly maps CSV rule urgencies (Emergency, High, Urgent, Moderate) to UI badges and CTAs. 2) ✅ SESSION CONTEXT SWITCHING: Fixed conversation loops after triage completion. Added _hard_reset_for_switch(), mark_completed(), archive_session(), and create_new_session_for_user() helper functions. System now properly detects new complaints after triage (e.g., 'thanks' → 'I have abdominal pain') and starts fresh sessions. 3) ✅ ENHANCED ABDOMINAL PAIN DETECTION: Updated complaint_detection.py with comprehensive abdominal pain synonyms (stomach pain, belly pain, tummy pain, RLQ pain, appendix pain). Added special mapping abdominal_pain → severe_abdominal_pain to match available complaint file. 4) ✅ STRICT EXTRACTION FUNCTIONS: Created /app/backend/services/extractors.py with strict temperature (requires unit F/C), severity (requires context or explicit pattern), duration, onset, pattern, and radiation extractors to prevent bare number confusion (e.g., '102' vs '7' for severity). 5) ✅ QUESTION LOOP PREVENTION: Enhanced handle_expected_slot() and next_best_question() to use asked_slots tracking, preventing repetitive questions. System clears expected_slot on context switch and properly manages session state. ALL CRITICAL BUGS ADDRESSED - READY FOR COMPREHENSIVE TESTING."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
