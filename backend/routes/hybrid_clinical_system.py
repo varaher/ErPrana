@@ -355,7 +355,7 @@ class HybridClinicalSystem:
         
         # Step 4: Fall back to unified clinical engine (100-rule system)
         try:
-            unified_result = self.unified_engine.process_chat_turn(user_input, session_id or f"session_{user_id}")
+            unified_result = await self.unified_engine.process_chat_turn(user_input, session_id or f"session_{user_id}")
             
             return {
                 "response": unified_result.get("response", "I'm here to help. Can you describe your symptoms?"),
