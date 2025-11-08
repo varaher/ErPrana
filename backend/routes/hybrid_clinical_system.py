@@ -174,9 +174,9 @@ class HybridClinicalSystem:
         # Then use the general complaint detector
         detected_complaint = complaint_detector.detect_complaint(user_input)
         
-        # Special mapping for abdominal_pain -> severe_abdominal_pain
+        # Special mapping for abdominal_pain -> severe abdominal pain
         if detected_complaint == "abdominal_pain":
-            detected_complaint = "severe_abdominal_pain"
+            detected_complaint = "severe abdominal pain"
         
         # Verify detected complaint is available in our system
         if detected_complaint and detected_complaint in self.available_complaints:
