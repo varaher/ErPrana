@@ -497,21 +497,23 @@ class HybridClinicalSystem:
         triage_level = result.get("triage_level", "🟨 Yellow")
         reason = result.get("triage_reason", "")
         
-        response = f"\n**Assessment Complete**\n\n"
-        response += f"**Triage Level:** {triage_level}\n"
-        response += f"**Reason:** {reason}\n\n"
+        # Find matching UI config (handle both "Red" and "🟥 Red" formats)
+        ui_config = URGENCY_UI.get(triage_level)
+        if not ui_config:
+            # Try to extract text urgency (e.g., "Red" from "🟥 Red")
+            for key in ["Emergency", "Red", "High", "Urgent", "Moderate", "Yellow", "Mild", "Green"]:
+                if key.lower() in triage_level.lower():
+                    ui_config = URGENCY_UI.get(key, URGENCY_UI["Moderate"])
+                    break
         
-        if "🟥 Red" in triage_level:
-            response += "**🚨 EMERGENCY: Call 911 or go to the nearest Emergency Department immediately.**\n\n"
-            response += "This is a potentially life-threatening situation that requires immediate medical attention."
-        elif "🟧 Orange" in triage_level:
-            response += "**⚠️ URGENT: Seek medical care within the next few hours.**\n\n"
-            response += "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
-        elif "🟨 Yellow" in triage_level:
-            response += "**📋 NON-URGENT: Schedule an appointment with your healthcare provider.**\n\n"
-            response += "This condition should be evaluated by a healthcare professional, but it's not immediately urgent."
-        else:
-            response += "**✅ ROUTINE: Monitor your symptoms and consult your healthcare provider if they worsen.**\n"
+        if not ui_config:
+            ui_config = URGENCY_UI["Moderate"]  # Default fallback
+        
+        response = f"\n**Assessment Complete**\n\n"
+        response += f"**Triage Level:** {ui_config['badge']}\n"
+        response += f"**Reason:** {reason}\n\n"
+        response += f"**{ui_config['cta']}**\n\n"
+        response += ui_config['description']
         
         return response
 
