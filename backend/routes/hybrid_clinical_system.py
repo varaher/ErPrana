@@ -52,8 +52,8 @@ URGENCY_UI = {
         "description": "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
     },
     "Urgent": {
-        "badge": "\ud83d\udfe7 Orange",
-        "cta": "\u26a0\ufe0f URGENT: Seek medical care within the next few hours.",
+        "badge": "ORANGE",
+        "cta": "URGENT: Seek medical care within the next few hours.",
         "description": "This condition requires prompt medical evaluation. Go to an urgent care center or emergency department."
     },
     "Moderate": {
