@@ -188,17 +188,7 @@ def check_completion_and_triage(session_id: str) -> Dict[str, Any]:
     data = complaint_data[cc]
     collected = s["collected_slots"]
     
-    # Check completion threshold
-    threshold = data.get("completion_threshold", 3)
-    if len(collected) < threshold:
-        print(f"ℹ️ Session {session_id}: {len(collected)}/{threshold} slots filled")
-        return {
-            "completed": False,
-            "triage_level": None,
-            "reason": f"Need {threshold - len(collected)} more slots"
-        }
-    
-    # Evaluate triage rules
+    # Evaluate triage rules FIRST (even if completion threshold not met)
     triage = "🟨 Yellow"  # default
     triage_reason = "Routine care recommended"
     
@@ -208,6 +198,20 @@ def check_completion_and_triage(session_id: str) -> Dict[str, Any]:
             triage_reason = rule.get("reason", "Triage rule matched")
             print(f"✅ Triage rule matched: {triage} - {triage_reason}")
             break
+    
+    # Check completion threshold
+    threshold = data.get("completion_threshold", 3)
+    if len(collected) < threshold:
+        print(f"ℹ️ Session {session_id}: {len(collected)}/{threshold} slots filled")
+        # If we have an emergency triage, complete anyway
+        if triage in ["🟥 Red", "🟧 Orange"]:
+            print(f"🚨 Emergency triage detected ({triage}) - completing despite incomplete slots")
+        else:
+            return {
+                "completed": False,
+                "triage_level": triage,  # Return the triage level even if incomplete
+                "reason": f"Need {threshold - len(collected)} more slots"
+            }
     
     # Update session
     sessions.update_one(
