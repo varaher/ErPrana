@@ -20,6 +20,13 @@ SYM_MAP = {
     "palpitations": "palpitations",
     "pounding heartbeat": "palpitations",
     "racing heart": "palpitations",
+    "rapid heartbeat": "palpitations",
+    "fast heartbeat": "palpitations",
+    "heartbeat": "palpitations",  # catch-all for heartbeat mentions
+    "heart racing": "palpitations",
+    "heart pounding": "palpitations",
+    "beating rapidly": "palpitations",
+    "beating fast": "palpitations",
     "sweating": "sweating",
     "diaphoresis": "sweating",
     
