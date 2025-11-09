@@ -19,11 +19,24 @@ router = APIRouter()
 # Session state storage (in production, use Redis/MongoDB)
 class SessionState:
     def __init__(self):
-        self.asked_ids: Set[str] = set()
-        self.last_bot_text: Optional[str] = None
+        self.facts: Dict[str, Any] = {}
+        self.asked_questions: Set[str] = set()
+        self.last_reply: Optional[str] = None
         self.repeat_count: int = 0
-        self.slots: Dict[str, Any] = {}
+        self.completed: bool = False
+        self.matched_rule: Optional[str] = None
         self.created_at: str = datetime.now().isoformat()
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "facts": self.facts,
+            "asked_questions": self.asked_questions,
+            "last_reply": self.last_reply,
+            "repeat_count": self.repeat_count,
+            "completed": self.completed,
+            "matched_rule": self.matched_rule,
+            "created_at": self.created_at
+        }
 
 sessions: Dict[str, SessionState] = {}
 
