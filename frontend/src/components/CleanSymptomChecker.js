@@ -275,40 +275,8 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         console.log(`Matched clinical rule: ${data.rule_id} - Triage: ${data.triage_level}`);
       }
       
-      // If comprehensive diagnoses are provided, they're already formatted in the response
-      // If basic recommendations are provided, format them
-      if (data.recommendations && data.recommendations.length > 0) {
-        assistantMessageText += '\n\n**📋 Recommendations:**\n\n';
-        
-        // Group recommendations by timeframe
-        const immediate = data.recommendations.filter(r => r.timeframe === 'immediate');
-        const shortTerm = data.recommendations.filter(r => r.timeframe === 'short-term');
-        const longTerm = data.recommendations.filter(r => r.timeframe === 'long-term');
-        
-        if (immediate.length > 0) {
-          assistantMessageText += '**🚨 Immediate Actions:**\n';
-          immediate.forEach(rec => {
-            assistantMessageText += `${rec.number}. ${rec.recommendation}\n`;
-            assistantMessageText += `   *Reason: ${rec.reasoning}*\n\n`;
-          });
-        }
-        
-        if (shortTerm.length > 0) {
-          assistantMessageText += '**⏰ Short-term (24 hours):**\n';
-          shortTerm.forEach(rec => {
-            assistantMessageText += `${rec.number}. ${rec.recommendation}\n`;
-            assistantMessageText += `   *Reason: ${rec.reasoning}*\n\n`;
-          });
-        }
-        
-        if (longTerm.length > 0) {
-          assistantMessageText += '**📅 Long-term:**\n';
-          longTerm.forEach(rec => {
-            assistantMessageText += `${rec.number}. ${rec.recommendation}\n`;
-            assistantMessageText += `   *Reason: ${rec.reasoning}*\n\n`;
-          });
-        }
-      }
+      // The enhanced system already formats everything perfectly in data.reply
+      // No need for additional formatting
 
       // Add assistant response with message ID for feedback
       const assistantMessageId = Date.now() + 1;
