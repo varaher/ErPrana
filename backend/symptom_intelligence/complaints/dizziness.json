@@ -1,6 +1,7 @@
 {
-  "name": "dizziness",
+  "chief_complaint": "dizziness",
   "display_name": "Dizziness",
+  "priority": "🟨 Yellow",
   "description": "Evaluation of dizziness, vertigo, lightheadedness, and balance issues",
   "slots": {
     "onset": {
