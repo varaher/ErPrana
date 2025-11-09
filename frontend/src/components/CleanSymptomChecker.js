@@ -247,30 +247,32 @@ const CleanSymptomChecker = ({ user, onBack }) => {
       }
 
       const data = await response.json();
-      console.log('Hybrid Clinical System Response:', data);
+      console.log('Enhanced Hybrid System Response:', data);
       
       // Update conversation state with backend response
       setConversationState(prev => ({
         ...prev,
-        currentStep: data.next_step === 'assessment_complete' ? 'complete' : 'ongoing',
-        backendState: data.collected_slots || {},
-        urgencyLevel: data.next_step === 'emergency' ? 'emergency' : 'normal',
+        currentStep: data.done ? 'complete' : 'ongoing',
+        backendState: data.facts || {},
+        urgencyLevel: (data.triage_level === 'RED' || data.triage_level === 'ORANGE') ? 'emergency' : 'normal',
         sessionId: data.session_id || prev.sessionId || `session_${Date.now()}`,
-        interviewActive: data.next_step === 'slot_filling',
-        pendingSlots: data.pending_slots || []
+        interviewActive: !data.done,
+        pendingSlots: []
       }));
 
       // Format assistant message based on response type
-      let assistantMessageText = data.response;
+      let assistantMessageText = data.reply;
       
       // Handle emergency detection
-      if (data.next_step === 'emergency' || (data.triage_level && data.triage_level.includes('🟥 Red'))) {
+      if (data.triage_level === 'RED') {
         assistantMessageText = "🚨 " + assistantMessageText;
+      } else if (data.triage_level === 'ORANGE') {
+        assistantMessageText = "⚠️ " + assistantMessageText;
       }
 
-      // Add analysis type information if available
-      if (data.general_analysis && data.general_analysis.rules_triggered > 0) {
-        console.log(`Analysis using ${data.general_analysis.rules_triggered} clinical rules`);
+      // Log rule matched if available
+      if (data.rule_id) {
+        console.log(`Matched clinical rule: ${data.rule_id} - Triage: ${data.triage_level}`);
       }
       
       // If comprehensive diagnoses are provided, they're already formatted in the response
