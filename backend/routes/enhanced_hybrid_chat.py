@@ -60,51 +60,7 @@ class EnhancedChatResponse(BaseModel):
     triage_level: Optional[str] = None
     facts: Optional[Dict] = None
 
-# Question priority list (ordered by importance)
-PRIORITY_QUESTIONS = [
-    {
-        "id": "main_symptom",
-        "text": "What single symptom is troubling you most right now? (e.g., chest pain, fever, headache, dizziness)",
-        "need": lambda s: not s.get("symptoms")
-    },
-    {
-        "id": "onset",
-        "text": "Did it start suddenly or gradually?",
-        "need": lambda s: s.get("symptoms") and not s.get("onset")
-    },
-    {
-        "id": "duration",
-        "text": "How long has this been going on? (minutes, hours, or days)",
-        "need": lambda s: s.get("symptoms") and not s.get("duration_text")
-    },
-    {
-        "id": "severity",
-        "text": "On a scale of 1-10, how severe is it right now?",
-        "need": lambda s: s.get("symptoms") and not s.get("severity")
-    },
-    {
-        "id": "radiation",
-        "text": "Does the pain spread to other areas (like your arm, jaw, or back)?",
-        "need": lambda s: "pain" in str(s.get("symptoms", [])).lower() and not s.get("radiation")
-    },
-    {
-        "id": "pattern",
-        "text": "Is it constant or does it come and go?",
-        "need": lambda s: s.get("symptoms") and not s.get("pattern")
-    }
-]
-
-def pick_next_question(session: SessionState) -> Optional[str]:
-    """
-    Pick the next unasked question based on priority
-    NEVER returns a question that was already asked
-    """
-    for q in PRIORITY_QUESTIONS:
-        if q["need"](session.slots) and q["id"] not in session.asked_ids:
-            session.asked_ids.add(q["id"])
-            return q["text"]
-    
-    return None
+# Removed old helper functions - now using universal orchestrator
 
 @router.post("/chat", response_model=EnhancedChatResponse)
 async def enhanced_hybrid_chat(request: EnhancedChatRequest):
