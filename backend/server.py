@@ -128,6 +128,10 @@ app.include_router(symptom_intelligence_layer_router, prefix="/api/symptom-intel
 app.include_router(hybrid_clinical_router, prefix="/api/hybrid")
 app.include_router(triage_feedback_router, prefix="/api/triage-feedback")
 
+# Enhanced hybrid chat with loop prevention
+from routes.enhanced_hybrid_chat import router as enhanced_hybrid_router
+app.include_router(enhanced_hybrid_router, prefix="/api/enhanced-hybrid")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
