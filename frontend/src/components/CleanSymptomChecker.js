@@ -229,20 +229,16 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         console.log('NLU processing failed, using original message:', nluError);
       }
 
-      // Call hybrid clinical system API (combines symptom intelligence + unified clinical chat)
-      const response = await fetch(`${BACKEND_URL}/api/hybrid/chat`, {
+      // Call ENHANCED hybrid clinical system API (universal orchestrator - works for all symptoms)
+      const response = await fetch(`${BACKEND_URL}/api/enhanced-hybrid/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_input: processedMessage,
+          message: processedMessage,
           session_id: conversationState.sessionId,
-          user_id: String(user.id || user.email || 'anonymous'),
-          conversation_history: messages.map(m => ({
-            role: m.sender,
-            content: m.text
-          }))
+          user_id: String(user.id || user.email || 'anonymous')
         }),
       });
 
