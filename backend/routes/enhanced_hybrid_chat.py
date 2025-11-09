@@ -111,7 +111,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "Enhanced Hybrid Clinical System",
-        "rules_loaded": len(LOADED_RULES),
+        "rules_loaded": "managed_by_orchestrator",
         "active_sessions": len(sessions),
         "features": [
             "Always extract facts before asking",
