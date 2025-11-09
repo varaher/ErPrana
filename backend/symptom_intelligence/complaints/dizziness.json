@@ -1,0 +1,200 @@
+{
+  "name": "dizziness",
+  "display_name": "Dizziness",
+  "description": "Evaluation of dizziness, vertigo, lightheadedness, and balance issues",
+  "slots": {
+    "onset": {
+      "type": "categorical",
+      "question": "When did the dizziness start? Was it sudden or gradual?",
+      "options": ["sudden", "gradual"],
+      "required": true
+    },
+    "duration": {
+      "type": "text",
+      "question": "How long have you been experiencing dizziness? (e.g., hours, days, weeks)",
+      "required": true
+    },
+    "pattern": {
+      "type": "categorical",
+      "question": "Is the dizziness constant or does it come and go?",
+      "options": ["constant", "intermittent", "positional"],
+      "required": true
+    },
+    "severity": {
+      "type": "scale",
+      "question": "On a scale of 1-10, how severe is your dizziness?",
+      "range": [1, 10],
+      "required": true
+    },
+    "type": {
+      "type": "categorical",
+      "question": "What type of dizziness is it? Does the room spin (vertigo), or do you feel lightheaded/unsteady?",
+      "options": ["spinning/vertigo", "lightheaded", "unsteady/off-balance", "floating"],
+      "required": true
+    },
+    "triggers": {
+      "type": "text",
+      "question": "What triggers the dizziness? (e.g., standing up, head movement, position change)",
+      "required": false
+    },
+    "associated_symptoms": {
+      "type": "multi_select",
+      "question": "Do you have any of these symptoms along with dizziness: hearing loss, ringing in ears, nausea, vomiting, headache, weakness, vision changes, chest pain, palpitations, confusion?",
+      "options": [
+        "hearing_loss",
+        "tinnitus",
+        "nausea",
+        "vomiting",
+        "headache",
+        "weakness",
+        "vision_changes",
+        "chest_pain",
+        "palpitations",
+        "confusion",
+        "sweating",
+        "none"
+      ],
+      "required": true
+    },
+    "recent_head_injury": {
+      "type": "boolean",
+      "question": "Have you had any recent head injury or trauma?",
+      "required": true
+    },
+    "medications": {
+      "type": "boolean",
+      "question": "Have you started any new medications recently?",
+      "required": false
+    }
+  },
+  "pending_slots": [
+    "onset",
+    "duration",
+    "type",
+    "pattern",
+    "severity",
+    "associated_symptoms",
+    "recent_head_injury"
+  ],
+  "completion_threshold": 5,
+  "triage_rules": [
+    {
+      "id": "dizziness_stroke",
+      "conditions": [
+        {
+          "slot": "associated_symptoms",
+          "operator": "includes_any",
+          "value": ["weakness", "vision_changes", "confusion", "headache"]
+        },
+        {
+          "slot": "onset",
+          "operator": "equals",
+          "value": "sudden"
+        }
+      ],
+      "triage_level": "🟥 Red",
+      "reason": "Possible stroke or TIA - Neurological emergency",
+      "action": "Seek immediate emergency care (call 911)"
+    },
+    {
+      "id": "dizziness_cardiac",
+      "conditions": [
+        {
+          "slot": "associated_symptoms",
+          "operator": "includes_any",
+          "value": ["chest_pain", "palpitations"]
+        },
+        {
+          "slot": "severity",
+          "operator": ">=",
+          "value": 7
+        }
+      ],
+      "triage_level": "🟧 Orange",
+      "reason": "Possible cardiac cause - Requires urgent evaluation",
+      "action": "Seek urgent medical care today"
+    },
+    {
+      "id": "dizziness_head_injury",
+      "conditions": [
+        {
+          "slot": "recent_head_injury",
+          "operator": "equals",
+          "value": true
+        }
+      ],
+      "triage_level": "🟧 Orange",
+      "reason": "Post-traumatic dizziness - Needs medical evaluation",
+      "action": "Seek urgent medical care for head injury assessment"
+    },
+    {
+      "id": "dizziness_severe_vertigo",
+      "conditions": [
+        {
+          "slot": "type",
+          "operator": "equals",
+          "value": "spinning/vertigo"
+        },
+        {
+          "slot": "associated_symptoms",
+          "operator": "includes_any",
+          "value": ["hearing_loss", "tinnitus"]
+        },
+        {
+          "slot": "severity",
+          "operator": ">=",
+          "value": 7
+        }
+      ],
+      "triage_level": "🟧 Orange",
+      "reason": "Possible vestibular disorder (e.g., Meniere's disease) - Needs evaluation",
+      "action": "Seek medical care within 24-48 hours"
+    },
+    {
+      "id": "dizziness_positional",
+      "conditions": [
+        {
+          "slot": "type",
+          "operator": "equals",
+          "value": "spinning/vertigo"
+        },
+        {
+          "slot": "pattern",
+          "operator": "equals",
+          "value": "positional"
+        },
+        {
+          "slot": "triggers",
+          "operator": "contains",
+          "value": "head"
+        }
+      ],
+      "triage_level": "🟨 Yellow",
+      "reason": "Possible Benign Paroxysmal Positional Vertigo (BPPV)",
+      "action": "Schedule appointment with healthcare provider or ENT specialist"
+    },
+    {
+      "id": "dizziness_moderate",
+      "conditions": [
+        {
+          "slot": "severity",
+          "operator": "<=",
+          "value": 6
+        },
+        {
+          "slot": "duration",
+          "operator": "contains",
+          "value": "days"
+        }
+      ],
+      "triage_level": "🟨 Yellow",
+      "reason": "Mild to moderate dizziness - Medical evaluation recommended",
+      "action": "Schedule appointment with healthcare provider"
+    }
+  ],
+  "default_triage": {
+    "triage_level": "🟨 Yellow",
+    "reason": "Dizziness evaluation needed",
+    "action": "Schedule appointment with healthcare provider for proper evaluation"
+  }
+}
