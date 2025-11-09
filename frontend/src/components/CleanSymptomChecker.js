@@ -923,6 +923,15 @@ const CleanSymptomChecker = ({ user, onBack }) => {
         <div ref={messagesEndRef} />
       </div>
       
+      {/* New Concern Button - shown after triage completion */}
+      {isAssessmentComplete && (
+        <div className="new-concern-container">
+          <button className="new-concern-btn" onClick={handleNewConcern}>
+            ➕ New Concern
+          </button>
+        </div>
+      )}
+      
       <div className="chat-input-area">
         <div className="input-container">
           <button
