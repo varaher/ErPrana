@@ -12,8 +12,7 @@ from typing import Optional, List, Dict, Any, Set
 import uuid
 from datetime import datetime
 
-from services.fact_extractor import extract_facts, merge_facts, summarize_facts, Facts
-from services.enhanced_rule_engine import evaluate_rules_from_facts, LOADED_RULES, get_triage_badge, get_next_steps
+from services.universal_orchestrator import orchestrate_message
 
 router = APIRouter()
 
