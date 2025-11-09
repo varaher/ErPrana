@@ -47,6 +47,64 @@ const CleanSymptomChecker = ({ user, onBack }) => {
   
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   
+  // Check if assessment is complete (triage delivered)
+  const isAssessmentComplete = messages.length > 0 && 
+    messages[messages.length - 1].type === 'assistant' &&
+    messages[messages.length - 1].message.includes('Assessment Complete');
+  
+  // Handle New Concern button
+  const handleNewConcern = async () => {
+    try {
+      // Reset backend session
+      await fetch(`${BACKEND_URL}/api/enhanced-hybrid/reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: conversationState.sessionId
+        }),
+      });
+    } catch (error) {
+      console.log('Session reset error (non-critical):', error);
+    }
+    
+    // Generate new session ID
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
+    // Reset conversation state
+    setConversationState({
+      currentStep: 'symptom_collection',
+      backendState: null,
+      sessionId: newSessionId,
+      collectedData: {
+        primarySymptom: '',
+        location: '',
+        duration: '',
+        severity: '',
+        associatedSymptoms: [],
+        triggerFactors: '',
+        relievingFactors: ''
+      },
+      urgencyLevel: 'normal',
+      requiresFollowup: true,
+      conversationHistory: []
+    });
+    
+    // Reset messages with fresh greeting
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning 🌅" :
+                     hour < 18 ? "Good afternoon ☀️" :
+                     "Good evening 🌙";
+    
+    setMessages([{
+      id: Date.now(),
+      type: 'assistant',
+      message: `${greeting}! Let's start fresh. What's your new health concern?`,
+      timestamp: new Date()
+    }]);
+  };
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
