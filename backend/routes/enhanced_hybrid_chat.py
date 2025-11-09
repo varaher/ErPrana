@@ -109,87 +109,35 @@ def pick_next_question(session: SessionState) -> Optional[str]:
 @router.post("/chat", response_model=EnhancedChatResponse)
 async def enhanced_hybrid_chat(request: EnhancedChatRequest):
     """
-    Enhanced chat endpoint with fact extraction and loop prevention
+    Universal orchestrator endpoint - works for ALL 100+ rules automatically
+    No more complaint-specific routing or fallback loops
     """
     # Get or create session
     session_id = request.session_id or str(uuid.uuid4())
     session = get_session(session_id)
     
-    # Step 1: ALWAYS extract facts from user input
-    new_facts = extract_facts(request.message)
+    # Use universal orchestrator
+    result = orchestrate_message(
+        user_id=request.user_id,
+        message=request.message,
+        session_state=session.to_dict()
+    )
     
-    # Merge into session slots
-    session.slots = merge_facts(session.slots, new_facts)
+    # Update session from result
+    if "facts" in result:
+        session.facts = result["facts"]
     
-    print(f"📊 Extracted facts: {new_facts.to_dict()}")
-    print(f"🗂️ Current slots: {session.slots}")
-    
-    # Step 2: Evaluate rules IMMEDIATELY on every turn
-    if session.slots.get("symptoms"):  # Only evaluate if we have at least one symptom
-        match = evaluate_rules_from_facts(session.slots, LOADED_RULES)
-        
-        if match and match.score >= 0.5:  # Sufficient confidence
-            # Clear ask queue; return triage
-            session.asked_ids.clear()
-            session.repeat_count = 0
-            
-            triage_badge = get_triage_badge(match.urgency)
-            next_steps_text = get_next_steps(match.urgency)
-            
-            triage_msg = (
-                f"**Assessment Complete**\n\n"
-                f"**Triage Level:** {triage_badge}\n"
-                f"**Reason:** {match.likely_condition}\n"
-                f"**Confidence:** {int(match.score * 100)}%\n\n"
-                f"{next_steps_text}"
-            )
-            
-            print(f"✅ Rule matched: {match.matched_rule_id} - {match.likely_condition} ({match.urgency})")
-            
-            return EnhancedChatResponse(
-                reply=triage_msg,
-                session_id=session_id,
-                done=True,
-                rule_id=match.matched_rule_id,
-                triage_level=triage_badge,
-                facts=session.slots
-            )
-    
-    # Step 3: No rule fired yet → ask the NEXT unseen question
-    next_q = pick_next_question(session)
-    
-    if not next_q:
-        # No more questions, but no rule matched - provide summary
-        summary = summarize_facts(session.slots)
-        reply = f"{summary}\n\nBased on what you've shared, I recommend scheduling an appointment with your healthcare provider for proper evaluation."
-    else:
-        # Acknowledge what we extracted, then ask next question
-        if not new_facts.is_empty():
-            acknowledgment = f"Got it. I noted: {', '.join(new_facts.to_dict().keys())}.\n\n"
-        else:
-            acknowledgment = ""
-        
-        reply = acknowledgment + next_q
-    
-    # Step 4: Loop guard - NEVER repeat the same question
-    if reply == session.last_bot_text:
-        session.repeat_count += 1
-    else:
-        session.repeat_count = 0
-    
-    session.last_bot_text = reply
-    
-    # Step 5: Recovery mechanism - if stuck, summarize and pivot
-    if session.repeat_count >= 2:
-        summary = summarize_facts(session.slots)
-        session.repeat_count = 0
-        reply = f"{summary}\n\nDoes that summary look right? If yes, type **OK**. Otherwise, tell me the single main symptom to focus on now."
+    if result.get("type") == "triage":
+        session.completed = True
+        session.matched_rule = result.get("rule_id")
     
     return EnhancedChatResponse(
-        reply=reply,
+        reply=result["text"],
         session_id=session_id,
-        done=False,
-        facts=session.slots
+        done=result.get("done", False),
+        rule_id=result.get("rule_id"),
+        triage_level=result.get("triage_level"),
+        facts=result.get("facts")
     )
 
 @router.post("/reset")
